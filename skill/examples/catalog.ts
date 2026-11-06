@@ -13,6 +13,31 @@ import { example as agentTools } from './agent-tools';
 import { example as checkoutPayment } from './checkout-payment';
 import { example as edgeCache } from './edge-cache';
 import { example as observability } from './observability';
+import { example as keyLock } from './key-lock';
+import { example as syncLoop } from './sync-loop';
+import { example as inboxFill } from './inbox-fill';
+import { example as batteryCharge } from './battery-charge';
+import { example as bellRing } from './bell-ring';
+import { example as tableScan } from './table-scan';
+import { example as tileLoader } from './tile-loader';
+import { example as emptyBox } from './empty-box';
+import { example as vaultRotate } from './vault-rotate';
+import { example as firewallFilter } from './firewall-filter';
+import { example as zeroTrust } from './zero-trust';
+import { example as auditLedger } from './audit-ledger';
+import { example as dataErasure } from './data-erasure';
+import { example as workloadScheduler } from './workload-scheduler';
+import { example as autoscale } from './autoscale';
+import { example as healthCheck } from './health-check';
+import { example as dnsResolve } from './dns-resolve';
+import { example as blueGreen } from './blue-green';
+import { example as snapshotRestore } from './snapshot-restore';
+import { example as cronJobs } from './cron-jobs';
+import { example as embeddingClusters } from './embedding-clusters';
+import { example as ragAnswer } from './rag-answer';
+import { example as trainingLoss } from './training-loss';
+import { example as recsRerank } from './recs-rerank';
+import { example as abTest } from './ab-test';
 
 export const examples: readonly Example[] = [
   ciDeploy,
@@ -29,4 +54,29 @@ export const examples: readonly Example[] = [
   checkoutPayment,
   edgeCache,
   observability,
+  keyLock,
+  syncLoop,
+  inboxFill,
+  batteryCharge,
+  bellRing,
+  tableScan,
+  tileLoader,
+  emptyBox,
+  vaultRotate,
+  firewallFilter,
+  zeroTrust,
+  auditLedger,
+  dataErasure,
+  workloadScheduler,
+  autoscale,
+  healthCheck,
+  dnsResolve,
+  blueGreen,
+  snapshotRestore,
+  cronJobs,
+  embeddingClusters,
+  ragAnswer,
+  trainingLoss,
+  recsRerank,
+  abTest,
 ];
