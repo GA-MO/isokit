@@ -23,9 +23,13 @@ Every image here is a real scene from `skill/examples/`, written by `exportSvg()
   <tr>
     <td><img src="docs/svg/inbox-fill.svg" alt="Letters stack in a glass tray" width="100%"></td>
     <td><img src="docs/svg/bell-ring.svg" alt="A bell rocks and rings spread" width="100%"></td>
-    <td><img src="docs/svg/hero-phone.svg" alt="The hero re-composed for a phone" width="100%"></td>
+    <td></td>
   </tr>
 </table>
+
+Every scene also ships a phone copy that tells the same story re-composed for a narrow screen. This is the hero's:
+
+<p align="center"><img src="docs/svg/hero-phone.svg" alt="The hero re-composed for a phone" width="360"></p>
 
 49 side finishes in six families. Generative finishes take a seed, and the same seed always draws the same pattern.
 
