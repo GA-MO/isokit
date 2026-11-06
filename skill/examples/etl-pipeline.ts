@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec2, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.light;
 const accent = '#d97706';
@@ -41,7 +41,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   sources.forEach((src, n) => {
     const at = srcAt(n);
     s.group(`src-${n}-g`, () => {
-      s.slab({ id: `src-${n}`, at, size: [srcSize, srcSize], height: 14 * k, radius: 12 * k, top: ui.top, side: { kind: 'marble', colors: ramps.silver }, grain: 0.05, edge: ui.edge, outline: 'rgb(22 23 27 / .14)' });
+      s.slab({ id: `src-${n}`, at, size: [srcSize, srcSize], height: 14 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.05, edge: ui.edge, outline: 'rgb(22 23 27 / .14)' });
       s.face({ id: `src-${n}-glow`, at, size: [srcSize, srcSize], radius: 12 * k, fill: 'rgb(251 191 36 / .35)' });
       s.text({ id: `src-${n}-name`, at, text: src, size: textSize, color: ui.ink, on: 'top', anchor: 'middle' });
     });
@@ -50,16 +50,16 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   sources.forEach((_, n) => s.pulse({ id: `p-${n}`, wire: 'w-load', color: accent, length: 0.18 }));
 
   s.group('core-g', () => {
-    s.slab({ id: 'core', at: coreAt, size: [coreSize, coreSize], height: 34 * k, radius: 20 * k, top: ui.top, side: { kind: 'marble', colors: ramps.amber, streak: 'wide' }, grain: 0.06, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' });
+    s.slab({ id: 'core', at: coreAt, size: [coreSize, coreSize], height: 34 * k, radius: 20 * k, top: ui.top, side: paints.gradient(s, ramps.amber), grain: 0.06, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' });
     s.face({ id: 'core-glow', at: coreAt, size: [coreSize, coreSize], radius: 20 * k, fill: 'rgb(251 191 36 / .3)' });
     s.text({ id: 'core-name', at: [coreAt[0] + coreSize / 2 - 14 * k, coreAt[1], 0], text: 'transform', size: textSize, color: '#b45309', on: 'top', along: 'y', anchor: 'middle' });
   });
 
   s.group('house-g', () => {
-    s.slab({ id: 'house', at: houseAt, size: [houseSize, houseSize], height: 16 * k, radius: 24 * k, top: ui.top, side: { kind: 'marble', colors: ramps.silver }, grain: 0.05, edge: ui.edge, outline: 'rgb(22 23 27 / .14)' });
+    s.slab({ id: 'house', at: houseAt, size: [houseSize, houseSize], height: 16 * k, radius: 24 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.05, edge: ui.edge, outline: 'rgb(22 23 27 / .14)' });
     const cellAt = (c: { i: number; j: number }, z = 0): Vec3 => [houseAt[0] + (c.i * pitch - 8) * k, houseAt[1] + c.j * pitch * k, houseAt[2] + z];
     cells.forEach((c, n) => s.face({ id: `slot-${n}`, at: cellAt(c), size: [44 * k, 44 * k], radius: 8 * k, stroke: 'rgb(22 23 27 / .2)', dash: '3 3' }));
-    cells.forEach((c, n) => s.slab({ id: `cell-${n}`, at: cellAt(c, 14 * k), size: [44 * k, 44 * k], height: 14 * k, radius: 8 * k, top: ui.top, side: { kind: 'marble', colors: ramps.amber }, grain: 0.05, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' }));
+    cells.forEach((c, n) => s.slab({ id: `cell-${n}`, at: cellAt(c, 14 * k), size: [44 * k, 44 * k], height: 14 * k, radius: 8 * k, top: ui.top, side: paints.gradient(s, ramps.amber), grain: 0.05, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' }));
   });
 
   const core2d = s.project(coreAt);
@@ -113,10 +113,11 @@ export const example: Example = {
   story: 'Rows from three sources flow into a transform step that cleans and joins them, and each batch fills the warehouse.',
   prompt: 'Draw an ETL pipeline: three source tiles send rows along wires into a transform block that dedupes and joins them, then each batch loads into a warehouse grid that fills up and empties.',
   level: 'medium',
+  category: 'data',
   useCase: 'Data',
   surface: 'light',
   interaction: 'watch',
-  html: responsive(
+  art: art(
     build('etl-sm', 390, 440, [190, 180], 0.72, { core: [0, 0], house: [215, 215], route: [[56, 0], [215, 0], [215, 117]], clean: { dx: -86, dy: 64, anchor: 'right' }, store: { dx: 0, dy: 118, anchor: 'top' } }, 10),
     build('etl-lg', 720, 420, [326, 204], 1, { core: [-70, 70], house: [150, -150], route: [[-14, 70], [150, 70], [150, -52]], clean: { dx: -20, dy: 92, anchor: 'top' }, store: { dx: 0, dy: 106, anchor: 'top' } }, 12),
     520,

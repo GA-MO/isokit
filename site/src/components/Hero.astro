@@ -1,5 +1,5 @@
 ---
-import { html } from '../../../skill/examples/hero';
+import { hero } from '../../../skill/examples/hero';
 import { repo } from '../content';
 
 const facts = ['SVG + WAAPI', 'no animation library', 'pauses off screen', 'still for reduced motion'];
@@ -33,6 +33,6 @@ const facts = ['SVG + WAAPI', 'no animation library', 'pauses off screen', 'stil
         }
       </ul>
     </div>
-    <div class="-mx-5 mt-12 sm:mx-auto sm:mt-16 sm:max-w-7xl" set:html={html} />
+    <div class="-mx-5 mt-12 sm:mx-auto sm:mt-16 sm:max-w-7xl" set:html={hero.html} />
   </div>
 </section>

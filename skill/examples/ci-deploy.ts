@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.light;
 const accent = '#0284c7';
@@ -40,7 +40,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const radius = st.size * 0.17 * k;
     const size = [st.size * k, st.size * k] as const;
     s.group(`${st.id}-g`, () => {
-      s.slab({ id: st.id, at: at(i), size, height: st.height * k, radius, top: ui.top, side: { kind: 'marble', colors: prod ? ramps.sky : ramps.silver, streak: prod ? 'wide' : 'fine' }, grain: 0.06, edge: ui.edge, outline: line });
+      s.slab({ id: st.id, at: at(i), size, height: st.height * k, radius, top: ui.top, side: paints.gradient(s, prod ? ramps.sky : ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
       if (!prod) s.face({ id: `${st.id}-lit`, at: at(i), size, radius, fill: tint });
       if (prod) s.face({ id: 'prod-ok', at: at(i), size, radius, fill: 'rgb(16 185 129 / .36)', stroke: 'rgb(5 150 105 / .6)' });
       const name = prod && !wide ? 'prod' : st.name;
@@ -56,7 +56,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   });
 
   s.group('pkg-move', () => {
-    s.slab({ id: 'pkg', at: at(0, pkgHeight), size: [pkgSize, pkgSize], height: pkgHeight, radius: 7 * k, top: ui.top, side: { kind: 'marble', colors: ramps.sky }, grain: 0.05, edge: ui.edge, outline: 'rgb(3 105 161 / .35)' });
+    s.slab({ id: 'pkg', at: at(0, pkgHeight), size: [pkgSize, pkgSize], height: pkgHeight, radius: 7 * k, top: ui.top, side: paints.gradient(s, ramps.sky), grain: 0.05, edge: ui.edge, outline: 'rgb(3 105 161 / .35)' });
   });
   s.pivot('pkg', at(0, 0));
 
@@ -113,10 +113,11 @@ export const example: Example = {
   story: 'A commit is packaged by the build, passes its tests and lands on production.',
   prompt: 'Draw a CI pipeline as a short chain: a commit becomes a package that hops through build and test, each stage lighting up, and lands on production with a green live check.',
   level: 'simple',
+  category: 'infra',
   useCase: 'CI/CD',
   surface: 'light',
   interaction: 'watch',
-  html: responsive(build('deploy-sm', 390, 380, [186, 180], 0.72, false), build('deploy-lg', 720, 400, [320, 200], 0.9, true), 520),
+  art: art(build('deploy-sm', 390, 380, [186, 180], 0.72, false), build('deploy-lg', 720, 400, [320, 200], 0.9, true), 520),
 };
 
 export default page(example);

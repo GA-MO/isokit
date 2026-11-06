@@ -7,13 +7,12 @@ interface Props {
 }
 
 const { name, rank } = levels[Astro.props.level];
+const heights = ['h-1', 'h-1.5', 'h-2', 'h-2.5'] as const;
 ---
 
 <span class="inline-flex items-center gap-2 text-xs font-medium text-surface-ink">
   <span class="flex items-end gap-0.5" aria-hidden="true">
-    {[1, 2, 3].map(n => (
-      <span class:list={['w-1 rounded-full', n === 1 ? 'h-1.5' : n === 2 ? 'h-2' : 'h-2.5', n <= rank ? 'bg-accent' : 'bg-surface-line']} />
-    ))}
+    {heights.map((h, i) => <span class:list={['w-1 rounded-full', h, i < rank ? 'bg-accent' : 'bg-surface-line']} />)}
   </span>
   {name}
 </span>

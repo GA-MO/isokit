@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, surfaces, type Example } from './shared';
 
 const ui = surfaces.light;
 const accent = '#6366f1';
@@ -138,10 +138,11 @@ export const example: Example = {
   story: 'Documents are split into terms that fill an index; a query lights the matching terms and three results rise in ranked order.',
   prompt: 'Draw documents being split into term tiles that fill a search index, then a query lighting up the matching tiles and three ranked results rising out of it.',
   level: 'medium',
+  category: 'data',
   useCase: 'Search',
   surface: 'light',
   interaction: 'watch',
-  html: responsive(build('searchidx-sm', 390, 460, [214, 236], 0.82, 'side'), build('searchidx-lg', 720, 420, [360, 196], 0.98, 'top'), 520),
+  art: art(build('searchidx-sm', 390, 460, [214, 236], 0.82, 'side'), build('searchidx-lg', 720, 420, [360, 196], 0.98, 'top'), 520),
 };
 
 export default page(example);

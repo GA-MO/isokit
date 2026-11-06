@@ -1,59 +1,11 @@
-import type { Material, Scene, SideArea, SidePaint } from '../lib/iso';
+import type { Material, Scene, SidePaint } from '../lib/iso';
+import { bandKey, fill, n, once, paints, pattern, ramps, rng, stops, vertical } from './shared';
 
 export interface Finish {
   slug: string;
   name: string;
   note: string;
   material: (scene: Scene) => Material;
-}
-
-type Band = Parameters<SidePaint>[3];
-type Stop = readonly [offset: number, color: string, opacity?: number];
-
-const n = (v: number) => Number(v.toFixed(2));
-
-const registry = new WeakMap<Scene, Map<string, string>>();
-
-function once(s: Scene, id: string, markup: () => string): string {
-  let defs = registry.get(s);
-  if (!defs) {
-    defs = new Map();
-    registry.set(s, defs);
-  }
-  let url = defs.get(id);
-  if (!url) {
-    url = s.def(id, markup());
-    defs.set(id, url);
-  }
-  return url;
-}
-
-const bandKey = (band: Band) => `${Math.round(band.y0)}-${Math.round(band.y1)}`;
-
-const fill = (a: SideArea, t: string, paint: string) => `<rect x="${n(a.x)}" y="${n(a.y)}" width="${n(a.width)}" height="${n(a.height)}" fill="${paint}" transform="${t}"/>`;
-
-const stops = (list: readonly Stop[]) => list.map(([o, c, a]) => `<stop offset="${o}" stop-color="${c}"${a === undefined ? '' : ` stop-opacity="${a}"`}/>`).join('');
-
-const pattern = (w: number, h: number, body: string, y = 0) => `<pattern id="$ID" patternUnits="userSpaceOnUse" x="0" y="${n(y)}" width="${n(w)}" height="${n(h)}">${body}</pattern>`;
-
-const tiled = (w: number, h: number, body: string) =>
-  [-1, 0, 1].flatMap(i => [-1, 0, 1].map(j => (i || j ? `<g transform="translate(${n(i * w)} ${n(j * h)})">${body}</g>` : body))).join('');
-
-const tiledY = (h: number, body: string) => [-1, 0, 1].map(j => (j ? `<g transform="translate(0 ${n(j * h)})">${body}</g>` : body)).join('');
-
-function vertical(s: Scene, key: string, band: Band, list: readonly Stop[]): string {
-  return once(s, `fin-${key}-${bandKey(band)}`, () => `<linearGradient id="$ID" gradientUnits="userSpaceOnUse" x1="0" y1="${n(band.y0)}" x2="0" y2="${n(band.y1)}">${stops(list)}</linearGradient>`);
-}
-
-function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 const wave = (period: number, samples: number, y: (x: number) => number) =>
@@ -74,25 +26,6 @@ function mix(ramp: readonly string[], t: number): string {
 
 const custom = (paint: SidePaint): Material => ({ kind: 'custom', paint });
 
-function terrazzo(s: Scene): Material {
-  const chips = once(s, 'fin-terrazzo', () => {
-    const r = rng(7);
-    const colors = ['#ece6d8', '#cf7a4f', '#86aaa2', '#dcb56c', '#a3a5af'];
-    let body = '';
-    for (let i = 0; i < 18; i++) {
-      const [cx, cy, size, sides, turn] = [r() * 40, r() * 30, 0.7 + r() * 2.2, 3 + Math.floor(r() * 3), r() * Math.PI * 2];
-      const points = Array.from({ length: sides }, (_, j) => {
-        const a = turn + (j * Math.PI * 2) / sides + (r() - 0.5) * 0.8;
-        const d = size * (0.6 + r() * 0.5);
-        return `${n(cx + Math.cos(a) * d)},${n(cy + Math.sin(a) * d)}`;
-      });
-      body += `<polygon points="${points.join(' ')}" fill="${colors[i % colors.length]}" opacity="${n(0.55 + r() * 0.4)}"/>`;
-    }
-    return pattern(40, 30, tiled(40, 30, body));
-  });
-  return custom((_, a, t, band) => fill(a, t, vertical(s, 'terrazzo', band, [[0, '#45464e'], [1, '#2a2b31']])) + fill(a, t, chips));
-}
-
 function circuit(s: Scene): Material {
   const traces = once(s, 'fin-circuit', () => {
     const gold = '#d9ae55';
@@ -104,21 +37,6 @@ function circuit(s: Scene): Material {
     );
   });
   return custom((_, a, t, band) => fill(a, t, vertical(s, 'circuit', band, [[0, '#13493a'], [1, '#0a2a20']])) + fill(a, t, traces));
-}
-
-function contour(s: Scene): Material {
-  const lines = once(s, 'fin-contour', () => {
-    const base = (x: number) => 2.1 * Math.sin((x / 96) * Math.PI * 2) + 0.9 * Math.sin((x / 96) * Math.PI * 4 + 1.1);
-    const body = [3, 9, 15, 21]
-      .map((y0, i) => {
-        const k = 0.55 + 0.45 * Math.sin(i * 1.7 + 0.4);
-        const d = wave(96, 32, x => y0 + base(x) * k + 0.6 * Math.sin((x / 96) * Math.PI * 6 + i * 2.1));
-        return `<path d="${d}" fill="none" stroke="#7dd3fc" stroke-width="${i === 0 ? 1.05 : 0.6}" opacity="${i === 0 ? 0.85 : 0.45}"/>`;
-      })
-      .join('');
-    return pattern(96, 24, tiledY(24, body));
-  });
-  return custom((_, a, t, band) => fill(a, t, vertical(s, 'contour', band, [[0, '#13293a'], [1, '#0a1620']])) + fill(a, t, lines));
 }
 
 function checker(s: Scene): Material {
@@ -148,22 +66,6 @@ function dither(s: Scene): Material {
     });
     return fill(a, t, url);
   });
-}
-
-function walnut(s: Scene): Material {
-  const grain = once(s, 'fin-walnut', () => {
-    const r = rng(23);
-    let body = '';
-    for (let i = 0; i < 14; i++) {
-      const y0 = (i / 14) * 30 + r() * 1.6;
-      const [a1, a2, p1, p2] = [0.6 + r() * 1.6, r() * 0.9, r() * 6.28, r() * 6.28];
-      const light = i % 4 === 3;
-      const d = wave(180, 36, x => y0 + a1 * Math.sin((x / 180) * Math.PI * 2 + p1) + a2 * Math.sin((x / 180) * Math.PI * 6 + p2));
-      body += `<path d="${d}" fill="none" stroke="${light ? '#9a6a42' : '#1f1108'}" stroke-width="${n(light ? 0.5 : 0.5 + r() * 0.9)}" opacity="${n(light ? 0.4 : 0.35 + r() * 0.4)}"/>`;
-    }
-    return pattern(180, 30, tiledY(30, body));
-  });
-  return custom((_, a, t, band) => fill(a, t, vertical(s, 'walnut', band, [[0, '#6a4226'], [1, '#3a2312']])) + fill(a, t, grain));
 }
 
 function minimap(s: Scene): Material {
@@ -273,14 +175,14 @@ export const finishes: readonly Finish[] = [
   { slug: 'titanium', name: 'Titanium', note: 'One standout tile in a hero', material: titanium },
   { slug: 'circuit', name: 'Circuit', note: 'Hardware, devices and IoT', material: circuit },
   { slug: 'minimap', name: 'Minimap', note: 'Editors, code and dev tools', material: minimap },
-  { slug: 'terrazzo', name: 'Terrazzo', note: 'Warm, crafted product stories', material: terrazzo },
+  { slug: 'brushed', name: 'Brushed', note: 'Servers, storage and hardware', material: s => paints.brushed(s, ramps.silver) },
   { slug: 'waveform', name: 'Waveform', note: 'Audio, signals and monitoring', material: waveform },
-  { slug: 'walnut', name: 'Walnut', note: 'Calm desk tools and notes', material: walnut },
+  { slug: 'glass', name: 'Glass', note: 'Layers, previews and overlays', material: s => paints.glass(s, '#38bdf8') },
   { slug: 'hexmesh', name: 'Hex mesh', note: 'Networks, security and infra', material: hexmesh },
   { slug: 'dither', name: 'Dither', note: 'Retro, pixel and 1‑bit looks', material: dither },
   { slug: 'fluted', name: 'Fluted', note: 'Premium hardware and light', material: fluted },
   { slug: 'heatmap', name: 'Heat map', note: 'Analytics, load and hot paths', material: heatmap },
-  { slug: 'contour', name: 'Contour', note: 'Maps, terrain and geo data', material: contour },
+  { slug: 'random', name: 'Random', note: 'Seeded noise, one per tile', material: s => paints.random(s, ramps.violet, 7) },
   { slug: 'checker', name: 'Checker', note: 'Test grids, games, playful UI', material: checker },
   { slug: 'basketweave', name: 'Basketweave', note: 'Textiles and cozy consumer apps', material: basketweave },
   { slug: 'aperture', name: 'Aperture', note: 'Displays, terminals and video', material: aperture },

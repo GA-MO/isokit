@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.light;
 const sky = ramps.sky;
@@ -33,15 +33,15 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 
   const drawEdge = (e: (typeof edges)[number]) => {
     const at: Vec3 = [e.dir[0] * R, e.dir[1] * R, node.z];
-    s.slab({ id: e.id, at, size: [node.size, node.size], height: node.height, radius: 13 * k, top: ui.top, side: { kind: 'marble', colors: ramps.silver }, grain: 0.06, edge: ui.edge });
+    s.slab({ id: e.id, at, size: [node.size, node.size], height: node.height, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
     s.face({ id: `${e.id}-hit`, at, size: [node.size, node.size], radius: 13 * k, fill: 'rgb(56 189 248 / .28)' });
     s.slab({ id: `${e.id}-copy`, at: [at[0], at[1], at[2] + 8 * k], size: [38 * k, 38 * k], height: 8 * k, radius: 7 * k, top: sky[2], side: { kind: 'flat', color: sky[1] }, edge: 'rgb(255 255 255 / .5)', shadow: false });
   };
 
   edges.filter(e => e.back).forEach(drawEdge);
-  s.slab({ id: 'file', at: file.at, size: [file.size, file.size], height: file.height, radius: 14 * k, top: ui.top, side: { kind: 'marble', colors: ramps.silver }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'file', at: file.at, size: [file.size, file.size], height: file.height, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
   s.face({ id: 'file-slots', at: file.at, size: [4 * pitch + 6 * k, strip.d + 10 * k], radius: 6 * k, stroke: 'rgb(22 23 27 / .16)', dash: '3 3' });
-  s.slab({ id: 'store', at: [0, 0, 0], size: [store.size, store.size], height: store.height, radius: 20 * k, top: ui.top, side: { kind: 'marble', colors: sky, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'store', at: [0, 0, 0], size: [store.size, store.size], height: store.height, radius: 20 * k, top: ui.top, side: paints.gradient(s, sky), grain: 0.06, edge: ui.edge });
   s.face({ id: 'store-glow', at: [0, 0, 0], size: [store.size, store.size], radius: 20 * k, fill: 'rgb(56 189 248 / .22)' });
   s.face({ id: 'track', at: [0, 0, 0], size: [4 * pitch + 6 * k, strip.d + 10 * k], radius: 6 * k, stroke: 'rgb(3 105 161 / .35)', dash: '3 3' });
   s.text({ id: 'store-name', at: [0, store.size / 2, -store.height * 0.45], text: 'storage', size: 11 * Math.max(k, 0.9), color: '#e0f2fe', on: 'left', anchor: 'middle' });
@@ -112,10 +112,11 @@ export const example: Example = {
   story: 'A file uploads to storage in four chunks that fill its progress bar, then copies spread to edge points near users.',
   prompt: 'Draw a file uploading to storage in chunks that fill a progress bar, then copies of it spreading out to three edge locations near users.',
   level: 'simple',
+  category: 'product',
   useCase: 'Storage',
   surface: 'light',
   interaction: 'watch',
-  html: responsive(
+  art: art(
     build({ name: 'upload-sm', width: 390, height: 380, origin: [195, 200], k: 0.84, wide: false }),
     build({ name: 'upload-lg', width: 720, height: 420, origin: [360, 215], k: 1, wide: true }),
     520,

@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.dark;
 const amber = ramps.amber;
@@ -69,11 +69,11 @@ function build({ name, width, height, origin, k }: Layout) {
       height: h,
       radius,
       top: ui.top,
-      side: { kind: 'marble', colors: ramps.graphite },
+      side: paints.brushed(s, ramps.graphite),
       grain: 0.06,
       edge: ui.edge,
       content: name,
-      hover: { lift, top: '#262014', side: { kind: 'marble', colors: amber }, edge: 'rgb(251 191 36 / .7)', guides: 'rgb(251 191 36 / .5)', label: `${sv.id}-stat` },
+      hover: { lift, top: '#262014', side: paints.gradient(s, amber), edge: 'rgb(251 191 36 / .7)', guides: 'rgb(251 191 36 / .5)', label: `${sv.id}-stat` },
     });
   });
 
@@ -116,10 +116,11 @@ export const example: Example = {
   story: 'A request lights its path through api, auth, billing and jobs, and any service lifts to show its p95 latency when you point at it.',
   prompt: 'Draw two rows of service tiles where a request lights a path through four of them, and hovering a tile lifts it and shows its p95 latency.',
   level: 'simple',
+  category: 'infra',
   useCase: 'Platform',
   surface: 'dark',
   interaction: 'hover',
-  html: responsive(
+  art: art(
     build({ name: 'svcmap-sm', width: 390, height: 330, origin: [197, 166], k: 0.7 }),
     build({ name: 'svcmap-lg', width: 720, height: 400, origin: [366, 206], k: 0.98 }),
     520,

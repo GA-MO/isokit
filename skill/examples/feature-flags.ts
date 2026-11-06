@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.light;
 const green = ramps.emerald;
@@ -29,11 +29,11 @@ function build({ name, width, height, origin, k, stacked }: Layout) {
   s.wire({ id: 'w-flag', points: route, stroke: ui.wire, width: 1.25, corner: 16 * k });
   s.pulse({ id: 'p-flag', wire: 'w-flag', color: green[2], length: 0.22 });
 
-  s.slab({ id: 'core', at: core.at, size: [core.size, core.size], height: core.height, radius: 17 * k, top: ui.top, side: { kind: 'marble', colors: green, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'core', at: core.at, size: [core.size, core.size], height: core.height, radius: 17 * k, top: ui.top, side: paints.gradient(s, green), grain: 0.06, edge: ui.edge });
   s.face({ id: 'core-glow', at: core.at, size: [core.size, core.size], radius: 17 * k, fill: 'rgb(52 211 153 / .3)' });
   s.text({ id: 'core-name', at: [core.at[0], core.at[1] + core.size / 2, -core.height * 0.5], text: 'flags', size: 11, color: '#ecfdf5', on: 'left', anchor: 'middle' });
 
-  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 22 * k, top: ui.top, side: { kind: 'marble', colors: ramps.silver }, grain: 0.05, edge: ui.edge });
+  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 22 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.05, edge: ui.edge });
   s.face({ id: 'plate-glow', at: plate.at, size: plate.size, radius: 22 * k, fill: 'rgb(52 211 153 / .12)' });
   s.text({ id: 'plate-name', at: [plate.at[0], plate.at[1] + plate.size[1] / 2 - 11 * k, plate.at[2]], text: '20 users', size: 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
 
@@ -192,7 +192,11 @@ const bind = (root) => {
     else show(stateAt(loopTime(root)));
   }, 150);
 };
-for (const name of names) for (const root of document.querySelectorAll('[data-iso="' + name + '"]')) bind(root);
+const scan = () => {
+  for (const name of names) for (const root of document.querySelectorAll('[data-iso="' + name + '"]')) bind(root);
+};
+scan();
+new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
 </script>`;
 }
 
@@ -206,10 +210,11 @@ export const example: Example = {
   story: 'Flipping a feature flag rolls the feature out to 10, 50 and then 100 percent of users, each step spreading across the user grid in a wave.',
   prompt: 'Draw a feature flag service rolling a feature out to a grid of users at 10, 50 and 100 percent, with a real switch I can press to step the rollout myself.',
   level: 'medium',
+  category: 'product',
   useCase: 'Release',
   surface: 'light',
   interaction: 'play',
-  html: `<style>${css}</style>${responsive(compact.scene, wide.scene, 520)}${script(wide.steps)}`,
+  art: art(compact.scene, wide.scene, 520, `<style>${css}</style>${script(wide.steps)}`),
 };
 
 export default page(example);

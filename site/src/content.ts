@@ -1,12 +1,20 @@
-import type { Example, Level } from '../../skill/examples/shared';
+import { levels as levelOrder, type Category, type Example, type Level } from '../../skill/examples/shared';
 
-export const levels: Record<Level, { name: string; note: string; rank: 1 | 2 | 3 }> = {
-  simple: { name: 'Simple', note: 'One idea and a handful of objects.', rank: 1 },
-  medium: { name: 'Medium', note: 'A flow with a branch, a state change or a choice.', rank: 2 },
-  complex: { name: 'Complex', note: 'A whole system, drawn wide.', rank: 3 },
+export { levelOrder };
+
+export const levels: Record<Level, { name: string; note: string; rank: 1 | 2 | 3 | 4 }> = {
+  spot: { name: 'Spot', note: 'One or two objects for a feature list, an empty state or a loader.', rank: 1 },
+  simple: { name: 'Simple', note: 'One idea and a handful of objects.', rank: 2 },
+  medium: { name: 'Medium', note: 'A flow with a branch, a state change or a choice.', rank: 3 },
+  complex: { name: 'Complex', note: 'A whole system, drawn wide.', rank: 4 },
 };
 
-export const levelOrder = ['simple', 'medium', 'complex'] as const satisfies readonly Level[];
+export const categoryNames: Record<Category, string> = {
+  product: 'Product',
+  security: 'Security',
+  infra: 'Infra',
+  data: 'Data & AI',
+};
 
 export const hints: Record<Example['interaction'], { fine: string; coarse: string } | null> = {
   watch: null,

@@ -1,6 +1,6 @@
-import { ISO_X, Scene, ease, responsive } from '../lib/iso';
+import { ISO_X, Scene, ease } from '../lib/iso';
 import { finishes } from './materials';
-import { fonts, page, surfaces, type Example, fitX, narrowest } from './shared';
+import { art, fonts, page, surfaces, fitX, narrowest } from './shared';
 
 const ui = surfaces.dark;
 const iy = ISO_X * Math.tan(Math.PI / 6);
@@ -61,22 +61,10 @@ function build(l: Layout) {
   return s;
 }
 
-export const html = responsive(
+export const gallery = art(
   build({ name: 'finish-sm', width: 390, height: 580, cols: 3, size: 78, thickness: 26, gap: [10, 18], top: 28, nameSize: 11 }),
   build({ name: 'finish-lg', width: 1120, height: 540, cols: 5, size: 118, thickness: 34, gap: [34, 30], top: 44, nameSize: 13 }),
   640,
 );
 
-const preview: Example = {
-  slug: 'material-gallery',
-  title: 'Side finishes',
-  story: 'Fifteen side finishes on one grid; lift a slab to read its name and when to use it.',
-  prompt: 'Lay out every side finish as a slab on an isometric grid, each one lifting on hover to show its name and when to pick it.',
-  level: 'medium',
-  useCase: 'Materials',
-  surface: 'dark',
-  interaction: 'hover',
-  html,
-};
-
-export default { ...page(preview), background: ui.page };
+export default { ...page({ title: 'Side finishes', surface: 'dark', art: gallery }), background: ui.page };

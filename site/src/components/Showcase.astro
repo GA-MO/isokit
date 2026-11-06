@@ -1,12 +1,14 @@
 ---
 import { examples } from '../../../skill/examples/catalog';
-import { levelOrder, levels } from '../content';
+import { categories } from '../../../skill/examples/shared';
+import { categoryNames, levelOrder, levels } from '../content';
 import ExampleCard from './ExampleCard.astro';
 
 const groups = levelOrder
   .map(level => ({ level, ...levels[level], items: examples.filter(e => e.level === level) }))
   .filter(g => g.items.length > 0);
-const useCases = [...new Set(examples.map(e => e.useCase))];
+const tabs = categories.filter(c => examples.some(e => e.category === c));
+const columns = { spot: 'sm:grid-cols-2 lg:grid-cols-3', simple: 'lg:grid-cols-2', medium: 'lg:grid-cols-2', complex: '' } as const;
 const chip =
   'h-8 shrink-0 rounded-full border border-line px-3.5 text-sm text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-page';
 ---
@@ -16,20 +18,20 @@ const chip =
     <div class="max-w-2xl">
       <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Live scenes, each with the prompt behind it.</h2>
       <p class="mt-4 text-lg text-pretty text-muted">
-        {examples.length} {examples.length === 1 ? "example" : "examples"}, from a single fan-out to a whole system. Copy any prompt and make it yours.
+        {examples.length} {examples.length === 1 ? "example" : "examples"}, from a single icon to a whole system. Copy any prompt and make it yours.
       </p>
     </div>
 
     {
-      useCases.length > 1 && (
-        <div class="-mx-5 mt-8 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0" role="group" aria-label="Filter by use case">
+      tabs.length > 1 && (
+        <div class="-mx-5 mt-8 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0" role="group" aria-label="Filter by category">
           <div class="flex gap-2 py-2 sm:flex-wrap">
             <button type="button" data-filter="" aria-pressed="true" class={chip}>
               All
             </button>
-            {useCases.map(u => (
-              <button type="button" data-filter={u} aria-pressed="false" class={chip}>
-                {u}
+            {tabs.map(c => (
+              <button type="button" data-filter={c} aria-pressed="false" class={chip}>
+                {categoryNames[c]}
               </button>
             ))}
           </div>
@@ -47,13 +49,7 @@ const chip =
               </h3>
               <p class="text-sm text-muted">{g.note}</p>
             </header>
-            <p data-empty hidden class="rounded-2xl border border-dashed border-line px-5 py-6 text-sm text-muted">
-              No {g.name.toLowerCase()} scene for <span data-empty-filter class="text-ink" />.{' '}
-              <button type="button" data-filter="" class="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
-                Show all
-              </button>
-            </p>
-            <div class:list={['grid gap-5 sm:gap-6', g.level !== 'complex' && 'lg:grid-cols-2']}>
+            <div class:list={['grid gap-5 sm:gap-6', columns[g.level]]}>
               {g.items.map(example => (
                 <ExampleCard example={example} />
               ))}
@@ -76,13 +72,10 @@ const chip =
     for (const group of root.querySelectorAll<HTMLElement>('[data-group]')) {
       let shown = 0;
       for (const card of group.querySelectorAll<HTMLElement>('[data-card]')) {
-        card.hidden = filter !== '' && card.dataset.useCase !== filter;
+        card.hidden = filter !== '' && card.dataset.category !== filter;
         if (!card.hidden) shown++;
       }
-      const empty = group.querySelector<HTMLElement>('[data-empty]');
-      const name = group.querySelector('[data-empty-filter]');
-      if (empty) empty.hidden = shown > 0;
-      if (name) name.textContent = filter;
+      group.hidden = shown === 0;
     }
   }
 

@@ -1,6 +1,7 @@
 ---
-import { html } from '../../../skill/examples/material-gallery';
+import { gallery } from '../../../skill/examples/material-gallery';
 import { finishes } from '../../../skill/examples/materials';
+import Art from './Art.astro';
 ---
 
 <section id="materials" class="surface-dark border-t border-line py-24 sm:py-32">
@@ -11,7 +12,7 @@ import { finishes } from '../../../skill/examples/materials';
         Every slab takes a finish on its sides. The kit bends each one around the rounded corner, so a stripe turns as one line.
       </p>
     </div>
-    <div class="mt-12 rounded-3xl border border-line bg-panel p-2 sm:mt-16 sm:p-6" set:html={html} />
+    <div class="mt-12 rounded-3xl border border-line bg-panel p-2 sm:mt-16 sm:p-6"><Art art={gallery} /></div>
     {
       finishes.length > 0 && (
         <dl class="mt-12 grid grid-cols-2 gap-x-5 gap-y-6 sm:gap-x-8 sm:gap-y-7 lg:grid-cols-4">

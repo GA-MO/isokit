@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.dark;
 const indigo = ramps.indigo;
@@ -25,12 +25,12 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const route: Vec3[] = wide ? [[main[0] + size / 2, main[1], wz], [d, d, wz], [d, -d + size / 2, wz]] : [[main[0] + size / 2, 0, wz], [branch[0] - size / 2, 0, wz]];
   s.wire({ id: 'w-branch', points: route, stroke: 'rgb(165 180 252 / .32)', width: 1.25, corner: 18 * k, hidden: true });
 
-  s.slab({ id: 'main', at: main, size: [size, size], height: h, radius, top: ui.top, side: { kind: 'marble', colors: indigo, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'main', at: main, size: [size, size], height: h, radius, top: ui.top, side: paints.gradient(s, indigo), grain: 0.06, edge: ui.edge });
   s.face({ id: 'main-glow', at: main, size: [size, size], radius, fill: 'rgb(129 140 248 / .3)' });
   s.text({ id: 'main-name', at: [main[0], main[1] + size / 2, -h * 0.5], text: 'main', size: 12, color: '#e0e7ff', on: 'left', anchor: 'middle' });
 
   s.frame({ id: 'ghost', at: branch, size: [size, size], height: h, radius, stroke: 'rgb(165 180 252 / .55)', dash: '4 4' });
-  s.slab({ id: 'branch', at: branch, size: [size, size], height: h, radius, top: ui.top, side: { kind: 'marble', colors: ramps.graphite, streak: 'wide' }, grain: 0.06, edge: 'rgb(165 180 252 / .35)' });
+  s.slab({ id: 'branch', at: branch, size: [size, size], height: h, radius, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: 'rgb(165 180 252 / .35)' });
   s.face({ id: 'branch-hit', at: branch, size: [size, size], radius, fill: 'rgb(129 140 248 / .22)' });
   s.text({ id: 'branch-name', at: [branch[0], branch[1] + size / 2, -h * 0.5], text: 'preview', size: 12, color: '#a5b4fc', on: 'left', anchor: 'middle' });
 
@@ -87,10 +87,11 @@ export const example: Example = {
   story: 'A branch appears beside the main database as a copy-on-write outline, turns solid, takes one change and merges it back.',
   prompt: 'Draw a main database spawning an instant copy-on-write branch that starts as an outline and turns solid, gets one schema change, then merges back.',
   level: 'simple',
+  category: 'data',
   useCase: 'Databases',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(
+  art: art(
     build({ name: 'branch-sm', width: 390, height: 400, origin: [195, 138], k: 0.8, wide: false }),
     build({ name: 'branch-lg', width: 720, height: 400, origin: [360, 200], k: 1, wide: true }),
     520,

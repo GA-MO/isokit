@@ -21,7 +21,7 @@ const snippet = `const s = new Scene({ name: 'deploy', width: 720, height: 400 }
 s.wire({ id: 'w', points: [[60, 0, 0], [220, 0, 0]], stroke: ui.wire });
 s.pulse({ id: 'p', wire: 'w', color: accent });
 s.slab({ id: 'build', at: [0, 0, 0], size: [120, 120], height: 28,
-  top: ui.top, side: { kind: 'marble', colors: ramps.violet } });
+  top: ui.top, side: paints.gradient(s, ramps.violet) });
 
 s.dropIn('build', 0.1);
 s.loop(6, 2.2);

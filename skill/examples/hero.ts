@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec2, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, paints } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#a78bfa';
@@ -79,7 +79,7 @@ function build(l: Layout) {
     radius: l.plate * 0.07,
     top: '#131418',
     grain: 0.05,
-    side: { kind: 'marble', colors: ramps.graphite, streak: 'wide' },
+    side: paints.brushed(s, ramps.graphite),
     edge: 'rgb(255 255 255 / .1)',
     content: `<rect x="${-half + inset}" y="${-half + inset}" width="${l.plate - inset * 2}" height="${l.plate - inset * 2}" rx="${l.plate * 0.04}" fill="${grid}"/>`,
   });
@@ -115,8 +115,8 @@ function build(l: Layout) {
     const r = t.size * 0.18;
     s.group(`g-${t.id}`, () => {
       s.svg(`${t.id}-glow`, `<g filter="${s.blur(t.size * 0.16)}">${s.plane([x, y, 0], `<rect x="${-t.size * 0.55}" y="${-t.size * 0.55}" width="${t.size * 1.1}" height="${t.size * 1.1}" rx="${r}" fill="${accent}" opacity=".55"/>`)}</g>`);
-      s.slab({ id: t.id, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: { kind: 'marble', colors: ramps.graphite, streak: 'wide' }, edge: ui.edge });
-      s.slab({ id: `${t.id}-hot`, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: { kind: 'marble', colors: ramps.violet, streak: 'wide' }, edge: 'rgb(196 181 253 / .5)', shadow: false });
+      s.slab({ id: t.id, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: paints.brushed(s, ramps.graphite), edge: ui.edge });
+      s.slab({ id: `${t.id}-hot`, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
       s.face({ id: `${t.id}-hit`, at: t.at, size: [t.size, t.size], radius: r, fill: tint });
       s.text({ id: `${t.id}-name`, at: t.at, text: t.name, size: l.text, color: '#d4d4d8', on: 'top', anchor: 'middle', font: 'sans' });
     });
@@ -228,7 +228,7 @@ function build(l: Layout) {
   return s;
 }
 
-export const html = responsive(
+export const hero = art(
   build({
     name: 'hero-sm',
     width: 390,
@@ -266,16 +266,4 @@ export const html = responsive(
   640,
 );
 
-const preview: Example = {
-  slug: 'hero',
-  title: 'Prompt to scene',
-  story: 'A prompt goes in and an animated isometric explainer builds itself on the artboard, then a second prompt draws a different one.',
-  prompt: 'Draw a hero where a typed prompt feeds an artboard and the diagram it asks for assembles itself: tiles drop in, wires connect, light runs through.',
-  level: 'complex',
-  useCase: 'Hero',
-  surface: 'dark',
-  interaction: 'watch',
-  html,
-};
-
-export default { ...page(preview), background: ui.page };
+export default { ...page({ title: 'Prompt to scene', surface: 'dark', art: hero }), background: ui.page };

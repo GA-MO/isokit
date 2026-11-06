@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fitX, fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fitX, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#a78bfa';
@@ -26,14 +26,14 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     s.pulse({ id: `p-${c.id}`, wire: `w-${c.id}`, color: accent, length: 0.14 });
   });
 
-  s.slab({ id: 'core', at: core, size: [coreSize, coreSize], height: 28 * k, radius: 18 * k, top: ui.top, side: { kind: 'marble', colors: ramps.violet, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'core', at: core, size: [coreSize, coreSize], height: 28 * k, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.violet), grain: 0.06, edge: ui.edge });
   s.face({ id: 'core-glow', at: core, size: [coreSize, coreSize], radius: 18 * k, fill: 'rgb(167 139 250 / .28)' });
   s.text({ id: 'core-name', at: [core[0], core[1], 0], text: 'event', size: 12, color: '#c4b5fd', on: 'top', anchor: 'middle' });
   s.label({ id: 'event', at: [core[0], core[1], 74 * k], text: 'order.shipped', size: 13 });
 
   channels.forEach(c => {
     const at: Vec3 = [chX, c.y * k, 0];
-    s.slab({ id: c.id, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+    s.slab({ id: c.id, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
     s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(167 139 250 / .3)' });
     s.text({ id: `${c.id}-name`, at, text: c.id, size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
     if (latency) {
@@ -77,10 +77,11 @@ export const example: Example = {
   story: 'One event leaves the core and lands on email, push and SMS at once.',
   prompt: 'Draw one event fanning out to email, push and SMS, each channel lighting up as it receives it.',
   level: 'simple',
+  category: 'product',
   useCase: 'Messaging',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(build('notify-sm', 390, 380, [205, 190], 0.82, false), build('notify-lg', 720, 400, [330, 196], 1, true), 520),
+  art: art(build('notify-sm', 390, 380, [205, 190], 0.82, false), build('notify-lg', 720, 400, [330, 196], 1, true), 520),
 };
 
 export default page(example);

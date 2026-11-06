@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.dark;
 const hit = '#38bdf8';
@@ -104,7 +104,7 @@ function build(l: Layout) {
 
   const sh = l.serverSize;
   s.group('server-g', () => {
-  s.slab({ id: 'server', at: l.server, size: [sh, sh], height: 80 * k * (l.name.endsWith('sm') ? 0.85 : 1), radius: sh * 0.16, top: ui.top, side: { kind: 'marble', colors: ramps.graphite, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'server', at: l.server, size: [sh, sh], height: 80 * k * (l.name.endsWith('sm') ? 0.85 : 1), radius: sh * 0.16, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
   s.face({ id: 'server-glow', at: l.server, size: [sh, sh], radius: sh * 0.16, fill: 'rgb(251 191 36 / .22)' });
   s.text({ id: 'server-name', at: l.server, text: 'origin', size: 12, color: '#a1a1aa', on: 'top', anchor: 'middle' });
   });
@@ -113,9 +113,9 @@ function build(l: Layout) {
   l.edges.forEach((at, i) => {
     const code = codes[i]!;
     s.group(`${code}-g`, () => {
-    s.slab({ id: code, at, size: [es, es], height: 18 * k, radius: es * 0.18, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+    s.slab({ id: code, at, size: [es, es], height: 18 * k, radius: es * 0.18, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
     if (i === near) {
-      s.slab({ id: 'warm', at, size: [es, es], height: 18 * k, radius: es * 0.18, top: '#16232c', side: { kind: 'marble', colors: ramps.sky }, grain: 0.06, edge: 'rgb(56 189 248 / .45)' });
+      s.slab({ id: 'warm', at, size: [es, es], height: 18 * k, radius: es * 0.18, top: '#16232c', side: paints.gradient(s, ramps.sky), grain: 0.06, edge: 'rgb(56 189 248 / .45)' });
       s.face({ id: 'edge-miss', at, size: [es, es], radius: es * 0.18, fill: 'rgb(251 191 36 / .3)' });
       s.face({ id: 'edge-hit', at, size: [es, es], radius: es * 0.18, fill: 'rgb(56 189 248 / .4)' });
     }
@@ -125,7 +125,7 @@ function build(l: Layout) {
 
   const cs = l.clientSize;
   s.group('client-g', () => {
-  s.slab({ id: 'client', at: l.client, size: [cs, cs], height: 12 * k, radius: cs * 0.2, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'client', at: l.client, size: [cs, cs], height: 12 * k, radius: cs * 0.2, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
   s.face({ id: 'client-glow', at: l.client, size: [cs, cs], radius: cs * 0.2, fill: 'rgb(56 189 248 / .3)' });
   s.text({ id: 'client-name', at: l.client, text: 'you', size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
   });
@@ -187,10 +187,11 @@ export const example: Example = {
   story: 'The first request misses the nearest edge and fetches from the origin; the next one is answered by the warmed edge in a fraction of the time.',
   prompt: 'Draw a request hitting the nearest edge region: first a cache miss that goes to the origin and back, then a cache hit answered right at the edge, with both latencies.',
   level: 'complex',
+  category: 'infra',
   useCase: 'Edge',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(build(compact()), build(wide()), 760),
+  art: art(build(compact()), build(wide()), 760),
 };
 
 export default page(example);

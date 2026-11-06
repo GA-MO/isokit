@@ -1,6 +1,7 @@
 ---
 import type { Example } from '../../../skill/examples/shared';
 import { hints } from '../content';
+import Art from './Art.astro';
 import CopyButton from './CopyButton.astro';
 import LevelBadge from './LevelBadge.astro';
 
@@ -14,11 +15,11 @@ const hint = hints[example.interaction];
 
 <article
   data-card
-  data-use-case={example.useCase}
+  data-category={example.category}
   class:list={[`surface-${example.surface}`, 'flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line bg-surface text-surface-ink']}
 >
   <div class="relative px-2 pt-2 sm:px-4 sm:pt-4">
-    <Fragment set:html={example.html} />
+    <Art art={example.art} />
     {
       hint && (
         <span class="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-surface-line bg-surface-well px-2.5 py-1 text-xs font-medium text-surface-muted sm:right-6 sm:top-6">

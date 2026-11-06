@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#2dd4bf';
@@ -30,12 +30,12 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.pulse({ id: 'p-ok', wire: 'w-cred', color: accent, length: 0.22 });
   s.wire({ id: 'w-app', points: [[idSize / 2, appAt[1], -12 * k], [appAt[0] - appSize / 2, appAt[1], -12 * k]], stroke: ui.wire, width: 1.25 });
 
-  s.slab({ id: 'identity', at: idAt, size: [idSize, idSize], height: idAt[2] - ground, radius: 22 * k, top: ui.top, side: { kind: 'marble', colors: ['#031e1d', '#06403b', '#0f766e', '#5eead4'], streak: 'wide' }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'identity', at: idAt, size: [idSize, idSize], height: idAt[2] - ground, radius: 22 * k, top: ui.top, side: paints.gradient(s, ['#031e1d', '#06403b', '#0f766e', '#5eead4']), grain: 0.06, edge: ui.edge });
   s.face({ id: 'identity-glow', at: idAt, size: [idSize, idSize], radius: 22 * k, fill: glow });
   s.text({ id: 'identity-name', at: [idAt[0] + idSize / 2 - 16 * k, 0, idAt[2]], text: 'identity', size: 12, color: '#99f6e4', on: 'top', along: 'y', anchor: 'middle' });
   s.face({ id: 'token-slot', at: tokenFrom, size: [tokenSize + 10 * k, tokenSize + 10 * k], radius: 10 * k, stroke: 'rgb(45 212 191 / .35)', dash: '3 3' });
 
-  s.slab({ id: 'app', at: appAt, size: [appSize, appSize], height: appAt[2] - ground, radius: 18 * k, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'app', at: appAt, size: [appSize, appSize], height: appAt[2] - ground, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
   s.face({ id: 'app-glow', at: appAt, size: [appSize, appSize], radius: 18 * k, fill: glow });
   s.text({ id: 'app-name', at: [appAt[0] + appSize / 2 - 14 * k, appAt[1], 0], text: 'app', size: 12, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
 
@@ -50,7 +50,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 
   for (let i = handoff.ghosts - 1; i >= 0; i--) s.face({ id: `ghost-${i}`, at: tokenFrom, size: [tokenSize, tokenSize], radius: 9 * k, stroke: accent, strokeWidth: 1 });
   s.group('token-move', () => {
-    s.slab({ id: 'token', at: tokenFrom, size: [tokenSize, tokenSize], height: 9 * k, radius: 9 * k, top: '#ccfbf1', side: { kind: 'marble', colors: ramps.teal }, edge: 'rgb(255 255 255 / .5)', shadow: false });
+    s.slab({ id: 'token', at: tokenFrom, size: [tokenSize, tokenSize], height: 9 * k, radius: 9 * k, top: '#ccfbf1', side: paints.gradient(s, ramps.teal), edge: 'rgb(255 255 255 / .5)', shadow: false });
   });
   s.pivot('token', [tokenFrom[0], tokenFrom[1], tokenFrom[2] - 9 * k]);
 
@@ -137,10 +137,11 @@ export const example: Example = {
   story: 'A sign-in passes password and a second factor, and the identity service hands the app a session token.',
   prompt: 'Draw a sign-in flow: a phone sends credentials to an identity service, which checks the password and a push approval, then hands a token tile to the app to open a session.',
   level: 'medium',
+  category: 'security',
   useCase: 'Auth',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(build('auth-sm', 390, 480, [196, 232], 0.86), build('auth-lg', 720, 420, [376, 200], 1), 520),
+  art: art(build('auth-sm', 390, 480, [196, 232], 0.86), build('auth-lg', 720, 420, [376, 200], 1), 520),
 };
 
 export default page(example);

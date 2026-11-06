@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#34d399';
@@ -57,10 +57,10 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     s.pulse({ id: `ack${i}`, wire: `back${i}`, color: '#d4d4d8', length: 0.12, width: 1.5 });
   });
 
-  s.slab({ id: 'producer', at: producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'producer', at: producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
   s.text({ id: 'producer-name', at: producer, text: 'api', size: 11, color: '#a1a1aa', on: 'top', anchor: 'middle' });
 
-  s.slab({ id: 'tray', at: tray, size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: '#18191e', side: { kind: 'marble', colors: ramps.graphite, streak: 'wide' }, grain: 0.05, edge: ui.edge });
+  s.slab({ id: 'tray', at: tray, size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: '#18191e', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge });
   for (let i = 0; i < slots; i++) s.face({ id: `slot-${i}`, at: slotAt(i), size: [jobSize + 6 * k, jobSize + 6 * k], radius: 8 * k, stroke: 'rgb(255 255 255 / .14)', dash: '3 3' });
 
   s.group('jobs', () => {
@@ -73,8 +73,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   workers.forEach((y, i) => {
     const at: Vec3 = [wx, y * k, 0];
     s.group(`worker-${i}`, () => {
-      s.slab({ id: `wk-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
-      s.slab({ id: `wk-hot-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: '#17231f', side: { kind: 'marble', colors: ramps.emerald }, grain: 0.06, edge: 'rgb(52 211 153 / .45)' });
+      s.slab({ id: `wk-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+      s.slab({ id: `wk-hot-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: '#17231f', side: paints.gradient(s, ramps.emerald), grain: 0.06, edge: 'rgb(52 211 153 / .45)' });
       s.text({ id: `wk-name-${i}`, at: [at[0] + 20 * k, at[1] + 20 * k, 0], text: `w${i + 1}`, size: 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
     });
     s.slab({ id: `held-${i}`, at: [at[0], at[1], jobZ + 2 * k], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: '#1d3a30', side: { kind: 'flat', color: '#047857' }, grain: 0.05, edge: 'rgb(52 211 153 / .6)' });
@@ -152,10 +152,11 @@ export const example: Example = {
   story: 'Jobs pile up in the queue faster than they are taken, then three workers pull them off the front one by one until it is empty again.',
   prompt: 'Draw jobs arriving into a queue faster than they are handled, three workers pulling from the front, each glowing while it works and acking when done.',
   level: 'medium',
+  category: 'infra',
   useCase: 'Queues',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(build('qworkers-sm', 390, 440, [146, 226], 0.7), build('qworkers-lg', 720, 420, [300, 190], 0.92), 520),
+  art: art(build('qworkers-sm', 390, 440, [146, 226], 0.7), build('qworkers-lg', 720, 420, [300, 190], 0.92), 520),
 };
 
 export default page(example);

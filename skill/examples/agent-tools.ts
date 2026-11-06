@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec2, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example, fitX, narrowest } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.dark;
 const call = '#818cf8';
@@ -49,14 +49,14 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const drawTool = (t: Tool) => {
     const at = plane(t.at);
     const size = [toolSize * k, toolSize * k] as const;
-    s.slab({ id: t.id, at, size, height: 22 * k, radius: 16 * k, top: ui.top, side: { kind: 'marble', colors: ramps.graphite }, grain: 0.06, edge: ui.edge });
+    s.slab({ id: t.id, at, size, height: 22 * k, radius: 16 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
     s.face({ id: `${t.id}-glow`, at, size, radius: 16 * k, fill: glow });
     s.text({ id: `${t.id}-name`, at: [at[0] + (toolSize / 2 - 14) * k, at[1], 0], text: t.name, size: wide ? 12 : 10, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
   };
   const drawCore = () => {
     const at = plane([0, 0], 14 * k);
     const size = [coreSize * k, coreSize * k] as const;
-    s.slab({ id: 'core', at, size, height: 44 * k, radius: 26 * k, top: ui.top, side: { kind: 'marble', colors: ramps.indigo, streak: 'wide' }, grain: 0.06, edge: ui.edge });
+    s.slab({ id: 'core', at, size, height: 44 * k, radius: 26 * k, top: ui.top, side: paints.gradient(s, ramps.indigo), grain: 0.06, edge: ui.edge });
     s.face({ id: 'core-glow', at, size, radius: 26 * k, fill: glow });
     s.text({ id: 'core-name', at: [at[0] + (coreSize / 2 - 18) * k, 0, at[2]], text: 'agent', size: wide ? 13 : 11, color: reply, on: 'top', along: 'y', anchor: 'middle' });
     [-34, 0, 34].forEach((dy, i) => {
@@ -137,10 +137,11 @@ export const example: Example = {
   story: 'An AI agent plans three steps, calls search, a database and a code runner in turn, and writes the answer from what comes back.',
   prompt: 'Draw an AI agent as a core with three tool satellites: a question arrives, the agent plans, calls search, database and code runner one by one, then types an answer card.',
   level: 'complex',
+  category: 'data',
   useCase: 'AI agents',
   surface: 'dark',
   interaction: 'watch',
-  html: responsive(
+  art: art(
     build('agent-sm', 390, 560, [196, 300], 0.7, false, { question: [195, 24], answer: [195, 110] }),
     build('agent-lg', 1120, 520, [590, 280], 1, true, { question: [120, 178], answer: [120, 272] }),
     760,

@@ -1,0 +1,17 @@
+---
+import type { Art } from '../../../skill/examples/shared';
+
+interface Props {
+  art: Art;
+}
+
+const { art } = Astro.props;
+const box = `art-${art.compact.name}`;
+const ratio = (v: { width: number; height: number }) => `${v.width}/${v.height}`;
+const css = `.${box}{aspect-ratio:${ratio(art.compact)}}${art.wide ? `@container (min-width:${art.breakpoint + 1}px){.${box}{aspect-ratio:${ratio(art.wide)}}}` : ''}`;
+---
+
+<Fragment set:html={`<style>${css}</style>${art.head}`} />
+<div class="@container">
+  <div data-art data-compact={art.compact.name} data-wide={art.wide?.name} data-breakpoint={art.breakpoint} class:list={[box, 'grid place-items-center']}></div>
+</div>

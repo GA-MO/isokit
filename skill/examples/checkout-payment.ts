@@ -1,5 +1,5 @@
-import { Scene, ease, responsive, type Vec2, type Vec3 } from '../lib/iso';
-import { fonts, page, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.light;
 const accent = '#7c3aed';
@@ -52,7 +52,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const radius = nd.size * 0.18 * n;
     s.group(`${nd.id}-g`, () => {
       if (nd.id === 'fraud') s.face({ id: 'scan', at: [p[0], p[1], -nd.height * n], size: [size[0] + 26 * n, size[1] + 26 * n], radius: radius + 8 * n, stroke: accent, strokeWidth: 1.25, dash: '4 4' });
-      s.slab({ id: nd.id, at: p, size, height: nd.height * n, radius, top: ui.top, side: { kind: 'marble', colors: nd.side, streak: nd.id === 'gateway' ? 'wide' : 'fine' }, grain: 0.05, edge: ui.edge, outline: nd.id === 'gateway' ? 'rgb(91 33 182 / .3)' : line });
+      s.slab({ id: nd.id, at: p, size, height: nd.height * n, radius, top: ui.top, side: paints.gradient(s, nd.side), grain: 0.05, edge: ui.edge, outline: nd.id === 'gateway' ? 'rgb(91 33 182 / .3)' : line });
       if (nd.id !== 'bank') s.face({ id: `${nd.id}-lit`, at: p, size, radius, fill: glow });
       if (nd.id === 'bank' || nd.id === 'checkout') s.face({ id: `${nd.id}-ok`, at: p, size, radius, fill: okTint, stroke: 'rgb(5 150 105 / .5)' });
       s.text({ id: `${nd.id}-name`, at: [p[0] + nd.size * n * 0.5 - 12 * n, p[1], 0], text: nd.id, size: text, color: nd.id === 'gateway' ? '#6d28d9' : ui.muted, on: 'top', along: 'y', anchor: 'middle' });
@@ -63,7 +63,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const corner: Vec3 = [R, R, 8 * n];
   const receiptTo: Vec3 = [checkout[0], checkout[1], 8 * n];
   s.group('receipt-move', () => {
-    s.slab({ id: 'receipt', at: receiptFrom, size: [30 * n, 40 * n], height: 7 * n, radius: 6 * n, top: ui.top, side: { kind: 'marble', colors: ramps.emerald }, edge: ui.edge, outline: 'rgb(4 120 87 / .4)', shadow: false });
+    s.slab({ id: 'receipt', at: receiptFrom, size: [30 * n, 40 * n], height: 7 * n, radius: 6 * n, top: ui.top, side: paints.gradient(s, ramps.emerald), edge: ui.edge, outline: 'rgb(4 120 87 / .4)', shadow: false });
   });
   s.pivot('receipt', [receiptFrom[0], receiptFrom[1], 0]);
 
@@ -135,10 +135,11 @@ export const example: Example = {
   story: 'A checkout payment runs through the gateway, a fraud check and the card network to the bank, and the approval comes back as a receipt.',
   prompt: 'Draw a card payment as a ring: checkout to gateway, fraud check, card network and bank, the bank approves in green and a receipt travels back to checkout.',
   level: 'complex',
+  category: 'product',
   useCase: 'Payments',
   surface: 'light',
   interaction: 'watch',
-  html: responsive(build('pay-sm', 390, 460, [195, 176], 98, 0.56, 9, [195, 360]), build('pay-lg', 1120, 520, [560, 236], 230, 1, 12, [560, 312]), 760),
+  art: art(build('pay-sm', 390, 460, [195, 176], 98, 0.56, 9, [195, 360]), build('pay-lg', 1120, 520, [560, 236], 230, 1, 12, [560, 312]), 760),
 };
 
 export default page(example);
