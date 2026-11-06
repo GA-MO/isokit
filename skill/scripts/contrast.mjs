@@ -85,13 +85,15 @@ for (const file of files) {
           const [p, q] = [await load(a), await load(b)];
           const k = p.w / origin.width;
           return list.map(it => {
+            const fg = (it.color.match(/[\d.]+/g) ?? ['0', '0', '0']).slice(0, 3).map(Number);
+            const dist = (d, i) => Math.abs(d[i] - fg[0]) + Math.abs(d[i + 1] - fg[1]) + Math.abs(d[i + 2] - fg[2]);
             const x0 = Math.max(0, Math.floor((it.box.x + scrollX - origin.x) * k)), y0 = Math.max(0, Math.floor((it.box.y + scrollY - origin.y) * k));
             const x1 = Math.min(p.w, Math.ceil((it.box.right + scrollX - origin.x) * k)), y1 = Math.min(p.h, Math.ceil((it.box.bottom + scrollY - origin.y) * k));
             const bg = [];
             for (let y = y0; y < y1; y++)
               for (let x = x0; x < x1; x++) {
                 const i = (y * p.w + x) * 4;
-                if (Math.abs(p.d[i] - q.d[i]) + Math.abs(p.d[i + 1] - q.d[i + 1]) + Math.abs(p.d[i + 2] - q.d[i + 2]) > 60) bg.push([q.d[i], q.d[i + 1], q.d[i + 2]]);
+                if (Math.abs(p.d[i] - q.d[i]) + Math.abs(p.d[i + 1] - q.d[i + 1]) + Math.abs(p.d[i + 2] - q.d[i + 2]) > 60 && dist(p.d, i) < dist(q.d, i) - 30) bg.push([q.d[i], q.d[i + 1], q.d[i + 2]]);
               }
             return { bg, area: Math.max(1, (x1 - x0) * (y1 - y0)) };
           });
