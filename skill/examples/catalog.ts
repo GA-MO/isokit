@@ -13,11 +13,11 @@ import { example as agentTools } from './agent-tools';
 import { example as checkoutPayment } from './checkout-payment';
 import { example as edgeCache } from './edge-cache';
 import { example as observability } from './observability';
-import { example as keyLock } from './key-lock';
+import { example as keycardSlot } from './keycard-slot';
 import { example as syncLoop } from './sync-loop';
 import { example as inboxFill } from './inbox-fill';
 import { example as batteryCharge } from './battery-charge';
-import { example as bellRing } from './bell-ring';
+import { example as alertStack } from './alert-stack';
 import { example as tableScan } from './table-scan';
 import { example as tileLoader } from './tile-loader';
 import { example as emptyBox } from './empty-box';
@@ -54,11 +54,11 @@ export const examples: readonly Example[] = [
   checkoutPayment,
   edgeCache,
   observability,
-  keyLock,
+  keycardSlot,
   syncLoop,
   inboxFill,
   batteryCharge,
-  bellRing,
+  alertStack,
   tableScan,
   tileLoader,
   emptyBox,
