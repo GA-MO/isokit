@@ -138,6 +138,7 @@ export const example: Example = {
   prompt: 'Draw a sign-in flow: a phone sends credentials to an identity service, which checks the password and a push approval, then hands a token tile to the app to open a session.',
   level: 'medium',
   category: 'security',
+  layout: 'panels',
   useCase: 'Auth',
   surface: 'dark',
   interaction: 'watch',

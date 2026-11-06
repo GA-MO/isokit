@@ -113,6 +113,7 @@ export const example: Example = {
   prompt: 'Draw a file uploading to storage in chunks that fill a progress bar, then copies of it spreading out to three edge locations near users.',
   level: 'simple',
   category: 'product',
+  layout: 'field',
   useCase: 'Storage',
   surface: 'light',
   interaction: 'watch',

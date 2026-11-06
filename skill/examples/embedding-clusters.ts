@@ -170,6 +170,7 @@ export const example: Example = {
   prompt: 'Draw embedding vectors as small tiles scattered on a plate that drift into three coloured clusters, then a new item drops in and joins its nearest cluster.',
   level: 'medium',
   category: 'data',
+  layout: 'field',
   useCase: 'Vectors',
   surface: 'dark',
   interaction: 'watch',

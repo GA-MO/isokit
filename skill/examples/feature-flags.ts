@@ -211,6 +211,7 @@ export const example: Example = {
   prompt: 'Draw a feature flag service rolling a feature out to a grid of users at 10, 50 and 100 percent, with a real switch I can press to step the rollout myself.',
   level: 'medium',
   category: 'product',
+  layout: 'field',
   useCase: 'Release',
   surface: 'light',
   interaction: 'play',

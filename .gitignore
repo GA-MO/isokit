@@ -7,3 +7,4 @@ bun.lock
 .twin-scratch
 skill/reference/
 !skill/scripts/bun.lock
+.contrast/

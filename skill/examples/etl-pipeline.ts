@@ -114,6 +114,7 @@ export const example: Example = {
   prompt: 'Draw an ETL pipeline: three source tiles send rows along wires into a transform block that dedupes and joins them, then each batch loads into a warehouse grid that fills up and empties.',
   level: 'medium',
   category: 'data',
+  layout: 'wide',
   useCase: 'Data',
   surface: 'light',
   interaction: 'watch',

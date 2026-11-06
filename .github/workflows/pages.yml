@@ -28,6 +28,8 @@ jobs:
       - run: sh scripts/check-names.sh
       - run: bun install
       - run: bun run test
+      - run: cd skill/scripts && bun install --frozen-lockfile
+      - run: bun run check:contrast
       - run: bun run build
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

@@ -78,6 +78,7 @@ export const example: Example = {
   prompt: 'Draw one event fanning out to email, push and SMS, each channel lighting up as it receives it.',
   level: 'simple',
   category: 'product',
+  layout: 'radial',
   useCase: 'Messaging',
   surface: 'dark',
   interaction: 'watch',

@@ -5,8 +5,10 @@ export const levels = ['spot', 'simple', 'medium', 'complex'] as const;
 export type Level = (typeof levels)[number];
 export const categories = ['product', 'security', 'infra', 'data'] as const;
 export type Category = (typeof categories)[number];
+export const layouts = ['wide', 'diagonal', 'panels', 'radial', 'field', 'exploded', 'object'] as const;
+export type Layout = (typeof layouts)[number];
 export type Surface = 'dark' | 'light';
-export type Interaction = 'watch' | 'hover' | 'play';
+export type Interaction = 'watch' | 'hover' | 'play' | 'drag' | 'explore';
 
 export interface Variant {
   scene: Scene;
@@ -31,6 +33,7 @@ export interface Example {
   prompt: string;
   level: Level;
   category: Category;
+  layout: Layout;
   useCase: string;
   surface: Surface;
   interaction: Interaction;

@@ -117,6 +117,7 @@ export const example: Example = {
   prompt: 'Draw two rows of service tiles where a request lights a path through four of them, and hovering a tile lifts it and shows its p95 latency.',
   level: 'simple',
   category: 'infra',
+  layout: 'field',
   useCase: 'Platform',
   surface: 'dark',
   interaction: 'hover',

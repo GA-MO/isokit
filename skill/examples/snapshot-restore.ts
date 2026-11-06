@@ -114,6 +114,7 @@ export const example: Example = {
   prompt: 'Draw a database next to a timeline of snapshots; a bad change turns it red, a cursor slides back to the 09:00 snapshot and its copy glides into the database to restore it.',
   level: 'medium',
   category: 'infra',
+  layout: 'diagonal',
   useCase: 'Backups',
   surface: 'light',
   interaction: 'watch',

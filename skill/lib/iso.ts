@@ -300,6 +300,8 @@ export class Scene {
   private readonly hiddenWires = new Set<string>();
   private readonly ambients: { target: string; prop: AnimatedProp; period: number; values: (string | number)[]; easing: string }[] = [];
   private readonly turntables = new Map<string, string[]>();
+  private readonly solids: { id: string; x: readonly [number, number]; y: readonly [number, number]; z: readonly [number, number] }[] = [];
+  private readonly sideTexts: { id: string; at: Vec3; on: 'left' | 'right'; size: number }[] = [];
   private introLength = 0;
   private loopLength = 0;
   private stillAt = 0;
@@ -406,6 +408,7 @@ export class Scene {
 
   text(o: TextOptions): this {
     const id = this.claim(o.id);
+    if ((o.on === 'left' || o.on === 'right') && !('screen' in o.at)) this.sideTexts.push({ id: o.id, at: o.at, on: o.on, size: o.size ?? 12 });
     const size = o.size ?? 12;
     const anchor = o.anchor ?? (o.pill ? 'middle' : 'start');
     const mono = (o.font ?? 'mono') === 'mono';
@@ -468,6 +471,7 @@ export class Scene {
 
   slab(o: SlabOptions): this {
     const id = this.claim(o.id);
+    this.solids.push({ id: o.id, x: [o.at[0] - o.size[0] / 2, o.at[0] + o.size[0] / 2], y: [o.at[1] - o.size[1] / 2, o.at[1] + o.size[1] / 2], z: [o.at[2] - o.height, o.at[2]] });
     const radius = o.radius ?? Math.min(o.size[0], o.size[1]) * 0.12;
     const bottom: Vec3 = [o.at[0], o.at[1], o.at[2] - o.height];
     const top = this.extremes(o.at, o.size, radius);
@@ -727,6 +731,7 @@ export class Scene {
 
   prism(o: PrismOptions): this {
     const [x, y, z0] = o.at;
+    this.solids.push({ id: o.id, x: [x - o.size[0] / 2, x + o.size[0] / 2], y: [y - o.size[1] / 2, y + o.size[1] / 2], z: [z0, z0 + Math.max(o.reach ?? o.height, o.height)] });
     const radius = o.radius ?? Math.min(o.size[0], o.size[1]) * 0.12;
     const r = Math.min(radius, o.size[0] / 2, o.size[1] / 2);
     const [w, d] = [o.size[0] / 2 - r, o.size[1] / 2 - r];
@@ -944,7 +949,25 @@ export class Scene {
     return { intro: this.introLength, loop: this.loopLength, still: this.stillAt, tracks };
   }
 
+  private checkSideTexts() {
+    const eps = 0.5;
+    for (const t of this.sideTexts) {
+      const [x, y, z] = t.at;
+      for (const b of this.solids) {
+        if (z < b.z[0] - eps || z > b.z[1] + 2 * t.size) continue;
+        const [along, across, front, label] = t.on === 'left' ? [x, y, b.y[1], 'y'] : [y, x, b.x[1], 'x'];
+        const span = t.on === 'left' ? b.x : b.y;
+        const back = t.on === 'left' ? b.y[0] : b.x[0];
+        if (along < span[0] - eps || along > span[1] + eps) continue;
+        if (across >= back - eps && across < front - eps) {
+          throw new Error(`iso: text "${t.id}" in scene ${this.name} is printed on the ${t.on} plane at ${label} = ${fmt(across)}, ${z > b.z[1] + eps ? 'floating over the top of' : 'inside'} "${b.id}" where no face shows; put it on the visible ${t.on} face at ${label} = ${fmt(front)} (z between ${fmt(b.z[0])} and ${fmt(b.z[1])})`);
+        }
+      }
+    }
+  }
+
   render(): string {
+    this.checkSideTexts();
     const o = this.opts;
     const lb = o.label ?? { bg: '#ffffff', border: 'rgb(15 23 42 / .14)', ink: '#0f172a', radius: 8 };
     const spec = JSON.stringify(this.motion()).replace(/</g, '\\u003c');
@@ -958,6 +981,7 @@ export class Scene {
   }
 
   exportSvg(options: ExportOptions = {}): string {
+    this.checkSideTexts();
     if (this.labels.length) {
       const ids = [...this.labelIds].join('", "');
       throw new Error(`iso: exportSvg() in scene ${this.name} found label() "${ids}"; a standalone SVG cannot hold HTML labels, draw them with text() (use its pill option for a pill) instead`);

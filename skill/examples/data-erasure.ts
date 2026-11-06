@@ -172,6 +172,7 @@ export const example: Example = {
   prompt: 'Draw a user-data erasure request fanning out from one core to six systems (db, search, cache, events, crm, backup); each clears its record tile, a green check pops and a reply runs back until it reads user 4821 erased 6/6.',
   level: 'complex',
   category: 'security',
+  layout: 'radial',
   useCase: 'Privacy',
   surface: 'dark',
   interaction: 'watch',

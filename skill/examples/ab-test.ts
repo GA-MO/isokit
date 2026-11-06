@@ -142,6 +142,7 @@ export const example: Example = {
   prompt: 'Draw an A/B test: traffic splits at a node into variants A and B with alternating pulses, each variant grows a result bar, and B wins in green with a lift label.',
   level: 'medium',
   category: 'data',
+  layout: 'radial',
   useCase: 'Experiments',
   surface: 'light',
   interaction: 'watch',

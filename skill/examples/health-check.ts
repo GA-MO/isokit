@@ -154,6 +154,7 @@ export const example: Example = {
   prompt: 'Draw a load balancer health-checking three nodes: one fails and turns rose, its wire retracts and it slides out of the pool while traffic continues to the healthy ones, then it recovers and rejoins.',
   level: 'medium',
   category: 'infra',
+  layout: 'radial',
   useCase: 'Reliability',
   surface: 'dark',
   interaction: 'watch',

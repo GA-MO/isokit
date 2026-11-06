@@ -188,6 +188,7 @@ export const example: Example = {
   prompt: 'Draw a request hitting the nearest edge region: first a cache miss that goes to the origin and back, then a cache hit answered right at the edge, with both latencies.',
   level: 'complex',
   category: 'infra',
+  layout: 'diagonal',
   useCase: 'Edge',
   surface: 'dark',
   interaction: 'watch',

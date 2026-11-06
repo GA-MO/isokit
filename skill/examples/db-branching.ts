@@ -88,6 +88,7 @@ export const example: Example = {
   prompt: 'Draw a main database spawning an instant copy-on-write branch that starts as an outline and turns solid, gets one schema change, then merges back.',
   level: 'simple',
   category: 'data',
+  layout: 'diagonal',
   useCase: 'Databases',
   surface: 'dark',
   interaction: 'watch',

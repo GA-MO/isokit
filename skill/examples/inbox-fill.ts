@@ -67,6 +67,7 @@ export const example: Example = {
   prompt: 'Draw a mail tray that slowly fills as letters drop in and stack, holds full, then empties back to the start.',
   level: 'spot',
   category: 'product',
+  layout: 'object',
   useCase: 'Messaging',
   surface: 'light',
   interaction: 'watch',

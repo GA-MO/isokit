@@ -127,6 +127,7 @@ export const example: Example = {
   prompt: 'Draw a model training run: data pulses into a model each epoch and a row of bars, one per epoch, steps down as the loss falls, with an epoch counter and loss label updating.',
   level: 'medium',
   category: 'data',
+  layout: 'diagonal',
   useCase: 'Training',
   surface: 'light',
   interaction: 'watch',

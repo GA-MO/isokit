@@ -111,6 +111,7 @@ export const example: Example = {
   prompt: 'Draw a cron schedule as a dial whose ticks light up in turn; at each scheduled tick a pulse runs to a new job tile that pops in, runs and rests.',
   level: 'simple',
   category: 'infra',
+  layout: 'radial',
   useCase: 'Jobs',
   surface: 'dark',
   interaction: 'watch',

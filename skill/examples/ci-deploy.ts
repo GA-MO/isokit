@@ -114,6 +114,7 @@ export const example: Example = {
   prompt: 'Draw a CI pipeline as a short chain: a commit becomes a package that hops through build and test, each stage lighting up, and lands on production with a green live check.',
   level: 'simple',
   category: 'infra',
+  layout: 'wide',
   useCase: 'CI/CD',
   surface: 'light',
   interaction: 'watch',

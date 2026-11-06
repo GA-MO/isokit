@@ -131,6 +131,7 @@ export const example: Example = {
   prompt: 'Draw a secrets vault rotating its key: a new key slides in beside the old one, pulses carry it to three services, then the old key fades out and the new one moves into its slot.',
   level: 'medium',
   category: 'security',
+  layout: 'radial',
   useCase: 'Secrets',
   surface: 'dark',
   interaction: 'watch',

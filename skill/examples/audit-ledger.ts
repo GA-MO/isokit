@@ -102,6 +102,7 @@ export const example: Example = {
   prompt: 'Draw an audit log as a stack of thin ledger pages: each event drops in as a new page printed with its name, like role.granted, and a small lock seals it.',
   level: 'simple',
   category: 'security',
+  layout: 'exploded',
   useCase: 'Compliance',
   surface: 'light',
   interaction: 'watch',

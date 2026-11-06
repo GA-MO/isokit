@@ -83,6 +83,7 @@ export const example: Example = {
   prompt: 'Draw a keycard sliding into the slot of a small reader box, its status light turning from amber to green, then the card lifting out again.',
   level: 'spot',
   category: 'security',
+  layout: 'object',
   useCase: 'Access',
   surface: 'dark',
   interaction: 'watch',

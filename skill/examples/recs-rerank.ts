@@ -124,6 +124,7 @@ export const example: Example = {
   prompt: 'Draw a shelf of product tiles that re-orders when a view or click signal arrives, the best match lifting out and moving to the front while the rest shift back.',
   level: 'medium',
   category: 'data',
+  layout: 'diagonal',
   useCase: 'Recommendations',
   surface: 'dark',
   interaction: 'watch',

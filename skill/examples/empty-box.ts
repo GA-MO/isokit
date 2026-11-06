@@ -61,6 +61,7 @@ export const example: Example = {
   prompt: 'Draw an empty state: an open box with its lid floating above it, next to a dashed placeholder with marching dashes.',
   level: 'spot',
   category: 'product',
+  layout: 'object',
   useCase: 'Empty state',
   surface: 'light',
   interaction: 'watch',

@@ -68,6 +68,7 @@ export const example: Example = {
   prompt: 'Draw a tile with two arrows circling it on the ground, the tile lighting up each time a sync lap completes.',
   level: 'spot',
   category: 'infra',
+  layout: 'object',
   useCase: 'Sync',
   surface: 'light',
   interaction: 'watch',

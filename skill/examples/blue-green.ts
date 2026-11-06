@@ -133,6 +133,7 @@ export const example: Example = {
   prompt: 'Draw a blue-green deployment: a router sending traffic to the live blue environment, a new build warming up on green, then the router switching its wire to green while blue goes idle.',
   level: 'medium',
   category: 'infra',
+  layout: 'diagonal',
   useCase: 'Release',
   surface: 'dark',
   interaction: 'watch',

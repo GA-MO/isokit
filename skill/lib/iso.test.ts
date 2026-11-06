@@ -327,3 +327,31 @@ test('lazyBox rejects names that are not kebab, empty sizes and bad breakpoints'
   expect(() => lazyBox({ name: 'a', width: 390, height: Number.NaN })).toThrow(/positive width and height/);
   for (const bp of [0, -1, Number.POSITIVE_INFINITY]) expect(() => lazyBox({ name: 'a', width: 390, height: 300 }, { name: 'b', width: 720, height: 400 }, bp)).toThrow(/breakpoint must be a positive/);
 });
+
+const box = () => scene().slab({ id: 'box', at: [0, 0, 0], size: [80, 80], height: 40, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+
+test('text on a side plane inside a slab throws and names the visible face', () => {
+  const left = box().text({ id: 'hidden', at: [0, 10, -20], text: 'docs', on: 'left' });
+  expect(() => left.render()).toThrow(/text "hidden" .* left plane at y = 10, inside "box" where no face shows; put it on the visible left face at y = 40 \(z between -40 and 0\)/);
+  const right = box().text({ id: 'back', at: [-40, 0, -20], text: 'db', on: 'right' });
+  expect(() => right.render()).toThrow(/right plane at x = -40, inside "box".*visible right face at x = 40/);
+  expect(() => box().text({ id: 'hidden', at: [0, 10, -20], text: 'docs', on: 'left' }).exportSvg()).toThrow(/no face shows/);
+});
+
+test('text on a visible side face, beside a slab or above it renders', () => {
+  expect(() => box().text({ id: 'front', at: [0, 40, -20], text: 'docs', on: 'left' }).render()).not.toThrow();
+  expect(() => box().text({ id: 'side', at: [40, 0, -20], text: 'db', on: 'right' }).render()).not.toThrow();
+  expect(() => box().text({ id: 'beside', at: [0, 120, -20], text: 'x', on: 'left' }).render()).not.toThrow();
+  expect(() => box().text({ id: 'above', at: [0, 10, 60], text: 'x', on: 'left' }).render()).not.toThrow();
+  expect(() => box().text({ id: 'top', at: [0, 10, 0], text: 'x', on: 'top' }).render()).not.toThrow();
+});
+
+test('a prism counts up to its reach', () => {
+  const s = scene().prism({ id: 'bar', at: [0, 0, 0], size: [40, 40], height: 20, reach: 80, top: '#fff', side: '#ccc' });
+  expect(() => s.text({ id: 'in', at: [0, 0, 60], text: 'x', on: 'right' }).render()).toThrow(/inside "bar".*x = 20 \(z between 0 and 80\)/);
+});
+
+test('side-plane text floating just over a slab top throws; text well above it does not', () => {
+  expect(() => box().text({ id: 'float', at: [40, 20, 14], text: 'docs', on: 'left', size: 10 }).render()).toThrow(/left plane at y = 20, floating over the top of "box"/);
+  expect(() => box().text({ id: 'sign', at: [40, 20, 60], text: 'docs', on: 'left', size: 10 }).render()).not.toThrow();
+});

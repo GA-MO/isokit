@@ -106,6 +106,7 @@ export const example: Example = {
   prompt: 'Draw a DNS lookup: a client asks a resolver for app.example.dev, the resolver asks root, TLD and authoritative servers one hop at a time, and the IP address returns to the client.',
   level: 'simple',
   category: 'infra',
+  layout: 'radial',
   useCase: 'Networking',
   surface: 'light',
   interaction: 'watch',

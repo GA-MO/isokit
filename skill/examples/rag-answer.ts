@@ -191,6 +191,7 @@ export const example: Example = {
   prompt: 'Draw retrieval-augmented generation: a question goes to a retriever, three matching document cards lift out of a store and travel into a model, and an answer card types in with citations.',
   level: 'complex',
   category: 'data',
+  layout: 'diagonal',
   useCase: 'AI search',
   surface: 'light',
   interaction: 'watch',

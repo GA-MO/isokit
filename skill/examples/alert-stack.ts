@@ -96,6 +96,7 @@ export const example: Example = {
   prompt: 'Draw small notification cards sliding in one by one and stacking on a tile, with a badge counting them, then the stack clearing.',
   level: 'spot',
   category: 'product',
+  layout: 'object',
   useCase: 'Alerts',
   surface: 'light',
   interaction: 'watch',

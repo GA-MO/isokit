@@ -20,6 +20,8 @@ export const hints: Record<Example['interaction'], { fine: string; coarse: strin
   watch: null,
   hover: { fine: 'Hover', coarse: 'Tap' },
   play: { fine: 'Click to play', coarse: 'Tap to play' },
+  drag: { fine: 'Drag', coarse: 'Drag' },
+  explore: { fine: 'Click a part', coarse: 'Tap a part' },
 };
 
 export const repo = 'https://github.com/GA-MO/isokit';

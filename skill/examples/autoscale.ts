@@ -142,6 +142,7 @@ export const example: Example = {
   prompt: 'Draw a load balancer feeding two nodes while a load meter rises; a third node drops into the row, traffic spreads across all three, and it leaves when load falls.',
   level: 'medium',
   category: 'infra',
+  layout: 'field',
   useCase: 'Scaling',
   surface: 'light',
   interaction: 'watch',

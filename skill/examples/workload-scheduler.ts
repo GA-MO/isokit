@@ -157,6 +157,7 @@ export const example: Example = {
   prompt: 'Draw a scheduler placing small workload blocks onto three nodes, each block gliding to the least busy node with room while a capacity label counts up.',
   level: 'medium',
   category: 'infra',
+  layout: 'field',
   useCase: 'Orchestration',
   surface: 'dark',
   interaction: 'watch',

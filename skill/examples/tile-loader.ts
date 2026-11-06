@@ -51,6 +51,7 @@ export const example: Example = {
   prompt: 'Draw a calm loading state: a 3 by 3 grid of small tiles dropping in one after another, holding, then leaving in order, looping.',
   level: 'spot',
   category: 'data',
+  layout: 'object',
   useCase: 'Loading',
   surface: 'dark',
   interaction: 'watch',

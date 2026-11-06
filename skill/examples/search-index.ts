@@ -139,6 +139,7 @@ export const example: Example = {
   prompt: 'Draw documents being split into term tiles that fill a search index, then a query lighting up the matching tiles and three ranked results rising out of it.',
   level: 'medium',
   category: 'data',
+  layout: 'field',
   useCase: 'Search',
   surface: 'light',
   interaction: 'watch',

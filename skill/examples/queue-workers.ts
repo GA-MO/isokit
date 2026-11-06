@@ -153,6 +153,7 @@ export const example: Example = {
   prompt: 'Draw jobs arriving into a queue faster than they are handled, three workers pulling from the front, each glowing while it works and acking when done.',
   level: 'medium',
   category: 'infra',
+  layout: 'wide',
   useCase: 'Queues',
   surface: 'dark',
   interaction: 'watch',

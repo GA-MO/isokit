@@ -96,6 +96,7 @@ export const example: Example = {
   prompt: 'Draw a magnifying glass scanning the rows of a table, each row lighting up under it, ending on a single match.',
   level: 'spot',
   category: 'data',
+  layout: 'object',
   useCase: 'Search',
   surface: 'light',
   interaction: 'watch',

@@ -136,6 +136,7 @@ export const example: Example = {
   prompt: 'Draw a card payment as a ring: checkout to gateway, fraud check, card network and bank, the bank approves in green and a receipt travels back to checkout.',
   level: 'complex',
   category: 'product',
+  layout: 'radial',
   useCase: 'Payments',
   surface: 'light',
   interaction: 'watch',

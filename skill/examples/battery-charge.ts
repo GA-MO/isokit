@@ -60,6 +60,7 @@ export const example: Example = {
   prompt: 'Draw a battery whose level cells fill one by one with an accent colour, flash when full, then drain back.',
   level: 'spot',
   category: 'infra',
+  layout: 'object',
   useCase: 'Capacity',
   surface: 'dark',
   interaction: 'watch',

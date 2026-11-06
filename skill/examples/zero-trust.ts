@@ -128,6 +128,7 @@ export const example: Example = {
   prompt: 'Draw zero-trust access: requests from remote, office and CI sources each stop at one policy check in front of the services, get a seal stamped on them, then continue to their service, the internal one included.',
   level: 'medium',
   category: 'security',
+  layout: 'field',
   useCase: 'Access',
   surface: 'dark',
   interaction: 'watch',

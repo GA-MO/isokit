@@ -8,7 +8,7 @@ const groups = levelOrder
   .map(level => ({ level, ...levels[level], items: examples.filter(e => e.level === level) }))
   .filter(g => g.items.length > 0);
 const tabs = categories.filter(c => examples.some(e => e.category === c));
-const columns = { spot: 'sm:grid-cols-2 lg:grid-cols-3', simple: 'lg:grid-cols-2', medium: 'lg:grid-cols-2', complex: '' } as const;
+const columns = { spot: 'sm:grid-cols-2 lg:grid-cols-3', simple: 'lg:grid-cols-2 lg:grid-flow-dense', medium: 'lg:grid-cols-2 lg:grid-flow-dense', complex: '' } as const;
 const chip =
   'h-8 shrink-0 rounded-full border border-line px-3.5 text-sm text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-page';
 ---

@@ -18,7 +18,8 @@ const panel = `prompt-${example.slug}`;
   data-card
   data-category={example.category}
   data-slug={example.slug}
-  class:list={[`surface-${example.surface}`, 'flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line bg-surface text-surface-ink']}
+  data-layout={example.layout}
+  class:list={[`surface-${example.surface}`, 'flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line bg-surface text-surface-ink', example.layout === 'wide' && 'col-span-full']}
 >
   <div class="relative px-2 pt-2 sm:px-4 sm:pt-4">
     <Art art={example.art} />

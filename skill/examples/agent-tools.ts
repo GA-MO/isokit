@@ -138,6 +138,7 @@ export const example: Example = {
   prompt: 'Draw an AI agent as a core with three tool satellites: a question arrives, the agent plans, calls search, database and code runner one by one, then types an answer card.',
   level: 'complex',
   category: 'data',
+  layout: 'radial',
   useCase: 'AI agents',
   surface: 'dark',
   interaction: 'watch',

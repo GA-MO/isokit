@@ -254,6 +254,7 @@ export const example: Example = {
   prompt: 'Draw three services streaming logs, metrics and traces into a collector that feeds a bar dashboard and a trace waterfall, with one service spiking red and recovering.',
   level: 'complex',
   category: 'infra',
+  layout: 'radial',
   useCase: 'Observability',
   surface: 'dark',
   interaction: 'watch',

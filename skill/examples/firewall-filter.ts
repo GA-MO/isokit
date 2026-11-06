@@ -131,6 +131,7 @@ export const example: Example = {
   prompt: 'Draw packets travelling toward a firewall: allowed packets pass through its gate to an api, one red packet hits the gate and bounces back the way it came.',
   level: 'medium',
   category: 'security',
+  layout: 'diagonal',
   useCase: 'Network',
   surface: 'light',
   interaction: 'watch',
