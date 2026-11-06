@@ -9,6 +9,7 @@ export type Surface = 'dark' | 'light';
 export type Interaction = 'watch' | 'hover' | 'play';
 
 export interface Variant {
+  scene: Scene;
   name: string;
   width: number;
   height: number;
@@ -36,7 +37,7 @@ export interface Example {
   art: Art;
 }
 
-const variant = (s: Scene): Variant => ({ name: s.name, width: s.width, height: s.height, markup: s.render() });
+const variant = (s: Scene): Variant => ({ scene: s, name: s.name, width: s.width, height: s.height, markup: s.render() });
 
 export function art(compact: Scene, wide?: Scene, breakpoint = 720, head = ''): Art {
   if (wide && !(Number.isFinite(breakpoint) && breakpoint > 0)) throw new Error(`art: breakpoint must be a positive number of px, got ${breakpoint}`);

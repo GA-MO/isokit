@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { Scene } from './iso';
+import { Scene, lazyBox } from './iso';
 
 const scene = () => new Scene({ name: 'demo', width: 400, height: 300 });
 
@@ -260,4 +260,70 @@ test('an image side is embedded once and reused by every corner strip', () => {
   const html = s.render();
   expect((html.match(/data:image\/webp;base64,AAAA/g) ?? []).length).toBe(1);
   expect((html.match(/<use href="#demo_b_texl"/g) ?? []).length).toBeGreaterThan(10);
+});
+
+const exportable = () =>
+  scene()
+    .slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .text({ id: 'name', at: [0, 0, 0], text: 'a < b', on: 'top' });
+
+test('exportSvg writes one standalone SVG whose motion is CSS keyframes, with no script', () => {
+  const s = exportable();
+  s.dropIn('core', 0.1).loop(4, 1).at('name', 'opacity', 1, 0.5, 0, 1, 'cubic-bezier(.22,1,.36,1)');
+  const svg = s.exportSvg({ title: 'Demo & co', background: '#101114', radius: 16 });
+  expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"')).toBe(true);
+  expect(svg).not.toContain('<script');
+  expect(svg).not.toContain('<div');
+  expect(svg).toContain('<title>Demo &amp; co</title>');
+  expect(svg).toContain('<rect width="100%" height="100%" fill="#101114" rx="16"/>');
+  expect(svg).toContain('a &lt; b');
+  expect(svg).toContain('svg{color:#0f172a;');
+  const names = [...svg.matchAll(/@keyframes (demo_k\d+)/g)].map(m => m[1]);
+  expect(names.length).toBe(s.motion().tracks.length);
+  expect(svg).toMatch(/#demo_core\{animation:demo_k\d+ 650ms linear 0ms 1 both,demo_k\d+ 650ms linear 0ms 1 both\}/);
+  expect(svg).toMatch(/#demo_name\{animation:demo_k\d+ 4000ms linear 650ms infinite backwards\}/);
+  expect(svg).toContain('animation-timing-function:cubic-bezier(.22,1,.36,1)');
+});
+
+test('exportSvg keyframe percentages only grow, so a jump at one instant keeps both values', () => {
+  const s = exportable();
+  s.loop(10, 0).at('core', 'opacity', 1, 1, 0, 1).at('core', 'opacity', 6, 1, 0.5, 0);
+  const block = s.exportSvg().match(/@keyframes demo_k0\{(.*?)\}\}/)?.[1] ?? '';
+  const pcts = [...block.matchAll(/([\d.]+)%\{/g)].map(m => Number(m[1]));
+  expect(pcts.every((p, i) => i === 0 || p > pcts[i - 1]!)).toBe(true);
+  expect(block).toContain('60%{opacity:1}');
+  expect(block).toContain('60.001%{opacity:0.5');
+});
+
+test('exportSvg stills every animation at the reduced-motion frame', () => {
+  const s = exportable();
+  s.dropIn('core', 0.1).loop(4, 1.5).at('name', 'opacity', 1, 0.5, 0, 1);
+  const svg = s.exportSvg();
+  expect(svg).toContain('@media (prefers-reduced-motion:reduce){');
+  expect(svg).toContain('#demo_name{animation-play-state:paused;animation-delay:-1500ms}');
+});
+
+test('exportSvg rejects HTML labels and points to text()', () => {
+  const s = exportable().label({ id: 'tag', at: [0, 0, 40], text: 'hi' });
+  expect(() => s.exportSvg()).toThrow(/found label\(\) "tag".*draw them with text\(\)/);
+  expect(() => exportable().exportSvg({ background: ' ' })).toThrow(/background must be a CSS colour/);
+});
+
+test('exportSvg keeps pivots, which a standalone SVG cannot get from the page', () => {
+  const s = exportable().pivot('core', [0, 0, 0]);
+  expect(s.exportSvg()).toContain('#demo_core{transform-box:view-box;transform-origin:200px 150px}');
+});
+
+test('lazyBox reserves the compact and wide aspect ratios and names both scenes', () => {
+  const html = lazyBox({ name: 'a-sm', width: 390, height: 300 }, { name: 'a-lg', width: 720, height: 400 }, 520);
+  expect(html).toContain('.iso-lazy-a-sm{aspect-ratio:390/300}@container (min-width:521px){.iso-lazy-a-sm{aspect-ratio:720/400}}');
+  expect(html).toContain('data-iso-lazy data-compact="a-sm" data-wide="a-lg" data-breakpoint="520"');
+  expect(lazyBox({ name: 'spot', width: 390, height: 300 })).not.toContain('data-wide');
+});
+
+test('lazyBox rejects names that are not kebab, empty sizes and bad breakpoints', () => {
+  expect(() => lazyBox({ name: 'a"><script>', width: 390, height: 300 })).toThrow(/must be lower-case kebab/);
+  expect(() => lazyBox({ name: 'a', width: 0, height: 300 })).toThrow(/positive width and height/);
+  expect(() => lazyBox({ name: 'a', width: 390, height: Number.NaN })).toThrow(/positive width and height/);
+  for (const bp of [0, -1, Number.POSITIVE_INFINITY]) expect(() => lazyBox({ name: 'a', width: 390, height: 300 }, { name: 'b', width: 720, height: 400 }, bp)).toThrow(/breakpoint must be a positive/);
 });

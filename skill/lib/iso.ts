@@ -231,6 +231,19 @@ export interface MotionSpec {
   tracks: Track[];
 }
 
+export interface ExportOptions {
+  title?: string;
+  color?: string;
+  background?: string;
+  radius?: number;
+}
+
+export interface SceneSize {
+  name: string;
+  width: number;
+  height: number;
+}
+
 export const ease = {
   io: 'cubic-bezier(.37,0,.63,1)',
   out: 'cubic-bezier(.22,1,.36,1)',
@@ -943,6 +956,46 @@ export class Scene {
       .join('');
     return `<div class="iso" data-iso="${this.name}" style="${escAttr(vars)}">${reveal ? `<style>${reveal}</style>` : ''}<svg viewBox="0 0 ${this.width} ${this.height}" aria-hidden="true"><defs>${[...this.defs.values()].join('')}</defs>${this.layers.join('')}</svg>${this.labels.join('')}<script type="application/json" class="iso-spec">${spec}</script></div>`;
   }
+
+  exportSvg(options: ExportOptions = {}): string {
+    if (this.labels.length) {
+      const ids = [...this.labelIds].join('", "');
+      throw new Error(`iso: exportSvg() in scene ${this.name} found label() "${ids}"; a standalone SVG cannot hold HTML labels, draw them with text() (use its pill option for a pill) instead`);
+    }
+    if (options.background !== undefined && !options.background.trim()) throw new Error('iso: exportSvg() background must be a CSS colour, got an empty string');
+    const o = this.opts;
+    const spec = this.motion();
+    const still = (spec.intro + spec.still) * 1000;
+    const css = (prop: AnimatedProp) => prop.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`);
+    const keyframes: string[] = [];
+    const byTarget = new Map<string, { run: string[]; delays: number[] }>();
+    spec.tracks.forEach((t, i) => {
+      const name = `${this.name}_k${i}`;
+      const steps: string[] = [];
+      let last = -1;
+      for (const k of t.keyframes) {
+        let pct = Number(k.offset) * 100;
+        if (pct <= last) pct = Math.min(100, last + 0.001);
+        last = pct;
+        const value = k[t.prop];
+        const easing = typeof k.easing === 'string' && k.easing !== 'linear' ? `;animation-timing-function:${k.easing}` : '';
+        steps.push(`${Number(pct.toFixed(3))}%{${css(t.prop)}:${value}${easing}}`);
+      }
+      keyframes.push(`@keyframes ${name}{${steps.join('')}}`);
+      const run = `${name} ${fmt(t.duration)}ms linear ${fmt(t.delay)}ms ${t.repeat ? 'infinite' : '1'} ${t.fill}`;
+      const entry = byTarget.get(t.target) ?? { run: [], delays: [] };
+      entry.run.push(run);
+      entry.delays.push(t.delay);
+      byTarget.set(t.target, entry);
+    });
+    const animate = [...byTarget].map(([id, e]) => `#${id}{animation:${e.run.join(',')}}`).join('');
+    const reduce = [...byTarget].map(([id, e]) => `#${id}{animation-play-state:paused;animation-delay:${e.delays.map(d => `${fmt(d - still)}ms`).join(',')}}`).join('');
+    const pivots = [...this.pivots].map(([id, [x, y]]) => `#${this.ref(id)}{transform-box:view-box;transform-origin:${fmt(x)}px ${fmt(y)}px}`).join('');
+    const style = `svg{color:${options.color ?? o.label?.ink ?? '#0f172a'};--iso-font:${o.font ?? 'system-ui, sans-serif'};--iso-mono:${o.mono ?? 'ui-monospace, monospace'}}g[id],path[id]{transform-box:fill-box;transform-origin:center}.iso-hot,.iso-guides{opacity:0}${pivots}${[...this.prismClips.values()].join('')}${keyframes.join('')}${animate}@media (prefers-reduced-motion:reduce){${reduce}}`;
+    const title = options.title ? `<title>${esc(options.title)}</title>` : '';
+    const background = options.background ? `<rect width="100%" height="100%" fill="${escAttr(options.background)}"${options.radius ? ` rx="${fmt(options.radius)}"` : ''}/>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${this.width} ${this.height}" width="${this.width}" height="${this.height}" role="img"${options.title ? ` aria-label="${escAttr(options.title)}"` : ''}>${title}<style>${style.replace(/</g, '\\3c ')}</style><defs>${[...this.defs.values()].join('')}</defs>${background}${this.layers.join('')}</svg>`;
+  }
 }
 
 export const isoCss = `.iso{position:relative;container-type:inline-size;width:100%;font-family:var(--iso-font)}
@@ -965,4 +1018,16 @@ export const isoCss = `.iso{position:relative;container-type:inline-size;width:1
 export function responsive(compact: Scene, wide: Scene, breakpoint = 720): string {
   const cls = `iso-switch-${compact.name}`;
   return `<style>.${cls}{container-type:inline-size}.${cls}>.iso-wide{display:none}@container (min-width:${breakpoint + 1}px){.${cls}>.iso-compact{display:none}.${cls}>.iso-wide{display:block}}</style><div class="iso-switch ${cls}"><div class="iso-compact">${compact.render()}</div><div class="iso-wide">${wide.render()}</div></div>`;
+}
+
+export function lazyBox(compact: SceneSize, wide?: SceneSize, breakpoint = 720): string {
+  for (const v of wide ? [compact, wide] : [compact]) {
+    if (!kebab.test(v.name)) throw new Error(`iso: lazyBox() scene name "${v.name}" must be lower-case kebab`);
+    if (!(Number.isFinite(v.width) && v.width > 0 && Number.isFinite(v.height) && v.height > 0)) throw new Error(`iso: lazyBox() scene ${v.name} needs a positive width and height, got ${v.width}x${v.height}`);
+  }
+  if (wide && !(Number.isFinite(breakpoint) && breakpoint > 0)) throw new Error(`iso: lazyBox() breakpoint must be a positive number of px, got ${breakpoint}`);
+  const box = `iso-lazy-${compact.name}`;
+  const wideCss = wide ? `@container (min-width:${fmt(breakpoint + 1)}px){.${box}{aspect-ratio:${fmt(wide.width)}/${fmt(wide.height)}}}` : '';
+  const wideAttr = wide ? ` data-wide="${wide.name}" data-breakpoint="${fmt(breakpoint)}"` : '';
+  return `<style>.${box}{aspect-ratio:${fmt(compact.width)}/${fmt(compact.height)}}${wideCss}</style><div style="container-type:inline-size"><div class="${box}" data-iso-lazy data-compact="${compact.name}"${wideAttr}></div></div>`;
 }

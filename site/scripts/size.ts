@@ -28,4 +28,4 @@ const largest = scenes.reduce((a, f) => (f.gzip > a.gzip ? f : a));
 row(`scene files, all ${scenes.length} (fetched near the screen)`, total.raw, total.gzip);
 row(`largest scene file (${largest.name.replace('scenes/', '')})`, largest.raw, largest.gzip);
 console.log(`${'scenes inline in index.html'.padEnd(40)} ${String((html.match(/class="iso" data-iso=/g) ?? []).length).padStart(10)}`);
-console.log(`${'scene boxes mounted on demand'.padEnd(40)} ${String((html.match(/data-art /g) ?? []).length).padStart(10)}`);
+console.log(`${'scene boxes mounted on demand'.padEnd(40)} ${String((html.match(/data-iso-lazy/g) ?? []).length).padStart(10)}`);

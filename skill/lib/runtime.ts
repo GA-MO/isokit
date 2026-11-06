@@ -174,3 +174,108 @@ export function mountAll(scope: ParentNode = document): IsoHandle[] {
     );
   return handles;
 }
+
+export interface LazyOptions {
+  src: (name: string) => string;
+  rootMargin?: string;
+  onError?: (box: HTMLElement, retry: () => void, error: unknown) => void;
+}
+
+export interface LazyHandle {
+  disconnect(): void;
+}
+
+function retryNote(box: HTMLElement, retry: () => void) {
+  const note = document.createElement('button');
+  note.type = 'button';
+  note.textContent = 'This scene did not load. Retry';
+  note.style.cssText = 'all:unset;cursor:pointer;font:inherit;text-decoration:underline;margin:auto';
+  note.addEventListener('click', retry);
+  box.replaceChildren(note);
+}
+
+export function mountLazy(options: LazyOptions, scope: ParentNode = document): LazyHandle {
+  if (typeof options?.src !== 'function') throw new Error('iso: mountLazy() needs { src: (name) => url of that scene file }');
+  const rootMargin = options.rootMargin ?? '75% 0px';
+  const onError = options.onError ?? retryNote;
+  const cache = new Map<string, Promise<string>>();
+  const load = (name: string) => {
+    let markup = cache.get(name);
+    if (!markup) {
+      markup = fetch(options.src(name)).then(r => {
+        if (!r.ok) throw new Error(`iso: scene ${name}: HTTP ${r.status}`);
+        return r.text();
+      });
+      markup.catch(() => cache.delete(name));
+      cache.set(name, markup);
+    }
+    return markup;
+  };
+  const pick = (box: HTMLElement) => {
+    const { compact, wide, breakpoint } = box.dataset;
+    return wide && box.getBoundingClientRect().width >= Number(breakpoint) + 1 ? wide : compact;
+  };
+  const unmount = (box: HTMLElement) => {
+    for (const old of box.querySelectorAll<HTMLElement>('.iso')) old.iso?.destroy();
+  };
+  const fail = (box: HTMLElement, error: unknown) => {
+    console.error(error);
+    unmount(box);
+    delete box.dataset.shown;
+    onError(box, () => show(box), error);
+  };
+  const show = async (box: HTMLElement) => {
+    if (!box.clientWidth) return;
+    const name = pick(box);
+    if (!name) return console.error('iso: a [data-iso-lazy] box has no data-compact scene name', box);
+    if (box.dataset.loading === name) return;
+    if (box.dataset.shown === name) {
+      delete box.dataset.loading;
+      return;
+    }
+    box.dataset.loading = name;
+    let markup: string;
+    try {
+      markup = await load(name);
+    } catch (e) {
+      if (box.dataset.loading !== name) return;
+      delete box.dataset.loading;
+      if (box.dataset.shown) console.error(e);
+      else fail(box, e);
+      return;
+    }
+    if (box.dataset.loading !== name) return;
+    delete box.dataset.loading;
+    const template = document.createElement('template');
+    template.innerHTML = markup;
+    unmount(box);
+    box.replaceChildren(template.content);
+    try {
+      const root = box.querySelector<HTMLElement>('.iso');
+      if (!root) throw new Error(`iso: scene file ${name} has no .iso root`);
+      mount(root);
+      box.dataset.shown = name;
+    } catch (e) {
+      fail(box, e);
+    }
+  };
+  const near = new IntersectionObserver(
+    entries => {
+      for (const e of entries) if (e.isIntersecting && e.target instanceof HTMLElement) show(e.target);
+    },
+    { rootMargin },
+  );
+  const resized = new ResizeObserver(entries => {
+    for (const e of entries) if (e.target instanceof HTMLElement && (e.target.dataset.shown || e.target.dataset.loading)) show(e.target);
+  });
+  for (const box of scope.querySelectorAll<HTMLElement>('[data-iso-lazy]')) {
+    near.observe(box);
+    if (box.dataset.wide) resized.observe(box);
+  }
+  return {
+    disconnect() {
+      near.disconnect();
+      resized.disconnect();
+    },
+  };
+}
