@@ -122,7 +122,7 @@ function build({ name, width, height, origin, k, minPx, sku, log }: Layout) {
     s.at(id, 'translate', t, 0.45, '-8px 0', '0 0', ease.out);
   };
   const dur = (wire: string) => Math.max(0.3, s.wireLength(wire) / 270);
-  const sync = (start: number, onArrive: (house: number, t: number) => void) => {
+  const sync = (start: number, onArrive: (house: number, t: number) => unknown) => {
     const up = start + dur(`b-${order - 1}`);
     s.travel(`pb-${order - 1}`, start);
     s.travel(`pf-${order}`, start);

@@ -48,7 +48,6 @@ function build({ name, width, height, origin, k, minPx, paidAt }: Layout) {
   const x = (i: number) => (i - (nodes.length - 1) / 2) * pitch;
   const size = (i: number): Vec2 => [nodes[i]!.size[0] * k, nodes[i]!.size[1] * k];
   const top = (i: number): Vec3 => [x(i), 0, 0];
-  const seat = (i: number): Vec3 => [x(i), 0, tokenH];
   const edge = (i: number, side: 1 | -1, z = wz): Vec3 => [x(i) + (side * size(i)[0]) / 2, 0, z];
 
   for (let i = 0; i < nodes.length - 1; i++) {
