@@ -1,6 +1,6 @@
 import { mountLazy } from '../../../skill/lib/runtime';
 
-function retry(box: HTMLElement, again: () => void) {
+function retry(box: HTMLElement, again: () => unknown) {
   const note = document.createElement('p');
   note.className = 'flex h-full items-center justify-center gap-3 text-sm text-surface-muted';
   note.textContent = 'This scene did not load.';
