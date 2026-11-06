@@ -1,7 +1,8 @@
 ---
-import { gallery } from '../../../skill/examples/material-gallery';
-import { finishes } from '../../../skill/examples/materials';
+import { galleries } from '../../../skill/examples/material-gallery';
 import Art from './Art.astro';
+
+const total = galleries.reduce((sum, g) => sum + g.finishes.length, 0);
 ---
 
 <section id="materials" class="surface-dark border-t border-line py-24 sm:py-32">
@@ -9,21 +10,33 @@ import Art from './Art.astro';
     <div class="max-w-2xl">
       <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Sides that look made, not filled.</h2>
       <p class="mt-4 text-lg text-pretty text-muted">
-        Every slab takes a finish on its sides. The kit bends each one around the rounded corner, so a stripe turns as one line.
+        {total} finishes in {galleries.length} families. The kit bends each one around the rounded corner, so a stripe turns as one line.
       </p>
     </div>
-    <div class="mt-12 rounded-3xl border border-line bg-panel p-2 sm:mt-16 sm:p-6"><Art art={gallery} /></div>
-    {
-      finishes.length > 0 && (
-        <dl class="mt-12 grid grid-cols-2 gap-x-5 gap-y-6 sm:gap-x-8 sm:gap-y-7 lg:grid-cols-4">
-          {finishes.map(f => (
-            <div class="border-t border-line pt-4">
-              <dt class="text-sm font-semibold text-ink">{f.name}</dt>
-              <dd class="mt-1 text-sm leading-relaxed text-pretty text-muted">{f.note}</dd>
+    <div class="mt-16 flex flex-col gap-20 sm:gap-24">
+      {
+        galleries.map(g => (
+          <section aria-labelledby={`finish-${g.slug}`}>
+            <header class="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line pb-4">
+              <h3 id={`finish-${g.slug}`} class="text-2xl font-semibold tracking-tight">
+                {g.name}
+              </h3>
+              <p class="text-sm text-muted">{g.note}</p>
+            </header>
+            <div class="rounded-3xl border border-line bg-panel p-2 sm:p-6">
+              <Art art={g.art} />
             </div>
-          ))}
-        </dl>
-      )
-    }
+            <dl class="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 sm:gap-x-8 sm:gap-y-7 lg:grid-cols-4">
+              {g.finishes.map(f => (
+                <div class="border-t border-line pt-4">
+                  <dt class="text-sm font-semibold text-ink">{f.name}</dt>
+                  <dd class="mt-1 text-sm leading-relaxed text-pretty text-muted">{f.note}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))
+      }
+    </div>
   </div>
 </section>

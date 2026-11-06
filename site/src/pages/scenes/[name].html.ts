@@ -1,9 +1,9 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { examples } from '../../../../skill/examples/catalog';
-import { gallery } from '../../../../skill/examples/material-gallery';
+import { galleries } from '../../../../skill/examples/material-gallery';
 
 export const getStaticPaths = (() =>
-  [...examples.map(e => e.art), gallery]
+  [...examples.map(e => e.art), ...galleries.map(g => g.art)]
     .flatMap(a => (a.wide ? [a.compact, a.wide] : [a.compact]))
     .map(v => ({ params: { name: v.name }, props: { markup: v.markup } }))) satisfies GetStaticPaths;
 
