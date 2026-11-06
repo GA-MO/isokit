@@ -1,16 +1,17 @@
-import { ISO_X, ISO_Y, Scene, ease, type Material, type Vec2, type Vec3 } from '../lib/iso';
+import { ISO_X, ISO_Y, Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fonts, page, paints, ramps, rng, surfaces } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#a78bfa';
 const hit = 'rgb(167 139 250 / .5)';
+const unlit = 'rgb(167 139 250 / 0)';
+const glow = 'rgb(167 139 250 / .2)';
 const liveInk = '#34d399';
 const curve = {
   grow: 'cubic-bezier(.4,.1,.1,1)',
   spin: 'cubic-bezier(.8,.9,.3,1)',
   fall: 'cubic-bezier(.5,0,.4,1)',
   slide: 'cubic-bezier(.15,.6,.6,1)',
-  pan: 'cubic-bezier(.7,0,.2,1)',
   shrink: 'cubic-bezier(.33,0,.91,.03)',
   snapOff: 'cubic-bezier(.45,.86,.17,.96)',
 } as const;
@@ -52,12 +53,11 @@ interface Layout {
   width: number;
   height: number;
   origin: Vec2;
-  core: { size: number; height: number; text: number };
+  core: { size: number; height: number; text: number; air: number };
   service: { size: number; height: number; text: number };
   leaf: { size: number; height: number };
   place: Record<Service | Leaf, Place>;
   pool: { at: Vec2; cols: number; rows: number; pitch: number; pod: number; empty: readonly number[]; from: Leaf };
-  pan: Vec2;
   card: { x: number; y: number; w: number; h: number; text: number; head: number };
   feed: Vec2;
   ground: { at: Vec2; size: number; pitch: number };
@@ -74,12 +74,29 @@ const T = {
   landed: 4.73,
   slide: 5.25,
   pops: 6.7,
-  pan: 9.6,
+  pool: 9.6,
   live: 11.9,
   collapse: 17.9,
   end: 20,
   still: 15.5,
 } as const;
+
+const num = (v: number) => Number(v.toFixed(2));
+
+function blocks(s: Scene, key: string, size: number, height: number, round: number, look: { top: string; side: readonly [dark: string, light: string]; edge: string }) {
+  const [half, r] = [size / 2, size * round];
+  const width = (half - r) * Math.SQRT2 + r;
+  const square = (paint: string) => `<rect x="${-half}" y="${-half}" width="${size}" height="${size}" rx="${num(r)}" ${paint}/>`;
+  const face = `scale(1 ${num(Math.tan(Math.PI / 6) * 1000) / 1000}) rotate(45)`;
+  const split = `<stop offset=".5" stop-color="${look.side[0]}"/><stop offset=".5" stop-color="${look.side[1]}"/>`;
+  const across = s.def(`${key}-across`, `<linearGradient id="$ID">${split}</linearGradient>`);
+  const turned = s.def(`${key}-turned`, `<linearGradient id="$ID" gradientUnits="userSpaceOnUse" x1="${-half}" y1="${half}" x2="${half}" y2="${-half}">${split}</linearGradient>`);
+  s.def(key, `<g id="$ID"><g transform="translate(0 ${height}) ${face}">${square(`fill="${turned}"`)}</g><rect x="${num(-width)}" width="${num(2 * width)}" height="${height}" fill="${across}"/><g transform="${face}">${square(`fill="${look.top}"`)}${square(`fill="none" stroke="${look.edge}" vector-effect="non-scaling-stroke"`)}</g></g>`);
+  return (at: Vec3) => {
+    const [x, y] = s.project(at);
+    return `<use href="#${s.ref(key)}" x="${num(x)}" y="${num(y)}"/>`;
+  };
+}
 
 function build(l: Layout) {
   const s = new Scene({ name: l.name, width: l.width, height: l.height, origin: l.origin, font: stack.sans, mono: stack.mono, label: ui.label });
@@ -87,8 +104,8 @@ function build(l: Layout) {
   const flash = (id: string, t: number) => {
     if ((flashed.get(id) ?? -1) > t) return;
     flashed.set(id, t + 0.72);
-    s.at(id, 'opacity', t, 0.1, 0, 1, ease.linear);
-    s.at(id, 'opacity', t + 0.1, 0.6, 1, 0, ease.linear);
+    s.at(id, 'fill', t, 0.1, unlit, hit, ease.linear);
+    s.at(id, 'fill', t + 0.1, 0.6, hit, unlit, ease.linear);
   };
 
   const ground = l.ground;
@@ -136,95 +153,90 @@ function build(l: Layout) {
   };
   const depth = (n: Node) => placeOf(n)[0] + placeOf(n)[1];
 
-  const coreAir = l.core.size * Math.SQRT2 * 1.2;
   const beam = l.origin[1] - l.feed[1];
   const reach = (l.feed[0] - l.origin[0]) / (2 * ISO_X);
   const feed: Vec3[] = Math.abs(reach) < 1 ? [[0, 0, beam], [0, 0, 0]] : [[reach, -reach, beam], [0, 0, beam], [0, 0, 0]];
   s.wire({ id: 'feed', points: feed, stroke: accent, width: 1.5, hidden: true, corner: 14 });
 
-  s.group('world', () => {
-    const edges = [...services.map(n => ['core', n] as const), ...leaves.map(n => [parents[n], n] as const)];
-    for (const [a, b] of edges) s.wire({ id: `w-${b}`, points: route(a, b), stroke: ui.wire, width: 1.25, hidden: true });
-    for (const [, b] of edges) s.pulse({ id: `p-${b}`, wire: `w-${b}`, color: accent, length: 0.28, glow: !isLeaf(b) });
+  const edges = [...services.map(n => ['core', n] as const), ...leaves.map(n => [parents[n], n] as const)];
+  for (const [a, b] of edges) s.wire({ id: `w-${b}`, points: route(a, b), stroke: ui.wire, width: 1.25, hidden: true });
+  for (const [, b] of edges) s.pulse({ id: `p-${b}`, wire: `w-${b}`, color: accent, length: 0.28, glow: false });
 
-    const ring = l.core.size * 1.14;
-    s.face({ id: 'core-target', at: [0, 0, 0], size: [ring, ring], radius: ring * 0.22, stroke: 'rgb(167 139 250 / .55)', dash: '4 4' });
-    s.march('core-target', 4, 4, 24);
-    const shadow = s.def('shadow-fill', '<radialGradient id="$ID"><stop offset=".4" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>');
-    const sh = l.core.size * 0.7;
-    s.svg('core-shadow', s.plane([8, 8, 0], `<rect x="${-sh}" y="${-sh}" width="${sh * 2}" height="${sh * 2}" rx="${sh * 0.5}" fill="${shadow}"/>`));
-    s.face({ id: 'core-ring', at: [0, 0, 0], size: [l.core.size, l.core.size], radius: l.core.size * 0.22, stroke: accent, strokeWidth: 1.5 });
+  const ring = l.core.size * 1.14;
+  s.face({ id: 'core-target', at: [0, 0, 0], size: [ring, ring], radius: ring * 0.22, stroke: 'rgb(167 139 250 / .55)', dash: '4 4' });
+  const shadow = s.def('shadow-fill', '<radialGradient id="$ID"><stop offset=".4" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>');
+  const sh = l.core.size * 0.7;
+  s.svg('core-shadow', s.plane([8, 8, 0], `<rect x="${-sh}" y="${-sh}" width="${sh * 2}" height="${sh * 2}" rx="${sh * 0.5}" fill="${shadow}"/>`));
+  s.face({ id: 'core-ring', at: [0, 0, 0], size: [l.core.size, l.core.size], radius: l.core.size * 0.22, stroke: accent, strokeWidth: 1.5 });
 
-    const tile = (n: Service | Leaf, side: Material, name?: string) => {
-      const [x, y] = placeOf(n);
-      const [size, h] = [sizeOf(n), heightOf(n)];
-      s.group(`g-${n}`, () => {
-        s.slab({ id: n, at: [x, y, h], size: [size, size], height: h, radius: size * 0.2, top: ui.top, side, edge: ui.edge, shadow: false });
-        s.face({ id: `${n}-hit`, at: [x, y, h], size: [size, size], radius: size * 0.2, fill: hit });
-        if (name) s.text({ id: `${n}-name`, at: [x, y, h], text: name, size: l.service.text, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle', font: 'sans' });
-      });
-      s.pivot(`g-${n}`, [x, y, 0]);
-      s.set(`${n}-hit`, 'opacity', 0, 0);
-    };
-    [...services].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n, paints.gradient(s, ramps.graphite), n));
+  const block = {
+    service: blocks(s, 'service', l.service.size, l.service.height, 0.2, { top: ui.top, side: ['#2b2c33', '#35363e'], edge: ui.edge }),
+    leaf: blocks(s, 'leaf', l.leaf.size, l.leaf.height, 0.2, { top: ui.top, side: ['#212228', '#292a30'], edge: ui.edge }),
+  };
+  const tile = (n: Service | Leaf, name?: string) => {
+    const [x, y] = placeOf(n);
+    const [size, h] = [sizeOf(n), heightOf(n)];
+    s.group(`g-${n}`, () => {
+      s.svg(n, block[isLeaf(n) ? 'leaf' : 'service']([x, y, h]));
+      s.face({ id: `${n}-hit`, at: [x, y, h], size: [size, size], radius: size * 0.2, fill: unlit });
+      if (name) s.text({ id: `${n}-name`, at: [x, y, h], text: name, size: l.service.text, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle', font: 'sans' });
+    });
+    s.pivot(`g-${n}`, [x, y, 0]);
+  };
+  [...services].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n, n));
 
-    const { size, height } = l.core;
-    s.group('core-fall', () =>
-      s.group('core-lean', () =>
-        s.group('core-live', () => {
-          s.turntable({ id: 'core-spin', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: ['#2e1065', '#3b1580', '#4a1c9b', '#5b21b6', '#7046d0', '#8b5cf6'], edge: 'rgb(196 181 253 / .5)', layers: 8 });
-          s.group('core-body', () => {
-            s.slab({ id: 'core', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
-            s.face({ id: 'core-hit', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: hit });
-            s.text({ id: 'core-name', at: [0, 0, height], text: 'orders-api', size: l.core.text, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle', weight: 500 });
-          });
-        }),
-      ),
-    );
-    s.pivot('core-spin', [0, 0, height / 2]);
-    s.pivot('core-lean', s.unproject(s.extremes([0, 0, 0], [size, size], size * 0.2).front, 0));
-    s.pivot('core-live', [0, 0, 0]);
-    s.set('core-hit', 'opacity', 0, 0);
+  const { size, height } = l.core;
+  s.group('core-fall', () =>
+    s.group('core-lean', () =>
+      s.group('core-live', () => {
+        s.turntable({ id: 'core-spin', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: ['#2e1065', '#3b1580', '#4a1c9b', '#5b21b6', '#7046d0', '#8b5cf6'], edge: 'rgb(196 181 253 / .5)', layers: 5 });
+        s.group('core-body', () => {
+          s.slab({ id: 'core', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
+          s.face({ id: 'core-glow', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: unlit });
+          s.face({ id: 'core-hit', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: unlit });
+          s.text({ id: 'core-name', at: [0, 0, height], text: 'orders-api', size: l.core.text, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle', weight: 500 });
+        });
+      }),
+    ),
+  );
+  s.pivot('core-spin', [0, 0, height / 2]);
+  s.pivot('core-lean', s.unproject(s.extremes([0, 0, 0], [size, size], size * 0.2).front, 0));
+  s.pivot('core-live', [0, 0, 0]);
 
-    [...leaves].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n, paints.flat('#26272d')));
-  });
+  [...leaves].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n));
 
-  const panAt = s.unproject([l.origin[0] + l.pan[0], l.origin[1] + l.pan[1]], 0);
   const pool = l.pool;
-  const centre: Vec2 = [pool.at[0] + panAt[0], pool.at[1] + panAt[1]];
+  const centre = pool.at;
   const span: Vec2 = [(pool.cols + 0.4) * pool.pitch, (pool.rows + 0.4) * pool.pitch];
   const src = placeOf(pool.from);
-  const srcAt: Vec2 = [src[0] + panAt[0], src[1] + panAt[1]];
-  const dir = Math.sign(centre[0] - srcAt[0]);
-  if (Math.abs(srcAt[1] - centre[1]) > span[1] / 2 - pool.pitch / 2) throw new Error(`hero ${l.name}: the wire from ${pool.from} misses the pool`);
-  s.wire({ id: 'w-pool', points: [[srcAt[0] + dir * (l.leaf.size / 2 + 2), srcAt[1], 0], [centre[0] - (dir * span[0]) / 2 - dir * 2, srcAt[1], 0]], stroke: ui.wire, width: 1.25, hidden: true });
+  const facing = (a: 0 | 1) => Math.abs(src[a] - centre[a]) <= span[a] / 2 - pool.pitch / 2;
+  const axis = facing(1) ? 0 : facing(0) ? 1 : null;
+  if (axis === null) throw new Error(`hero ${l.name}: the wire from ${pool.from} misses the pool`);
+  const dir = Math.sign(centre[axis] - src[axis]);
+  const along = (v: number): Vec3 => (axis === 0 ? [v, src[1], 0] : [src[0], v, 0]);
+  s.wire({ id: 'w-pool', points: [along(src[axis] + dir * (l.leaf.size / 2 + 2)), along(centre[axis] - (dir * span[axis]) / 2 - dir * 2)], stroke: ui.wire, width: 1.25, hidden: true });
   s.pulse({ id: 'p-pool', wire: 'w-pool', color: accent, length: 0.28, glow: false });
   s.slab({ id: 'pool', at: [centre[0], centre[1], 6], size: span, height: 6, radius: pool.pitch * 0.35, top: '#141519', side: paints.flat('#202127'), edge: 'rgb(255 255 255 / .09)', shadow: false });
   const slots = Array.from({ length: pool.cols * pool.rows }, (_, i) => {
     const [c, r] = [i % pool.cols, Math.floor(i / pool.cols)];
     const at: Vec2 = [centre[0] + (c - (pool.cols - 1) / 2) * pool.pitch, centre[1] + (r - (pool.rows - 1) / 2) * pool.pitch];
-    return { i, wave: c + r, at };
+    return { i, wave: Math.floor((c + r) / 2), at };
   });
   const empty = slots.filter(sl => pool.empty.includes(sl.i));
   const pods = slots.filter(sl => !pool.empty.includes(sl.i));
   if (1 + services.length + leaves.length + 1 + pods.length !== 40) throw new Error(`hero ${l.name}: the system must end at 40 objects, the pool holds ${pods.length} pods`);
   s.group('slots', () => empty.forEach(sl => s.face({ id: `slot-${sl.i}`, at: [sl.at[0], sl.at[1], 6], size: [pool.pod, pool.pod], radius: pool.pod * 0.22, stroke: 'rgb(167 139 250 / .4)', dash: '3 3' })));
-  s.march('slots', 3, 3, 18);
   const podH = Math.round(pool.pod * 0.36);
-  const lit = pods.filter((_, k) => k % 3 === 1).map(p => p.i);
+  const lit = pods.filter((_, k) => k % 7 === 3).map(p => p.i);
   const waves = [...new Set(pods.map(p => p.wave))].sort((a, b) => a - b);
+  const pod = blocks(s, 'pod', pool.pod, podH, 0.22, { top: '#1d1e24', side: ['#25262c', '#2e2f36'], edge: 'rgb(255 255 255 / .1)' });
   for (const w of waves) {
-    s.group(`wave-${w}`, () =>
-      pods
-        .filter(p => p.wave === w)
-        .forEach(p => {
-          const at: Vec3 = [p.at[0], p.at[1], 6 + podH];
-          s.slab({ id: `pod-${p.i}`, at, size: [pool.pod, pool.pod], height: podH, radius: pool.pod * 0.22, top: '#1d1e24', side: paints.flat('#2a2b32'), edge: 'rgb(255 255 255 / .1)', shadow: false });
-          if (lit.includes(p.i)) s.face({ id: `pod-${p.i}-hit`, at, size: [pool.pod, pool.pod], radius: pool.pod * 0.22, fill: hit });
-        }),
-    );
+    const row = pods.filter(p => p.wave === w);
+    s.group(`wave-${w}`, () => {
+      s.svg(`pods-${w}`, row.map(p => pod([p.at[0], p.at[1], 6 + podH])).join(''));
+      row.filter(p => lit.includes(p.i)).forEach(p => s.face({ id: `pod-${p.i}-hit`, at: [p.at[0], p.at[1], 6 + podH], size: [pool.pod, pool.pod], radius: pool.pod * 0.22, fill: unlit }));
+    });
   }
-  lit.forEach(i => s.set(`pod-${i}-hit`, 'opacity', 0, 0));
 
   const gone = 1.04;
   const draw = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, gone, 0, easing);
@@ -234,7 +246,8 @@ function build(l: Layout) {
   for (const n of [...services, ...leaves, 'pool']) s.intro(`p-${n}`, 'opacity', 0, 0.01, 1, 1, ease.linear);
 
   s.set('card-hot', 'opacity', 0, 0);
-  flash('card-hot', T.sent);
+  s.at('card-hot', 'opacity', T.sent, 0.1, 0, 1, ease.linear);
+  s.at('card-hot', 'opacity', T.sent + 0.1, 0.6, 1, 0, ease.linear);
   s.at('hint', 'opacity', T.hint, 0.15, 1, 0, ease.linear);
   const steps = prompt.length;
   s.typeIn('prompt', T.type, steps * typeStep, steps);
@@ -250,9 +263,9 @@ function build(l: Layout) {
   s.spin('core-spin', T.spin, 1.0, 180, 0, curve.spin);
   s.set('core-spin', 'opacity', T.crossfade, 0);
   s.set('core-body', 'opacity', T.crossfade, 1);
-  const over = 10 * (coreAir / 278);
-  s.set('core-fall', 'translate', T.spin - 0.05, `0 ${-coreAir}px`);
-  s.at('core-fall', 'translate', T.fall, 0.63, `0 ${-coreAir}px`, `0 ${over}px`, curve.fall);
+  const over = 10 * (l.core.air / 278);
+  s.set('core-fall', 'translate', T.spin - 0.05, `0 ${-l.core.air}px`);
+  s.at('core-fall', 'translate', T.fall, 0.63, `0 ${-l.core.air}px`, `0 ${over}px`, curve.fall);
   s.at('core-fall', 'translate', T.landed, 0.4, `0 ${over}px`, '0 0', ease.io);
   s.at('core-lean', 'scale', T.lean, 0.3, '1 1', '1 1.1', ease.out);
   s.at('core-lean', 'scale', T.fall, 0.63, '1 1.1', '1 0.96', curve.fall);
@@ -303,23 +316,23 @@ function build(l: Layout) {
     flash(`${n}-hit`, t + 0.55);
   });
 
-  s.at('world', 'translate', T.pan, 1.4, '0 0', `${l.pan[0]}px ${l.pan[1]}px`, curve.pan);
-  s.dropAt('pool', T.pan + 0.7, 75, 0.8);
-  waves.forEach(w => s.dropAt(`wave-${w}`, T.pan + 1.2 + w * 0.09));
-  s.at('slots', 'opacity', T.pan + 1.2 + Math.min(...empty.map(sl => sl.wave)) * 0.09, 0.4, 0, 1, ease.linear);
-  draw('w-pool', T.pan + 1.7, 0.35, ease.out);
+  s.dropAt('pool', T.pool, 75, 0.8);
+  waves.forEach(w => s.dropAt(`wave-${w}`, T.pool + 0.5 + w * 0.16));
+  s.at('slots', 'opacity', T.pool + 0.5 + Math.min(...empty.map(sl => sl.wave)) * 0.16, 0.4, 0, 1, ease.linear);
+  draw('w-pool', T.pool + 1, 0.35, ease.out);
 
   type Hop = readonly [wire: Service | Leaf, back: boolean];
   const into = (cdn: 'cdn-a' | 'cdn-b'): Hop[] => [[cdn, true], ['gateway', true]];
   const routes: { hops: Hop[]; pool?: true }[] = [
     { hops: [...into('cdn-a'), ['queue', false], ['worker-c', false]], pool: true },
     { hops: [...into('cdn-b'), ['db', false], ['replica-a', false]] },
-    { hops: [...into('cdn-a'), ['cache', false], ['shard-b', false]] },
     { hops: [['auth', false], ['auth', true]] },
-    { hops: [...into('cdn-b'), ['queue', false], ['worker-a', false]] },
+    { hops: [...into('cdn-a'), ['cache', false], ['shard-b', false]] },
+    { hops: [...into('cdn-b'), ['queue', false], ['worker-c', false]], pool: true },
     { hops: [...into('cdn-a'), ['db', false], ['replica-b', false]] },
-    { hops: [...into('cdn-b'), ['cache', false], ['shard-a', false]] },
-    { hops: [...into('cdn-a'), ['queue', false], ['worker-b', false]] },
+    { hops: [...into('cdn-b'), ['queue', false], ['worker-a', false]] },
+    { hops: [...into('cdn-a'), ['cache', false], ['shard-a', false]] },
+    { hops: [...into('cdn-b'), ['queue', false], ['worker-b', false]] },
   ];
   const lands = (n: Service | Leaf, back: boolean): Node => (!back ? n : isLeaf(n) ? parents[n] : 'core');
   const r = rng(7);
@@ -334,12 +347,13 @@ function build(l: Layout) {
       at += dur + 0.02;
       return h;
     });
-    const tail = route.pool && t > T.pan + 1.9 ? { at, dur: hop('w-pool') } : null;
+    const tail = route.pool && t > T.pool + 1.2 ? { at, dur: hop('w-pool') } : null;
     if (!plan.every(h => free(`p-${h.n}`, h.at, h.dur)) || (tail && !free('p-pool', tail.at, tail.dur))) continue;
     k++;
     for (const h of plan) {
       travel(`p-${h.n}`, h.at, h.dur, h.back);
-      flash(`${lands(h.n, h.back)}-hit`, h.at + h.dur);
+      const to = lands(h.n, h.back);
+      if (to === 'core' || h === plan[plan.length - 1]) flash(`${to}-hit`, h.at + h.dur);
     }
     if (tail) {
       travel('p-pool', tail.at, tail.dur, false);
@@ -347,15 +361,14 @@ function build(l: Layout) {
     }
   }
 
-  s.at('core-live', 'scale', T.live + 1.25, 1.25, '1 1', '1 0.92', ease.io);
-  s.at('core-live', 'scale', T.live + 2.5, 1.25, '1 0.92', '1 1', ease.io);
-  s.at('core-live', 'rotate', T.live + 1.25, 1.25, '0deg', '1deg', ease.io);
-  s.at('core-live', 'rotate', T.live + 2.5, 1.25, '1deg', '-1deg', ease.io);
-  s.at('core-live', 'rotate', T.live + 3.75, 1.25, '-1deg', '0deg', ease.io);
+  for (const at of [T.live + 0.5, T.live + 3.5]) {
+    s.at('core-glow', 'fill', at, 1.5, unlit, glow, ease.io);
+    s.at('core-glow', 'fill', at + 1.5, 1.5, glow, unlit, ease.io);
+  }
 
   const c = T.collapse;
   retract('w-pool', c, 0.23, 'start', curve.snapOff);
-  [...waves].reverse().forEach((w, i) => s.at(`wave-${w}`, 'opacity', c + 0.05 + i * 0.066, 0.18, 1, 0, ease.linear));
+  [...waves].reverse().forEach((w, i) => s.at(`wave-${w}`, 'opacity', c + 0.05 + i * 0.1, 0.18, 1, 0, ease.linear));
   s.at('slots', 'opacity', c + 0.05, 0.2, 1, 0, ease.linear);
   s.at('pool', 'opacity', c + 0.85, 0.25, 1, 0, ease.linear);
   [...leaves].reverse().forEach((n, i) => {
@@ -373,7 +386,6 @@ function build(l: Layout) {
   s.at('core-shadow', 'opacity', c + 1.3, 0.4, 1, 0, ease.linear);
   s.set('core-body', 'opacity', c + 1.8, 0);
   s.set('core-live', 'scale', c + 1.85, '1 1');
-  s.set('world', 'translate', c + 1.85, '0 0');
   s.at('prompt', 'opacity', c + 1.2, 0.3, 1, 0, ease.linear);
   s.set('prompt', 'clipPath', c + 1.55, 'inset(-20% 100% -20% 0)');
   s.set('prompt', 'opacity', c + 1.6, 1);
@@ -390,41 +402,40 @@ const sp = (dx: number, dy: number): Vec2 => {
 
 const wide = build({
   name: 'hero-lg',
-  width: 1200,
-  height: 560,
-  origin: [660, 320],
-  core: { size: 112, height: 52, text: 13 },
-  service: { size: 64, height: 22, text: 12 },
-  leaf: { size: 42, height: 16 },
+  width: 720,
+  height: 570,
+  origin: [282, 300],
+  core: { size: 96, height: 44, text: 13, air: 86 },
+  service: { size: 56, height: 20, text: 12 },
+  leaf: { size: 34, height: 13 },
   place: {
-    queue: { at: [0, -205] },
-    'worker-a': { at: [-90, -330], exit: 'y' },
-    'worker-b': { at: [0, -330] },
-    'worker-c': { at: [90, -330], exit: 'y' },
-    db: { at: [205, 0] },
-    'replica-a': { at: [330, -60], exit: 'x' },
-    'replica-b': { at: [330, 80], exit: 'x' },
-    gateway: { at: [0, 205] },
-    'cdn-a': { at: [-80, 330], exit: 'y' },
-    'cdn-b': { at: [80, 330], exit: 'y' },
-    auth: { at: [-150, 205] },
-    cache: { at: [-205, 0] },
-    'shard-a': { at: [-205, -130] },
-    'shard-b': { at: [-330, 60], exit: 'x' },
+    cache: { at: [-160, 0] },
+    'shard-a': { at: [-255, -75] },
+    'shard-b': { at: [-255, 75] },
+    db: { at: [0, -160] },
+    'replica-a': { at: [-75, -255] },
+    'replica-b': { at: [75, -255] },
+    gateway: { at: [0, 160] },
+    'cdn-a': { at: [-75, 255], exit: 'x' },
+    'cdn-b': { at: [75, 255], exit: 'x' },
+    auth: { at: [0, 255] },
+    queue: { at: [160, 0] },
+    'worker-a': { at: [255, -75], exit: 'y' },
+    'worker-b': { at: [255, 75], exit: 'y' },
+    'worker-c': { at: [255, 0] },
   },
-  pool: { at: [300, -300], cols: 6, rows: 5, pitch: 40, pod: 28, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
-  pan: [-216, 0],
-  card: { x: 40, y: 32, w: 484, h: 104, text: 22, head: 15 },
-  feed: [526, 84],
-  ground: { at: [560, 330], size: 1100, pitch: 26 },
+  pool: { at: [420, 0], cols: 6, rows: 5, pitch: 28, pod: 20, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
+  card: { x: 24, y: 20, w: 480, h: 100, text: 22, head: 15 },
+  feed: [282, 120],
+  ground: { at: [400, 330], size: 900, pitch: 24 },
 });
 
 const compact = build({
   name: 'hero-sm',
   width: 390,
   height: 580,
-  origin: [195, 380],
-  core: { size: 72, height: 34, text: 10 },
+  origin: [195, 310],
+  core: { size: 72, height: 34, text: 10, air: 122 },
   service: { size: 42, height: 15, text: 9 },
   leaf: { size: 28, height: 11 },
   place: {
@@ -444,16 +455,15 @@ const compact = build({
     'shard-b': { at: sp(-160, -40), exit: 'x' },
   },
   pool: { at: sp(0, 205), cols: 6, rows: 5, pitch: 26, pod: 18, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
-  pan: [0, -70],
   card: { x: 16, y: 16, w: 358, h: 80, text: 14, head: 12 },
   feed: [195, 96],
-  ground: { at: [195, 360], size: 640, pitch: 18 },
+  ground: { at: [195, 290], size: 640, pitch: 18 },
 });
 
 const tilt = `<script type="module">
 const fine = matchMedia('(hover: hover) and (pointer: fine)');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-const rest = [${T.live}, ${T.collapse - 0.1}];
+const rest = [${T.live}, ${num(T.collapse - 0.1)}];
 const max = 3.5;
 const bind = (wrap) => {
   if (wrap.dataset.tilt) return;
@@ -507,6 +517,6 @@ scan();
 new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
 </script>`;
 
-export const hero = art(compact, wide, 640, tilt);
+export const hero = art(compact, wide, 520, tilt);
 
 export default { ...page({ title: 'One prompt, a whole system', surface: 'dark', art: hero }), background: ui.page };
