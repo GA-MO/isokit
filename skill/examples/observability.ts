@@ -126,7 +126,7 @@ function build(l: Layout) {
     s.group(`svc-${name}`, () => {
       s.slab({ id: `svc-${name}-slab`, at, size: [bs, bs], height: 22 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
       if (i === spiking) s.face({ id: 'svc-hot', at, size: [bs, bs], radius: 13 * k, fill: 'rgb(251 113 133 / .42)' });
-      s.text({ id: `svc-${name}-name`, at, text: name, size: 11, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+      s.text({ id: `svc-${name}-name`, at, text: name, size: 11, color: '#e4e4e7', on: 'top', anchor: 'middle' });
     });
   });
 

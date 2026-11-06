@@ -69,7 +69,9 @@ function build({ name, width, height, origin, k, minPx, note }: Layout) {
       s.text({ id: 'card-id', at: [colX(0) - 12 * k, slotY, cardH], text: 'FX-142', size: print - 1, color: ink, on: 'top', anchor: 'start' });
       s.group('card-ok', () => {
         s.face({ id: 'card-ok-dot', at: [colX(0) - 24 * k, slotY, cardH], size: [17 * k, 17 * k], radius: 8.5 * k, fill: done });
-        s.text({ id: 'card-ok-tick', at: [colX(0) - 24 * k, slotY, cardH + 0.5], text: '✓', size: print - 1, color: '#ffffff', anchor: 'middle', weight: 700, font: 'sans' });
+        const [tx, ty] = s.project([colX(0) - 24 * k, slotY, cardH + 0.5]);
+        const u = 3.2 * k;
+        s.svg('card-ok-tick', `<path d="M${tx - u} ${ty}l${u * 0.75} ${u * 0.8}l${u * 1.35} ${-u * 1.5}" fill="none" stroke="#ffffff" stroke-width="${1.7 * k}" stroke-linecap="round" stroke-linejoin="round"/>`);
       });
     });
   });
