@@ -232,7 +232,7 @@ function random(s: Scene, ramp: Ramp, seed: number, cell = 3): Material {
 
 export const paints = {
   flat: (color: string): Material => {
-    if (typeof color !== 'string' || !color.trim()) throw new Error('paints.flat: color must be a CSS colour');
+    if (typeof color !== 'string' || !color.trim()) throw new Error('paints.flat: color must be a non-empty CSS colour');
     return { kind: 'flat', color };
   },
   gradient,
