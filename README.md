@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/svg/hero.svg" alt="A one-line prompt types in, one box spins in and lands, and the system grows to 40 connected nodes with requests flowing through it" width="100%">
+  <img src="docs/svg/hero.svg" alt="A one-line prompt types in, one box spins in and lands, and the system grows to 40 connected nodes with requests flowing through it" width="720">
 </p>
 
 <h1 align="center">isokit</h1>
@@ -12,7 +12,7 @@ You describe a product story. The `iso` skill storyboards it into three to six b
 
 ## Gallery
 
-Every image here is a real scene from `skill/examples/`, written by `exportSvg()` into `docs/svg/`. The [showcase](https://ga-mo.github.io/isokit/) plays all 39 scenes with their prompts.
+Every image here is a real scene from `skill/examples/`, written by `exportSvg()` into `docs/svg/`. The [showcase](https://ga-mo.github.io/isokit/) plays all 64 scenes with their prompts.
 
 <table>
   <tr>
@@ -49,6 +49,9 @@ Every scene also ships a phone copy that tells the same story re-composed for a 
 | No animation library | SVG, HTML text, CSS and WAAPI. The runtime is 1.4 kB gzip |
 | Calm by default | Plays when scrolled into view, pauses off screen, shows a still that tells the whole story under reduced motion |
 | Labels that never overflow | Text has a 13 px floor on phones, and `fitX()` keeps each label inside its scene at the narrowest width it will be shown |
+| Readable text, checked | `skill/scripts/contrast.mjs` measures every text in every scene against the pixels behind it at five moments; CI fails under 4.5:1. The kit throws when a side label would sit on a face nobody can see |
+| Six compositions | Wide strips, diagonal rows, upright panels, radial cores, high fields and exploded stacks, plus single objects for feature lists |
+| Scenes you can play | A switch that steps a rollout, a slider that drives load (mouse and touch), parts you click to drill into |
 | 49 side finishes | Metal, glass, natural, tech pattern, retro and seeded generative paints that bend round the slab's rounded corner as one line |
 | `exportSvg()` | Writes a scene as one SVG animated with CSS `@keyframes` alone, no script, for READMEs, docs and email |
 | `mountLazy()` | Mounts many scenes on one page as they scroll near the screen, fetching only the compact or wide copy that fits |
@@ -189,46 +192,51 @@ s.exportSvg();   // one standalone SVG, animated with CSS @keyframes, no script
 
 ## What is in `skill/examples/`
 
-There are 39 scenes for fictional products at four levels, in four categories (the showcase tabs: Product, Security, Infra, Data & AI). Every tab has at least one scene at every level.
+There are 64 scenes for fictional products at four levels, in four categories (the showcase tabs: Product, Security, Infra, Data & AI), each tagged with one of seven layouts. Every tab has at least one scene at every level.
 
-- Spot: small one- or two-object scenes for feature lists, empty states and loaders: a keycard reader, a sync loop, a filling inbox, a charging battery, an alert stack, a table scan, a tile loader and an empty box.
-- Simple: CI/CD, notifications, file upload, database branching, a service map you can hover, an audit ledger, DNS resolution and cron jobs.
-- Medium: auth, ETL, queue and workers, search index, a feature flag rollout you can play, key rotation, a firewall, zero-trust access, a workload scheduler, autoscaling, health checks, a blue-green release, a snapshot restore, embedding clusters, a training loss curve, a re-ranking shelf and an A/B test.
-- Complex: an AI agent calling tools, payments, edge cache, observability, a data erasure request and a retrieval-backed answer.
+| Layout | Composition | Scenes |
+|---|---|---|
+| wide | a long strip read left to right, shown as a full-width card at about 3:1 | CI/CD, ETL, queue and workers, a live funnel, a billing cycle, parcel delivery, test shards |
+| diagonal | a long row along an iso axis | database branching, edge cache, a firewall, blue-green, snapshot restore, retrieval-backed answer, training loss, a re-ranking shelf, a kanban card, stock sync, diff to merge, a refund |
+| panels | upright panels facing each other | sign-in with 2-step, live cursors, two approvals, design comments, one message in six languages (Thai included) |
+| radial | a core with things on a ring | notifications, agent tools, payments, observability, key rotation, data erasure, health checks, DNS, cron, A/B test, CMS publishing, sensors to a gateway, a smart home scene, currency conversion |
+| field | a wide field or grid from high up | file upload, a service map you can hover, search index, a flag rollout you can play, zero-trust, a scheduler, autoscaling, embeddings, an OTA rollout, build cache, calendar booking, a load slider you can drag |
+| exploded | layers lifted apart | an audit ledger, video transcoding, image sizes, a fraud gauge, data lineage, a system you click to drill into |
+| object | one or two objects | a keycard reader, a sync loop, a filling inbox, a charging battery, an alert stack, a table scan, a tile loader, an empty box |
 
 There is also the hero, and the 49 side finishes in `materials-*.ts` with one gallery per family in `material-gallery.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
 
 ## Numbers
 
-All numbers were measured on 2026-11-06 on an Apple silicon Mac with Chrome. 1 kB = 1024 bytes.
+All numbers were measured on 2026-11-07 on an Apple silicon Mac with Chrome. 1 kB = 1024 bytes.
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero inline, 45 empty scene boxes, folded prompts, the install tabs) | 607.7 kB | 50.4 kB |
-| Showcase CSS | 25.3 kB | 5.7 kB |
+| Showcase `index.html` (the hero inline, 70 empty scene boxes, folded prompts, the install tabs) | 563.6 kB | 51.9 kB |
+| Showcase CSS | 25.7 kB | 5.8 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 5.6 kB | 2.2 kB |
-| Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag demo, hero tilt) | 7.4 kB | 2.7 kB |
-| All 82 scene files in `site/dist/scenes/` (compact and wide copies) | 9558.7 kB | 739.6 kB |
+| Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
+| All 132 scene files in `site/dist/scenes/` (compact and wide copies) | 14165.7 kB | 1108.6 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 3.3 kB | 1.4 kB |
 | Runtime with `mountLazy()` | 4.8 kB | 2.0 kB |
-| `docs/svg/hero.svg` (the image at the top) | 152.8 kB | 14.8 kB |
+| `docs/svg/hero.svg` (the image at the top) | 88.8 kB | 10.0 kB |
 
-The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (45), not all 82.
+The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (70), not all 132.
 
-Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load (the same hero alone on a page measured 24.6 % and 27.4 % an hour apart); the frame rate did not:
+Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load; the frame rate does not. The hero flashes with `fill` and moves pulses by dash offset, which only repaint, and has no pan or wobble on large groups, because an opacity or transform track on any SVG element re-layerizes the page every frame:
 
 | Viewport | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy |
 |---|---|---|---|---|---|
-| 393 px (phone) | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 42.4 % (41.9 to 46.6) |
-| 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 54.5 % (53.6 to 55.7) |
+| 393 px (phone) | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 22.9 % (18.3 to 23.5) |
+| 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 24.9 % (24.2 to 26.9) |
 
 How they were measured:
 
 - Sizes: `bun run build && bun run size` at the repo root. `site/scripts/size.ts` gzips each file in `site/dist` at level 9 and sums the inline module scripts and the scene files.
 - Runtime rows: `bun build skill/lib/entry.ts --minify --target browser > out.js`, then `wc -c < out.js` and `gzip -9 -c out.js | wc -c`. The `mountLazy()` row bundles a one-line entry that calls it.
 - SVG rows: `bun run readme:svg`, which writes `docs/svg/` and prints each file's size.
-- Hero motion: `node skill/scripts/perf.mjs page=<built showcase URL> width=393 throttle=4 seconds=20 selector=.iso-compact` (and `width=1280 selector=.iso-wide`). It counts `requestAnimationFrame` frames, reads long tasks, and takes main-thread time from Chrome's `Performance.getMetrics`.
+- Hero motion: `node skill/scripts/perf.mjs page=<built showcase URL> width=393 throttle=4 seconds=20 selector='#top .iso-compact'` (and `width=1280 selector='#top .iso-wide'`). It counts `requestAnimationFrame` frames, reads long tasks, and takes main-thread time from Chrome's `Performance.getMetrics`.
 
 Fonts are not counted. The site self-hosts Inter and Fira Code as `woff2`. The SVGs in `docs/` fall back to the system's sans and monospace fonts.
 
@@ -240,6 +248,7 @@ bun run dev          # showcase dev server
 bun run build        # static build into site/dist, served under /isokit/
 bun run test         # kit and example tests
 bun run readme:svg   # rewrite the animated SVGs in docs/svg/
+bun run check:contrast  # every text in every scene at 4.5:1 or more (needs skill/scripts deps and Chrome)
 ```
 
 Pushing to `main` deploys the site to GitHub Pages through `.github/workflows/pages.yml`. Set the repository's Pages source to GitHub Actions (Settings, Pages) once before the first deploy.

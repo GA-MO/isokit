@@ -15,8 +15,9 @@ The kit lives next to this file:
 - `scripts/shots.mjs`: screenshots any page at chosen times and widths and writes `sheet.png`.
 - `scripts/check.ts`: strict type-check of scene files anywhere on disk against the kit (`bun scripts/check.ts scene.ts`).
 - `scripts/perf.mjs`: plays a page in Chrome at a phone width with the CPU throttled (`node scripts/perf.mjs page=<out.html> width=393 throttle=4 seconds=20`) and prints frame rate, frame-time percentiles, late frames, long tasks and main-thread time. Run it on any scene with 30 or more moving objects.
+- `scripts/contrast.mjs`, `scripts/render-all.ts`: measure every text in a rendered page against the pixels right behind its glyphs at the still frame and four more moments, and fail under 4.5:1 (`node scripts/contrast.mjs <out.html>`; `bun scripts/render-all.ts <dir>` writes every catalog example first). Run it on every scene before you call it done.
 - `scripts/study-rive.mjs`, `scripts/compare-rive.mjs`: optional tools for studying a `.riv` animation of your own frame by frame and comparing it with a kit scene. Both need `runtime=<folder with canvas_advanced.mjs and rive.wasm>`.
-- `examples/`: 39 scenes for fictional products, each one file that exports `example` (title, story, prompt, level, category, and `art`: the compact and wide scenes from `art(compact, wide, breakpoint)`) and a default `Page`, so `scripts/render.ts` renders any of them. A `spot` scene is a single small scene, `art(compact)`. `hero.ts` exports `hero` (an `Art`) and `material-gallery.ts` exports `galleries` (one `Art` per finish family), each with a default `Page`. `examples/shared.ts` holds the surfaces, colour ramps, `paints`, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
+- `examples/`: 64 scenes for fictional products, each one file that exports `example` (title, story, prompt, level, category, layout, interaction, and `art`: the compact and wide scenes from `art(compact, wide, breakpoint)`) and a default `Page`, so `scripts/render.ts` renders any of them. A `spot` scene is a single small scene, `art(compact)`. `hero.ts` exports `hero` (an `Art`) and `material-gallery.ts` exports `galleries` (one `Art` per finish family), each with a default `Page`. `examples/shared.ts` holds the surfaces, colour ramps, `paints`, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
 
 Pick the example closest to your story and read it before drawing:
 
@@ -44,7 +45,13 @@ Pick the example closest to your story and read it before drawing:
 | `blue-green.ts`, `snapshot-restore.ts` | medium | a re-targeted wire, a cursor sliding back along a timeline |
 | `embedding-clusters.ts`, `training-loss.ts`, `recs-rerank.ts`, `ab-test.ts` | medium | points settling into clusters, falling `prism` bars, a slot shelf re-ordering, a split with a winner |
 | `data-erasure.ts`, `rag-answer.ts` | complex | one request fanning out to six systems with a counter, retrieved cards flying into a model and an answer typing in |
-| `hero.ts` | complex | one prompt grows a system in tiers of 1, 5, 15 and 40: a turntable spin-in and a weighted drop, outputs sliding out from under, pops, a make-room pan with a grid fill, endless requests, a tilt toward the mouse at rest; SVG `text()` only, so `exportSvg()` works on it |
+| `hero.ts` | complex | one prompt grows a system in tiers of 1, 5, 15 and 40: a turntable spin-in and a weighted drop, outputs sliding out from under, pops, a pool that drops in with a grid fill, endless requests, a tilt toward the mouse at rest; flashes by `fill` and repeated tiles by `<use>` to stay cheap; SVG `text()` only, so `exportSvg()` works on it |
+| `funnel-live.ts`, `billing-cycle.ts`, `parcel-delivery.ts`, `test-shards.ts` | medium, complex | `layout: 'wide'`: 3:1 strips read left to right (stages narrowing, a month strip that shifts without a jump, vehicles carrying a box, shards racing in lanes and merging) |
+| `kanban-move.ts`, `stock-sync.ts`, `diff-merge.ts`, `refund-flow.ts` | simple to complex | `layout: 'diagonal'`: a card or token travelling along one iso axis, gates turning green, a refund running back the same path in a second colour |
+| `live-cursors.ts`, `two-approvals.ts`, `design-comments.ts`, `translate-six.ts` | simple, medium | `layout: 'panels'`: upright `panel()`s facing each other; cursors typing, two ticks that unlock a lock, pins and a thread, one message in six languages with a Thai and Japanese font stack |
+| `cms-publish.ts`, `sensor-gateway.ts`, `smart-home.ts`, `currency-convert.ts` | simple, medium | `layout: 'radial'`: one copy to five channels, readings in then a floor wave out, devices changing state in turn, one pulse once round a ring wire |
+| `ota-rollout.ts`, `build-cache.ts`, `calendar-booking.ts`, `load-slider.ts` | simple to complex | `layout: 'field'`: waves across a device field with a halt and retry, cache hits worked out from a dependency table, a meeting skipping a conflict; `load-slider` is a drag control (a real range input, mouse, touch and keys) that seeks the loop while ambient traffic keeps moving |
+| `video-transcode.ts`, `image-resize.ts`, `fraud-gauge.ts`, `data-lineage.ts`, `drill-down.ts` | simple to complex | `layout: 'exploded'`: renditions lifting apart and encoding, sizes peeling off, risk layers adding up past a line, an upstream path lighting down through layers; `drill-down` opens a part into its layers from a real button by seeking that part's loop segment |
 | `materials-*.ts`, `material-gallery.ts` | | 49 side finishes in six families (Metal, Glass, Natural, Tech pattern, Retro, Generative) as `(scene) => Material` factories, one label-free gallery per family. Generative finishes take a seed. Copy a finish rather than inventing one |
 
 Setup once: `cd <this dir>/scripts && bun install && bunx playwright install webkit` (screenshots use the installed Google Chrome for Chromium). Type-check: `scripts/node_modules/.bin/tsc -p <this dir>`.
@@ -74,7 +81,12 @@ Loop rule: the last frame equals the first. Anything that changes during the loo
 
 Paint order is fixed: what is added later always covers what was added earlier. Motion that would change who covers whom (a card moving from the top of a stack to the bottom) is drawn as slots instead. Each element is a slot that moves one step and fades or recolours like its neighbour, and every segment starts again from the slot's rest value, so all slots jump back together while the picture looks the same. Give each slot one label per option and crossfade which one shows beside the active slot.
 
-## 2. Compose for the phone first
+## 2. Pick a layout, then compose for the phone first
+
+Every example names its composition in `layout`: `wide` (a long strip read left to right; its wide scene is about 3:1, such as 1200x400, with breakpoint 720, and the showcase shows it as a full-width card), `diagonal` (a long row along an iso axis), `panels` (upright `panel()`s facing each other), `radial` (a core with things on a ring), `field` (many tiles seen from high up; a slightly steeper `ratio` helps), `exploded` (layers lifted apart vertically) or `object` (one or two objects for a feature list or empty state). Pick the one the story needs before drawing; a page of scenes reads better when they vary.
+
+A scene the viewer can play (`interaction: 'play' | 'drag' | 'explore'`) ships a small inline module script in `art()`'s `head`: real `<button>` or `<input type="range">` in a `label({ html })`, pointer events for mouse and touch (`touch-action: none` on a drag control), keys too, a `MutationObserver` to bind scenes that mount later, the loop paused while the viewer acts and resumed after a few idle seconds, and a loop that still tells the story with no input (`feature-flags.ts`, `load-slider.ts`, `drill-down.ts`).
+
 
 Booth and landing pages are opened on phones. Build two scenes and wrap them with `responsive(compact, wide)`:
 
@@ -135,7 +147,7 @@ More building blocks:
 
 - `s.group(id, () => { ... })` wraps everything drawn inside into one animatable group (a stack that moves, a tile with its icon). HTML labels cannot join a group; use `text()`.
 - `s.pivot(id, at)` sets the point an element scales or rotates around (default: its own centre).
-- `s.text({ id, at, text, size, on, along, pill })` is SVG text: flat on screen (`on: 'screen'`), printed on a top face (`'top'`, reading down-right, or `along: 'y'` reading up-right) or on a side face (`'left'`, `'right'`). Use it for text that moves in a group, sits on a surface, or must be smaller than 13 px; use `label()` for readable copy.
+- `s.text({ id, at, text, size, on, along, pill })` is SVG text: flat on screen (`on: 'screen'`), printed on a top face (`'top'`, reading down-right, or `along: 'y'` reading up-right) or on a side face (`'left'`, `'right'`). Use it for text that moves in a group, sits on a surface, or must be smaller than 13 px; use `label()` for readable copy. On a side (`on: 'left' | 'right'`) it must sit on the face you see, the slab's front: `y = centre + depth / 2` for `left`, `x = centre + width / 2` for `right`, `z` between its bottom and top. The kit throws, naming that face, when it sits inside a slab or prism, on its back or just over its top.
 - `s.panel({ at, size, thickness, facing })` is a tile standing upright, its face toward the viewer's left or right.
 - `slab({ outline })` strokes the silhouette for line-art boxes (white sides, dark outline).
 - `s.plane(at, markup, 'left' | 'right')` lays markup on a side face; `s.planeTransform(at, on)` gives the transform for your own elements.
