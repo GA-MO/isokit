@@ -61,8 +61,8 @@ All numbers were measured on 2026-11-06.
 |---|---|---|
 | Showcase `index.html` (the hero inline, 40 empty scene boxes) | 588.9 kB | 45.0 kB |
 | Showcase CSS | 23.4 kB | 5.4 kB |
-| Showcase JS bundle (scene runtime, lazy mounting, copy buttons, filter) | 4.9 kB | 1.9 kB |
-| Showcase inline JS (flag demo and the rest of the module scripts) | 4.2 kB | 1.7 kB |
+| Showcase JS bundle (scene runtime and lazy mounting) | 4.9 kB | 1.9 kB |
+| Showcase inline JS (copy buttons, filter and the flag demo) | 4.2 kB | 1.7 kB |
 | All 72 scene files in `site/dist/scenes/` (compact and wide copies) | 8310.1 kB | 648.0 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
 | Scene runtime alone (`skill/lib/entry.ts`) | 3.3 kB | 1.4 kB |

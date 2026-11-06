@@ -18,7 +18,11 @@ function load(name: string): Promise<string> {
 function pick(box: HTMLElement): string {
   const { compact, wide, breakpoint } = box.dataset;
   if (!compact) throw new Error('art: a [data-art] box has no data-compact scene');
-  return wide && box.clientWidth > Number(breakpoint) ? wide : compact;
+  return wide && box.getBoundingClientRect().width >= Number(breakpoint) + 1 ? wide : compact;
+}
+
+function unmount(box: HTMLElement) {
+  for (const old of box.querySelectorAll<HTMLElement>('.iso')) old.iso?.destroy();
 }
 
 function failed(box: HTMLElement) {
@@ -31,31 +35,44 @@ function failed(box: HTMLElement) {
   retry.textContent = 'Retry';
   retry.addEventListener('click', () => show(box));
   note.append(retry);
+  unmount(box);
+  delete box.dataset.shown;
   box.replaceChildren(note);
 }
 
 async function show(box: HTMLElement) {
   if (!box.clientWidth) return;
   const name = pick(box);
-  if (box.dataset.shown === name || box.dataset.loading === name) return;
+  if (box.dataset.loading === name) return;
+  if (box.dataset.shown === name) {
+    delete box.dataset.loading;
+    return;
+  }
   box.dataset.loading = name;
+  let markup: string;
   try {
-    const markup = await load(name);
+    markup = await load(name);
+  } catch (e) {
     if (box.dataset.loading !== name) return;
-    const template = document.createElement('template');
-    template.innerHTML = markup;
-    for (const old of box.querySelectorAll<HTMLElement>('.iso')) old.iso?.destroy();
-    box.replaceChildren(template.content);
+    delete box.dataset.loading;
+    console.error(e);
+    if (!box.dataset.shown) failed(box);
+    return;
+  }
+  if (box.dataset.loading !== name) return;
+  delete box.dataset.loading;
+  const template = document.createElement('template');
+  template.innerHTML = markup;
+  unmount(box);
+  box.replaceChildren(template.content);
+  try {
     const root = box.querySelector<HTMLElement>('.iso');
     if (!root) throw new Error(`scene ${name}: no .iso root in its markup`);
     mount(root);
     box.dataset.shown = name;
   } catch (e) {
     console.error(e);
-    delete box.dataset.shown;
     failed(box);
-  } finally {
-    if (box.dataset.loading === name) delete box.dataset.loading;
   }
 }
 
@@ -68,7 +85,7 @@ export function mountArts(scope: ParentNode = document) {
     { rootMargin: '75% 0px' },
   );
   const resized = new ResizeObserver(entries => {
-    for (const e of entries) if (e.target instanceof HTMLElement && e.target.dataset.shown) show(e.target);
+    for (const e of entries) if (e.target instanceof HTMLElement && (e.target.dataset.shown || e.target.dataset.loading)) show(e.target);
   });
   for (const box of boxes) {
     near.observe(box);

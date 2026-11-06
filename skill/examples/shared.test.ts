@@ -84,12 +84,14 @@ test('random paints the same pattern for the same seed and a different one for a
   };
   expect(draw(5)).toBe(draw(5));
   expect(draw(5)).not.toBe(draw(6));
-  expect(draw(-5)).toContain('<rect');
 });
 
 test('paints reject inputs that would draw nothing or garbage', () => {
   const s = new Scene({ name: 'bad', width: 390, height: 300 });
   expect(() => paints.random(s, ramps.teal, 1.5)).toThrow(/seed must be a whole number/);
+  expect(() => paints.random(s, ramps.teal, -5)).toThrow(/seed must be a whole number from 0/);
+  expect(() => paints.random(s, ramps.teal, 2 ** 32)).toThrow(/seed must be a whole number from 0/);
+  expect(() => paints.flat('')).toThrow(/color must be a CSS colour/);
   expect(() => paints.random(s, ramps.teal, Number.NaN)).toThrow(/seed must be a whole number/);
   expect(() => paints.random(s, ramps.teal, 2 ** 60)).toThrow(/seed must be a whole number/);
   expect(() => paints.random(s, ramps.teal, 1, 0)).toThrow(/cell must be between 1 and 12/);

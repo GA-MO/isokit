@@ -208,7 +208,7 @@ function glass(s: Scene, tint: string, opacity = 0.6): Material {
 
 function random(s: Scene, ramp: Ramp, seed: number, cell = 3): Material {
   checkRamp('random', ramp);
-  if (!Number.isSafeInteger(seed)) throw new Error(`paints.random: seed must be a whole number (the same seed always draws the same pattern), got ${seed}`);
+  if (!(Number.isInteger(seed) && seed >= 0 && seed <= 0xffffffff)) throw new Error(`paints.random: seed must be a whole number from 0 to 4294967295 (the same seed always draws the same pattern), got ${seed}`);
   if (!(Number.isFinite(cell) && cell >= 1 && cell <= 12)) throw new Error(`paints.random: cell must be between 1 and 12 scene units, got ${cell}`);
   const k = key(...ramp, seed, cell);
   const cells = once(s, `paint-random-${k}`, () => {
@@ -231,7 +231,10 @@ function random(s: Scene, ramp: Ramp, seed: number, cell = 3): Material {
 }
 
 export const paints = {
-  flat: (color: string): Material => ({ kind: 'flat', color }),
+  flat: (color: string): Material => {
+    if (typeof color !== 'string' || !color.trim()) throw new Error('paints.flat: color must be a CSS colour');
+    return { kind: 'flat', color };
+  },
   gradient,
   brushed,
   stripes,

@@ -175,7 +175,7 @@ const html = responsive(buildCompact(), buildWide());
 </script>
 ```
 
-A page with many scenes should not ship them all inline. Render each compact and wide scene to its own file at build time and mount the one that fits its box when the box nears the screen: the showcase does this with `art()` from `examples/shared.ts`, `site/src/pages/scenes/[name].html.ts` and `site/src/scripts/arts.ts` (`mount()` from `lib/runtime.ts` on each fetched scene).
+A page with many scenes should not ship them all inline. Render each compact and wide scene (`scene.render()`) to its own static file at build time, put an empty box with the scene's `aspect-ratio` in its place, and when an `IntersectionObserver` (`rootMargin: '75% 0px'`) sees the box near the screen, fetch only the copy that fits the box's width (wide above the breakpoint), parse it with a `<template>`, insert it and call `mount(root)` from `lib/runtime.ts`. On a resize across the breakpoint, `root.iso.destroy()` the old copy and mount the other. `art(compact, wide, breakpoint)` in `examples/shared.ts` returns both copies' markup and sizes for this.
 
 Copy `lib/iso.ts` and `lib/runtime.ts` into the project as `src/lib/iso/` (they have no dependencies). With Astro's ClientRouter, call `mountAll()` on `astro:page-load` and `el.iso?.destroy()` on `astro:before-swap`. Scenes are built at build time, so the page ships only the SVG and the small runtime. The isokit showcase site (`site/` in the repo) renders every example this way.
 
