@@ -7,7 +7,7 @@ const line = 'rgb(22 23 27 / .16)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
-const grow = 'cubic-bezier(.62,.2,.1,1)';
+const fill = 'cubic-bezier(.32,.5,.06,1)';
 const exit = 'linear(0, -0.007 11.8%, -0.045 37.8%, -0.048 57%, -0.028 63.2%, 0.018 69.3%, 0.079 74.3%, 0.164 79.3%, 0.27 84%, 0.392 88.3%, 0.459 90.3%, 0.535 92.3%, 0.609 94%, 0.694 95.8%, 0.777 97.3%, 0.859 98.5%, 0.942 99.5%, 1)';
 
 const pitch = 130;
@@ -88,7 +88,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   two.forEach((_, i) => s.draw(`w2-${i}`, 0.9 + i * 0.05, 0.3, ease.out, 'intro'));
 
   s.loop(12.5, 6.2);
-  loads.forEach(l => s.heightTo('meter-bar', l.t, l.dur, l.from * k, l.to * k, grow));
+  loads.forEach(l => s.heightTo('meter-bar', l.t, l.dur, l.from * k, l.to * k, fill));
 
   const busy = new Map<string, number>();
   const lit = new Map<string, number>();

@@ -5,7 +5,7 @@ const ui = surfaces.light;
 const accent = '#6366f1';
 const win = '#059669';
 const line = 'rgb(22 23 27 / .16)';
-const grow = 'cubic-bezier(.62,.2,.1,1)';
+const fill = 'cubic-bezier(.32,.5,.06,1)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
@@ -107,9 +107,10 @@ function build(l: Layout) {
     steps[v.id] += 1;
     const next = (v.final * k * steps[v.id]) / (visits / 2);
     if (heights[v.id] === 0) s.at(`bar-${v.id}`, 'opacity', land, 0.1, 0, 1, ease.linear);
-    for (const id of v.id === 'b' ? ['bar-b', 'bar-b-win'] : ['bar-a']) s.heightTo(id, land, 0.5, heights[v.id], next, grow);
+    const grows = i + 2 < visits ? visitAt(i + 2) - t : 0.9;
+    for (const id of v.id === 'b' ? ['bar-b', 'bar-b-win'] : ['bar-a']) s.heightTo(id, land, grows, heights[v.id], next, fill);
     heights[v.id] = next;
-    last = land + 0.5;
+    last = Math.max(last, land + grows);
   }
 
   const decide = last + 0.25;

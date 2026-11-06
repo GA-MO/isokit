@@ -110,7 +110,8 @@ These recipes never use an oscillating spring. What reads as "spring" is two thi
 | slide out | `cubic-bezier(.38,.08,0,.97)` | B coming out from behind A |
 | merge | `cubic-bezier(.52,.18,.25,1)` | two things becoming one |
 | shrink away | `cubic-bezier(.33,0,.91,.03)` / `(.97,.09,1,.89)` | gone with intent |
-| grow | `cubic-bezier(.62,.2,.1,1)` | heights that mean time |
+| grow | `cubic-bezier(.62,.2,.1,1)` | heights that mean time, in the slow vs fast and time saved comparisons only: it waits about 0.2 s, then covers most of the height in a few frames, which reads as a jump on a bar that simply fills |
+| fill | `cubic-bezier(.32,.5,.06,1)`, 1 s for a tall bar | a bar, level or meter filling: moves from the first frame, peaks at 3.4x its average speed, the last 10 % takes half the time. A bar that grows in steps chains them (each step lasts until the next starts) so it never stops mid-climb |
 | squash | `cubic-bezier(.05,.6,.2,1)` | an expo-out collapse |
 | constant pull | `cubic-bezier(.33,0,.67,.33)` | streams accelerating toward a target |
 | pop | `cubic-bezier(.3,1.4,.5,1)` | a tile popping out of its slot |

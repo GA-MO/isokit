@@ -4,7 +4,7 @@ import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Exampl
 const ui = surfaces.light;
 const accent = '#0d9488';
 const line = 'rgb(22 23 27 / .16)';
-const grow = 'cubic-bezier(.62,.2,.1,1)';
+const fill = 'cubic-bezier(.32,.5,.06,1)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
@@ -97,13 +97,13 @@ function build(l: Layout) {
     const land = hit + 0.1 + out;
     for (const id of [`bar-${i}`, `hot-${i}`]) {
       s.at(id, 'opacity', land, 0.1, 0, 1, ease.linear);
-      s.heightTo(id, land, 0.75, 0, h, grow);
+      s.heightTo(id, land, 1, 0, h, fill);
     }
     if (i > 0) s.at(`hot-${i - 1}`, 'opacity', land, 0.4, 1, 0, ease.linear);
     const shown = land + 0.3;
     s.at(`tag-${i}`, 'opacity', shown, 0.15, 0, 1, ease.linear);
     if (i > 0) s.at(`tag-${i - 1}`, 'opacity', shown, 0.15, 1, 0, ease.linear);
-    last = land + 0.75;
+    last = land + 1;
   });
 
   const reset = last + 1.9;

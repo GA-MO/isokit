@@ -3,7 +3,7 @@ import { art, fonts, page, paints, ramps, surfaces, type Example } from './share
 
 const ui = surfaces.dark;
 const emerald = ramps.emerald;
-const grow = 'cubic-bezier(.62,.2,.1,1)';
+const rise = 'cubic-bezier(.32,.5,.06,1)';
 
 const cells = 4;
 
@@ -41,7 +41,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const t = first + i * step;
     const out = drain + (cells - 1 - i) * 0.14;
     s.at(`cell-${i}`, 'opacity', t, 0.1, 0, 1, ease.linear);
-    s.heightTo(`cell-${i}`, t, fill, 0, cellH, grow);
+    s.heightTo(`cell-${i}`, t, fill, 0, cellH, rise);
     s.heightTo(`cell-${i}`, out, 0.5, cellH, 0, ease.io);
     s.at(`cell-${i}`, 'opacity', out + 0.4, 0.1, 1, 0, ease.linear);
     s.march(`slot-${i}`, 4, 4, 24);
