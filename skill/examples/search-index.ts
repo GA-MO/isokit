@@ -52,7 +52,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     s.group(`t-${i}`, () => {
       slab(`t-${i}-slab`, at, [tile, tile], 8 * k);
       if ((query as readonly string[]).includes(term)) {
-        s.face({ id: `t-${i}-hit`, at, size: [tile, tile], radius: tile * 0.18, fill: accent });
+        s.face({ id: `t-${i}-hit`, at, size: [tile, tile], radius: tile * 0.18, fill: '#4f46e5' });
         s.text({ id: `t-${i}-word`, at, text: term, size: termSize, color: ink, on: 'top', anchor: 'middle' });
         s.text({ id: `t-${i}-lit`, at, text: term, size: termSize, color: '#ffffff', on: 'top', anchor: 'middle' });
       } else s.text({ id: `t-${i}-word`, at, text: term, size: termSize, color: ink, on: 'top', anchor: 'middle' });
@@ -63,8 +63,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const r = results[i]!;
     s.group(`r-${i}`, () => {
       slab(`r-${i}-slab`, at, [60 * k, 60 * k], 14 * k, i === 0 ? '#eef0ff' : ui.top);
-      s.text({ id: `r-${i}-rank`, at: [at[0], at[1] - 11 * k, at[2]], text: `${i + 1}`, size: 16, weight: 600, font: 'sans', color: i === 0 ? accent : ink, on: 'top', anchor: 'middle' });
-      s.text({ id: `r-${i}-doc`, at: [at[0], at[1] + 13 * k, at[2]], text: r, size: termSize, color: '#71717a', on: 'top', anchor: 'middle' });
+      s.text({ id: `r-${i}-rank`, at: [at[0], at[1] - 11 * k, at[2]], text: `${i + 1}`, size: 16, weight: 600, font: 'sans', color: i === 0 ? '#4f46e5' : ink, on: 'top', anchor: 'middle' });
+      s.text({ id: `r-${i}-doc`, at: [at[0], at[1] + 13 * k, at[2]], text: r, size: termSize, color: '#5b5e68', on: 'top', anchor: 'middle' });
     });
   });
 
@@ -99,6 +99,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const on = found + 0.05 * query.indexOf(term as (typeof query)[number]);
     s.at(`t-${i}-hit`, 'opacity', on, 0.25, 0, 1, ease.linear);
     s.at(`t-${i}-lit`, 'opacity', on, 0.25, 0, 1, ease.linear);
+    s.at(`t-${i}-word`, 'opacity', on, 0.25, 1, 0, ease.linear);
     s.at(`t-${i}`, 'translate', on, 0.3, '0 0', '0 -6px', rise);
   });
   const send = found + 0.45;
@@ -121,6 +122,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     if (!(query as readonly string[]).includes(term)) return;
     s.at(`t-${i}-hit`, 'opacity', clear, 0.3, 1, 0, ease.linear);
     s.at(`t-${i}-lit`, 'opacity', clear, 0.3, 1, 0, ease.linear);
+    s.at(`t-${i}-word`, 'opacity', clear, 0.3, 0, 1, ease.linear);
     s.at(`t-${i}`, 'translate', clear, 0.3, '0 -6px', '0 0', ease.io);
   });
   const empty = clear + 0.5;

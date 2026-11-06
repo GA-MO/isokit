@@ -119,7 +119,7 @@ function build(l: Layout) {
       s.face({ id: 'edge-miss', at, size: [es, es], radius: es * 0.18, fill: 'rgb(251 191 36 / .3)' });
       s.face({ id: 'edge-hit', at, size: [es, es], radius: es * 0.18, fill: 'rgb(56 189 248 / .4)' });
     }
-    s.text({ id: `${code}-name`, at, text: code, size: 11, color: i === near ? '#e4e4e7' : '#71717a', on: 'top', anchor: 'middle' });
+    s.text({ id: `${code}-name`, at, text: code, size: 11, color: i === near ? '#e4e4e7' : '#a1a1aa', on: 'top', anchor: 'middle' });
     });
   });
 

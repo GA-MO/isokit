@@ -57,7 +57,7 @@ function build({ name, width, height, origin, k, noteBelow }: Layout) {
   const [nx, ny] = s.project(noteBelow ? [db[0] + disc / 2, db[1] + disc / 2, -discH] : [db[0], db[1], dbTop]);
   const noteAt = (text: string): Vec2 => (noteBelow ? [fitX(nx, text, width, narrowest), ny + 18] : [fitX(nx, text, width, 521), ny - 0.41 * disc - 22]);
   s.label({ id: 'note-bad', at: { screen: noteAt('✗ bad migration') }, html: `<span style="color:${bad}">✗</span> bad migration`, size: 13, anchor: noteBelow ? 'top' : 'bottom' });
-  s.label({ id: 'note-ok', at: { screen: noteAt('✓ restore 09:00') }, html: `<span style="color:${accent}">✓</span> restore 09:00`, size: 13, anchor: noteBelow ? 'top' : 'bottom' });
+  s.label({ id: 'note-ok', at: { screen: noteAt('✓ restore 09:00') }, html: `<span style="color:#0f766e">✓</span> restore 09:00`, size: 13, anchor: noteBelow ? 'top' : 'bottom' });
 
   snapshots.forEach((_, i) => s.dropIn(`snap-${i}`, 0.1 + i * 0.083));
   s.dropIn('db', 0.45);

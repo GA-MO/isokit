@@ -2,7 +2,7 @@ import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
 const ui = surfaces.light;
-const accent = '#0284c7';
+const accent = '#0369a1';
 const deny = '#e11d48';
 const line = 'rgb(22 23 27 / .3)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';

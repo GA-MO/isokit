@@ -3,7 +3,7 @@ import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Exampl
 
 const ui = surfaces.light;
 const accent = '#6366f1';
-const win = '#059669';
+const win = '#047857';
 const line = 'rgb(22 23 27 / .16)';
 const fill = 'cubic-bezier(.32,.5,.06,1)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';

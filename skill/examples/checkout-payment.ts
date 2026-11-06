@@ -4,7 +4,7 @@ import { art, fonts, page, ramps, surfaces, type Example, paints } from './share
 const ui = surfaces.light;
 const accent = '#7c3aed';
 const glow = 'rgb(139 92 246 / .2)';
-const ok = '#059669';
+const ok = '#047857';
 const okTint = 'rgb(16 185 129 / .3)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
@@ -55,7 +55,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
       s.slab({ id: nd.id, at: p, size, height: nd.height * n, radius, top: ui.top, side: paints.gradient(s, nd.side), grain: 0.05, edge: ui.edge, outline: nd.id === 'gateway' ? 'rgb(91 33 182 / .3)' : line });
       if (nd.id !== 'bank') s.face({ id: `${nd.id}-lit`, at: p, size, radius, fill: glow });
       if (nd.id === 'bank' || nd.id === 'checkout') s.face({ id: `${nd.id}-ok`, at: p, size, radius, fill: okTint, stroke: 'rgb(5 150 105 / .5)' });
-      s.text({ id: `${nd.id}-name`, at: [p[0] + nd.size * n * 0.5 - 12 * n, p[1], 0], text: nd.id, size: text, color: nd.id === 'gateway' ? '#6d28d9' : ui.muted, on: 'top', along: 'y', anchor: 'middle' });
+      s.text({ id: `${nd.id}-name`, at: [p[0] + nd.size * n * 0.5 - 12 * n, p[1], 0], text: nd.id, size: text, color: nd.id === 'gateway' ? '#6d28d9' : '#4b4e57', on: 'top', along: 'y', anchor: 'middle' });
     });
   });
 

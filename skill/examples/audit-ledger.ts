@@ -39,7 +39,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.group('src-g', () => {
     lineArt('src', src, [srcSize, srcSize], 20 * k);
     s.face({ id: 'src-glow', at: src, size: [srcSize, srcSize], radius: srcSize * 0.18, fill: 'rgb(99 102 241 / .16)' });
-    s.text({ id: 'src-name', at: [src[0] + srcSize / 2 - 12 * k, src[1], src[2]], text: 'iam', size: wide ? 12 : 10, color: ui.muted, on: 'top', along: 'y', anchor: 'middle' });
+    s.text({ id: 'src-name', at: [src[0] + srcSize / 2 - 12 * k, src[1], src[2]], text: 'iam', size: wide ? 12 : 10, color: '#4b4e57', on: 'top', along: 'y', anchor: 'middle' });
   });
 
   s.slab({ id: 'tray', at: tray, size: traySize, height: 16 * k, radius: 14 * k, top: '#fbfbfa', side: paints.brushed(s, ramps.silver), outline: line, shade: false, edge: line });

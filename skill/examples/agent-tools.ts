@@ -51,7 +51,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const size = [toolSize * k, toolSize * k] as const;
     s.slab({ id: t.id, at, size, height: 22 * k, radius: 16 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
     s.face({ id: `${t.id}-glow`, at, size, radius: 16 * k, fill: glow });
-    s.text({ id: `${t.id}-name`, at: [at[0] + (toolSize / 2 - 14) * k, at[1], 0], text: t.name, size: wide ? 12 : 10, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
+    s.text({ id: `${t.id}-name`, at: [at[0] + (toolSize / 2 - 14) * k, at[1], 0], text: t.name, size: wide ? 12 : 10, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
   };
   const drawCore = () => {
     const at = plane([0, 0], 14 * k);

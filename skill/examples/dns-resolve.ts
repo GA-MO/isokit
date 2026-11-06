@@ -41,7 +41,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     route(`w-${sv.id}`, sv.id === 'auth' ? answer : referral, y === 0 ? [[from, 0, z], [to, 0, z]] : [[from, 0, z], [bend, 0, z], [bend, y, z], [to, y, z]]);
   });
 
-  const tile = (id: string, at: Vec3, size: number, h: number, side: Material, label: string, color: string = ui.muted) =>
+  const tile = (id: string, at: Vec3, size: number, h: number, side: Material, label: string, color: string = '#4b4e57') =>
     s.group(id, () => {
       s.slab({ id: `${id}-slab`, at, size: [size, size], height: h, radius: size * 0.18, top: ui.top, side, grain: 0.05, edge: ui.edge, outline: line, shade: false });
       s.face({ id: `${id}-lit`, at, size: [size, size], radius: size * 0.18, fill: tint });
@@ -53,7 +53,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 
   const [cx, cy] = s.project(client);
   s.label({ id: 'ask', at: { screen: [fitX(cx, query, width, minPx), cy - 98 * k] }, text: query, size: 13, anchor: 'bottom' });
-  s.label({ id: 'ip', at: { screen: [fitX(cx, `✓ ${ip}`, width, minPx), cy - 46 * k] }, html: `<span style="color:${answer}">✓</span> ${ip}`, size: 13, anchor: 'bottom' });
+  s.label({ id: 'ip', at: { screen: [fitX(cx, `✓ ${ip}`, width, minPx), cy - 46 * k] }, html: `<span style="color:#047857">✓</span> ${ip}`, size: 13, anchor: 'bottom' });
 
   s.dropIn('client', 0.1);
   s.dropIn('resolver', 0.18);

@@ -1,19 +1,36 @@
-import { Scene, ease, type Vec3 } from '../lib/iso';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.light;
 const accent = '#0284c7';
 const tint = 'rgb(56 189 248 / .22)';
-const done = '#059669';
+const done = '#047857';
+const nameInk = '#4b4e57';
 const travelEase = 'cubic-bezier(.39,.08,.04,.91)';
 const line = 'rgb(22 23 27 / .16)';
 
 const stages = [
-  { id: 'commit', x: -250, size: 80, height: 18, name: 'commit' },
-  { id: 'build', x: -90, size: 92, height: 24, name: 'build' },
-  { id: 'test', x: 70, size: 92, height: 24, name: 'test' },
-  { id: 'prod', x: 250, size: 128, height: 40, name: 'production' },
+  { id: 'commit', size: 80, height: 18, name: 'commit' },
+  { id: 'build', size: 92, height: 24, name: 'build' },
+  { id: 'test', size: 92, height: 24, name: 'test' },
+  { id: 'prod', size: 128, height: 40, name: 'production' },
 ] as const;
+
+interface Layout {
+  name: string;
+  width: number;
+  height: number;
+  origin: Vec2;
+  k: number;
+  wide: boolean;
+  stops: readonly [number, number, number, number];
+  along: Vec2;
+  reach: number;
+  live: Vec2;
+}
+
+const chain = { along: [1, 0], reach: 0.5 } as const;
+const strip = { along: [Math.SQRT1_2, -Math.SQRT1_2], reach: 0.64 } as const;
 
 const hops = [
   { from: 0, to: 1, start: 0.5 },
@@ -22,16 +39,20 @@ const hops = [
 ] as const;
 const hopDur = 0.95;
 
-function build(name: string, width: number, height: number, origin: readonly [number, number], k: number, wide: boolean) {
+function build({ name, width, height, origin, k, wide, stops, along, reach, live }: Layout) {
   const s = new Scene({ name, width, height, origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
-  const at = (i: number, z = 0): Vec3 => [stages[i]!.x * k, 0, z];
+  const at = (i: number, z = 0): Vec3 => [stops[i]! * along[0] * k, stops[i]! * along[1] * k, z];
+  const edge = (i: number, side: 1 | -1, z: number): Vec3 => {
+    const c = at(i, z);
+    const d = stages[i]!.size * reach * k * side;
+    return [c[0] + along[0] * d, c[1] + along[1] * d, z];
+  };
   const pkgSize = 34 * k;
   const pkgHeight = 22 * k;
 
   stages.slice(1).forEach((st, i) => {
-    const a = stages[i]!;
     const z = -10 * k;
-    s.wire({ id: `w-${st.id}`, points: [[(a.x + a.size / 2) * k, 0, z], [(st.x - st.size / 2) * k, 0, z]], stroke: ui.wire, width: 1.25 });
+    s.wire({ id: `w-${st.id}`, points: [edge(i, 1, z), edge(i + 1, -1, z)], stroke: ui.wire, width: 1.25 });
     s.pulse({ id: `p-${st.id}`, wire: `w-${st.id}`, color: accent, length: 0.3 });
   });
 
@@ -44,10 +65,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
       if (!prod) s.face({ id: `${st.id}-lit`, at: at(i), size, radius, fill: tint });
       if (prod) s.face({ id: 'prod-ok', at: at(i), size, radius, fill: 'rgb(16 185 129 / .36)', stroke: 'rgb(5 150 105 / .6)' });
       const name = prod && !wide ? 'prod' : st.name;
-      s.text({ id: `${st.id}-name`, at: [st.x * k + (st.size * k) / 2 - 8 * k, 0, 0], text: name, size: wide ? 13 : 10, color: ui.muted, on: 'top', along: 'y', anchor: 'middle' });
+      const c = at(i);
+      s.text({ id: `${st.id}-name`, at: [c[0] + (st.size * k) / 2 - 8 * k, c[1], 0], text: name, size: wide ? 13 : 10, color: nameInk, on: 'top', along: 'y', anchor: 'middle' });
       if (st.id === 'test') {
         [-16, 0, 16].forEach((dx, j) => {
-          const p: Vec3 = [(st.x + dx) * k, 30 * k, 0];
+          const p: Vec3 = [c[0] + dx * k, c[1] + 30 * k, 0];
           s.face({ id: `dot-${j}`, at: p, size: [10 * k, 10 * k], radius: 5 * k, fill: 'rgb(22 23 27 / .1)' });
           s.face({ id: `dot-${j}-on`, at: p, size: [10 * k, 10 * k], radius: 5 * k, fill: accent });
         });
@@ -62,8 +84,9 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 
   const commitTop = s.project(at(0, 0));
   const prodTop = s.project(at(3, 0));
-  s.label({ id: 'sha', at: { screen: [commitTop[0] + 44 * k, commitTop[1] - 56 * k] }, text: 'main · 4f2a9c1', size: 13, anchor: 'bottom' });
-  s.label({ id: 'live', at: { screen: wide ? [prodTop[0] + 56 * k, prodTop[1] - 72 * k] : [fitX(prodTop[0], '✓ live · v2.4.1', width, narrowest, 'top'), prodTop[1] + 92 * k] }, html: `<span style="color:${done}">✓</span> live · v2.4.1`, size: 13, anchor: wide ? 'bottom' : 'top' });
+  const minPx = wide ? 721 : narrowest;
+  s.label({ id: 'sha', at: { screen: [fitX(commitTop[0] + 44 * k, 'main · 4f2a9c1', width, minPx), commitTop[1] - 56 * k] }, text: 'main · 4f2a9c1', size: 13, anchor: 'bottom' });
+  s.label({ id: 'live', at: { screen: [fitX(prodTop[0] + live[0] * k, '✓ live · v2.4.1', width, minPx), prodTop[1] + live[1] * k] }, html: `<span style="color:${done}">✓</span> live · v2.4.1`, size: 13, anchor: wide ? 'bottom' : 'top' });
 
   stages.forEach((st, i) => s.dropIn(`${st.id}-g`, 0.1 + i * 0.083));
   s.dropIn('pkg', 0.55);
@@ -118,7 +141,11 @@ export const example: Example = {
   useCase: 'CI/CD',
   surface: 'light',
   interaction: 'watch',
-  art: art(build('deploy-sm', 390, 380, [186, 180], 0.72, false), build('deploy-lg', 720, 400, [320, 200], 0.9, true), 520),
+  art: art(
+    build({ name: 'deploy-sm', width: 390, height: 380, origin: [186, 180], k: 0.72, wide: false, stops: [-250, -90, 70, 250], ...chain, live: [0, 92] }),
+    build({ name: 'deploy-lg', width: 1200, height: 400, origin: [600, 232], k: 1.45, wide: true, stops: [-323, -133, 65, 288], ...strip, live: [0, -100] }),
+    720,
+  ),
 };
 
 export default page(example);

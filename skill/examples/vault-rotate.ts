@@ -48,7 +48,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.group('vault-g', () => {
     s.slab({ id: 'vault', at: vault, size: [vaultSize, vaultSize], height: vaultH, radius: 22 * k, top: ui.top, side: paints.gradient(s, gold), grain: 0.06, edge: ui.edge });
     s.face({ id: 'vault-glow', at: vault, size: [vaultSize, vaultSize], radius: 22 * k, fill: 'rgb(251 191 36 / .2)' });
-    s.text({ id: 'vault-name', at: [vault[0], vault[1] + vaultSize / 2, -vaultH * 0.5], text: 'vault', size: 12, color: '#fde68a', on: 'left', anchor: 'middle' });
+    s.text({ id: 'vault-name', at: [vault[0], vault[1] + vaultSize / 2, -vaultH * 0.5], text: 'vault', size: 12, color: '#fffbeb', on: 'left', anchor: 'middle' });
     [slotA, slotB].forEach((at, i) => s.face({ id: `slot-${i}`, at: [at[0], at[1], 0], size: [keySize, keySize], radius: 9 * k, stroke: 'rgb(253 230 138 / .35)', dash: '4 4' }));
   });
   s.march('slot-0', 4, 4, 24);

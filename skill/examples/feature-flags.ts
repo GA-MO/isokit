@@ -31,11 +31,11 @@ function build({ name, width, height, origin, k, stacked }: Layout) {
 
   s.slab({ id: 'core', at: core.at, size: [core.size, core.size], height: core.height, radius: 17 * k, top: ui.top, side: paints.gradient(s, green), grain: 0.06, edge: ui.edge });
   s.face({ id: 'core-glow', at: core.at, size: [core.size, core.size], radius: 17 * k, fill: 'rgb(52 211 153 / .3)' });
-  s.text({ id: 'core-name', at: [core.at[0], core.at[1] + core.size / 2, -core.height * 0.5], text: 'flags', size: 11, color: '#ecfdf5', on: 'left', anchor: 'middle' });
+  s.text({ id: 'core-name', at: [core.at[0], core.at[1] + core.size / 2, -core.height * 0.6], text: 'flags', size: 11, color: '#ffffff', on: 'left', anchor: 'middle' });
 
   s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 22 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.05, edge: ui.edge });
   s.face({ id: 'plate-glow', at: plate.at, size: plate.size, radius: 22 * k, fill: 'rgb(52 211 153 / .12)' });
-  s.text({ id: 'plate-name', at: [plate.at[0], plate.at[1] + plate.size[1] / 2 - 11 * k, plate.at[2]], text: '20 users', size: 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+  s.text({ id: 'plate-name', at: [plate.at[0], plate.at[1] + plate.size[1] / 2 - 11 * k, plate.at[2]], text: '20 users', size: 10, color: '#4b4e57', on: 'top', anchor: 'middle' });
 
   const tiles = Array.from({ length: 20 }, (_, i) => {
     const col = i % 5;

@@ -47,7 +47,7 @@ function build({ name, width, height, origin, k, reach, pitch, wide }: Layout) {
     s.group(id, () => {
       s.slab({ id: `${id}-slab`, at, size: [tile, tile], height: tileH, radius: 13 * k, top: ui.top, side, grain: 0.06, edge: ui.edge });
       s.face({ id: `${id}-hit`, at, size: [tile, tile], radius: 13 * k, fill: 'rgb(45 212 191 / .22)' });
-      s.text({ id: `${id}-name`, at: [at[0] + tile / 2 - 12 * k, at[1], 0], text: label, size: wide ? 11 : 10, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
+      s.text({ id: `${id}-name`, at: [at[0] + tile / 2 - 12 * k, at[1], 0], text: label, size: wide ? 11 : 10, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
     });
   lanes.forEach((l, i) => {
     station(`src-${l.id}`, [-X, laneY(i), 0], l.id, paints.brushed(s, ramps.graphite));

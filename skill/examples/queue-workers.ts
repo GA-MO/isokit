@@ -1,5 +1,5 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
+import { art, fonts, n, page, ramps, surfaces, type Example, paints } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#34d399';
@@ -8,7 +8,7 @@ const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 
 const slots = 6;
-const workers = [-118, 0, 118] as const;
+const workerYs = [-118, 0, 118] as const;
 const work = 1.25;
 
 type Step = { kind: 'arrive'; t: number } | { kind: 'take'; t: number; worker: number };
@@ -33,70 +33,123 @@ const peak = steps.reduce((acc, st) => {
   return { d, max: Math.max(acc.max, d) };
 }, { d: 0, max: 0 }).max;
 
-function build(name: string, width: number, height: number, origin: readonly [number, number], k: number) {
-  const s = new Scene({ name, width, height, origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
+interface Geometry {
+  slotAt: (i: number) => Vec3;
+  slide: Vec3;
+  producer: Vec3;
+  feed: readonly Vec3[];
+  workers: readonly Vec3[];
+  routes: readonly (readonly Vec3[])[];
+  depth: Vec3;
+  tray: () => Scene;
+}
+
+function chain(s: Scene, k: number): Geometry {
   const pitch = 54 * k;
   const trayLen = pitch * slots + 14 * k;
-  const tray: Vec3 = [0, 0, 0];
   const slotAt = (i: number): Vec3 => [trayLen / 2 - 7 * k - pitch * (i + 0.5), 0, 0];
   const producer: Vec3 = [slotAt(slots - 1)[0], -130 * k, 0];
   const ws = 66 * k;
   const wx = trayLen / 2 + 130 * k;
   const busZ = -8 * k;
   const busX = trayLen / 2 + 50 * k;
+  return {
+    slotAt,
+    slide: [pitch, 0, 0],
+    producer,
+    feed: [[producer[0], producer[1] + 32 * k, busZ], [producer[0], -35 * k, busZ]],
+    workers: workerYs.map((y): Vec3 => [wx, y * k, 0]),
+    routes: workerYs.map((y): Vec3[] => (y === 0 ? [[trayLen / 2, 0, busZ], [wx - ws / 2, 0, busZ]] : [[trayLen / 2, 0, busZ], [busX, 0, busZ], [busX, y * k, busZ], [wx - ws / 2, y * k, busZ]])),
+    depth: [40 * k, 135 * k, 0],
+    tray: () => s.slab({ id: 'tray', at: [0, 0, 0], size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: '#18191e', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge }),
+  };
+}
+
+const tip = (size: number, radius: number) => size * Math.SQRT1_2 - radius * (Math.SQRT2 - 1);
+
+function strip(s: Scene, k: number): Geometry {
+  const [ox, oy] = s.project([0, 0, 0]);
+  const at = (x: number, y: number, z = 0): Vec3 => s.unproject([ox + x * k, oy + y * k], z);
+  const pitch = 68;
+  const half = (pitch * slots + 16) / 2;
+  const busZ = -8 * k;
+  const rows = [-92, 0, 92] as const;
+  const bus = half + 70;
+  const wx = bus + 60 + tip(66, 13);
+  const px = -half - 80 - tip(64, 12);
+  const route = (row: number): Vec3[] => (row === 0 ? [at(half, 0, busZ), at(wx - tip(66, 13), 0, busZ)] : [at(half, 0, busZ), at(bus, 0, busZ), at(bus, row, busZ), at(wx - tip(66, 13), row, busZ)]);
+  return {
+    slotAt: i => at(half - 8 - pitch * (i + 0.5), 0),
+    slide: at(pitch, 0),
+    producer: at(px, 0),
+    feed: [at(px + tip(64, 12), 0, busZ), at(-half, 0, busZ)],
+    workers: rows.map(row => at(wx, row)),
+    routes: rows.map(route),
+    depth: at(0, 70),
+    tray: () => {
+      const [ww, hh, r, ry, t] = [n(2 * half * k), n(40 * k), n(14 * k), n(14 * k * 0.58), n(14 * k)];
+      const x = n(ox - ww / 2);
+      const y = n(oy - hh / 2);
+      const side = s.def('tray-side', `<linearGradient id="$ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ramps.graphite[3]}"/><stop offset=".12" stop-color="${ramps.graphite[2]}"/><stop offset="1" stop-color="${ramps.graphite[0]}"/></linearGradient>`);
+      return s.svg('tray', `<rect x="${x}" y="${n(y + t + 6 * k)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="#000" opacity=".35" filter="${s.blur(8)}"/><rect x="${x}" y="${n(y + t)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="${side}"/><rect x="${x}" y="${n(oy)}" width="${ww}" height="${t}" fill="${side}"/><rect x="${x}" y="${y}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="#18191e" stroke="${ui.edge}" stroke-width="1"/>`);
+    },
+  };
+}
+
+function build(name: string, width: number, height: number, origin: readonly [number, number], k: number, layout: typeof chain) {
+  const s = new Scene({ name, width, height, origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
+  const g = layout(s, k);
+  const ws = 66 * k;
   const jobSize = 38 * k;
   const jobZ = 10 * k;
 
-  s.wire({ id: 'feed', points: [[producer[0], producer[1] + 32 * k, busZ], [producer[0], -35 * k, busZ]], stroke: ui.wire, width: 1.25 });
+  s.wire({ id: 'feed', points: g.feed, stroke: ui.wire, width: 1.25 });
   s.pulse({ id: 'p-feed', wire: 'feed', color: '#d4d4d8', length: 0.3 });
-  workers.forEach((y, i) => {
-    const points: Vec3[] = y === 0 ? [[trayLen / 2, 0, busZ], [wx - ws / 2, 0, busZ]] : [[trayLen / 2, 0, busZ], [busX, 0, busZ], [busX, y * k, busZ], [wx - ws / 2, y * k, busZ]];
+  g.routes.forEach((points, i) => {
     s.wire({ id: `w${i}`, points, stroke: ui.wire, width: 1.25 });
     s.pulse({ id: `p${i}`, wire: `w${i}`, color: accent, length: 0.2 });
     s.wire({ id: `back${i}`, points: [...points].reverse(), stroke: 'transparent' });
     s.pulse({ id: `ack${i}`, wire: `back${i}`, color: '#d4d4d8', length: 0.12, width: 1.5 });
   });
 
-  s.slab({ id: 'producer', at: producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.text({ id: 'producer-name', at: producer, text: 'api', size: 11, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'producer', at: g.producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+  s.text({ id: 'producer-name', at: g.producer, text: 'api', size: k > 1 ? 13 : 11, color: '#a1a1aa', on: 'top', anchor: 'middle' });
 
-  s.slab({ id: 'tray', at: tray, size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: '#18191e', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge });
-  for (let i = 0; i < slots; i++) s.face({ id: `slot-${i}`, at: slotAt(i), size: [jobSize + 6 * k, jobSize + 6 * k], radius: 8 * k, stroke: 'rgb(255 255 255 / .14)', dash: '3 3' });
+  g.tray();
+  for (let i = 0; i < slots; i++) s.face({ id: `slot-${i}`, at: g.slotAt(i), size: [jobSize + 6 * k, jobSize + 6 * k], radius: 8 * k, stroke: 'rgb(255 255 255 / .14)', dash: '3 3' });
 
   s.group('jobs', () => {
     for (let i = peak - 1; i >= 0; i--) {
-      const at = slotAt(i);
+      const at = g.slotAt(i);
       s.slab({ id: `job-${i}`, at: [at[0], at[1], jobZ], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: '#2a2b32', side: { kind: 'flat', color: '#52525b' }, grain: 0.05, edge: 'rgb(255 255 255 / .2)' });
     }
   });
 
-  workers.forEach((y, i) => {
-    const at: Vec3 = [wx, y * k, 0];
+  g.workers.forEach((at, i) => {
     s.group(`worker-${i}`, () => {
       s.slab({ id: `wk-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
       s.slab({ id: `wk-hot-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: '#17231f', side: paints.gradient(s, ramps.emerald), grain: 0.06, edge: 'rgb(52 211 153 / .45)' });
-      s.text({ id: `wk-name-${i}`, at: [at[0] + 20 * k, at[1] + 20 * k, 0], text: `w${i + 1}`, size: 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+      s.text({ id: `wk-name-${i}`, at: [at[0] + 20 * k, at[1] + 20 * k, 0], text: `w${i + 1}`, size: k > 1 ? 12 : 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
     });
     s.slab({ id: `held-${i}`, at: [at[0], at[1], jobZ + 2 * k], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: '#1d3a30', side: { kind: 'flat', color: '#047857' }, grain: 0.05, edge: 'rgb(52 211 153 / .6)' });
   });
 
-  const depthAt: Vec3 = [tray[0] + 40 * k, tray[1] + 135 * k, 0];
   for (let d = 0; d <= peak; d++) {
-    s.label({ id: `depth-${d}`, at: depthAt, html: `<span style="color:${ui.muted}">queued</span> <b style="font-weight:500;color:${d ? ui.ink : ui.muted}">${d}</b>`, size: 13, anchor: 'center' });
+    s.label({ id: `depth-${d}`, at: g.depth, html: `<span style="color:${ui.muted}">queued</span> <b style="font-weight:500;color:${d ? ui.ink : ui.muted}">${d}</b>`, size: 13, anchor: 'center' });
   }
 
   s.dropIn('producer', 0.1);
   s.dropIn('tray', 0.18);
-  workers.forEach((_, i) => s.dropIn(`worker-${i}`, 0.3 + i * 0.083));
+  g.workers.forEach((_, i) => s.dropIn(`worker-${i}`, 0.3 + i * 0.083));
   s.intro('depth-0', 'opacity', 0.7, 0.3, 0, 1, ease.out);
 
   const feedDur = Math.max(0.3, s.wireLength('feed') / 270);
-  const slide = s.offset([0, 0, 0], [pitch, 0, 0]);
+  const slide = s.offset([0, 0, 0], g.slide);
   const showDepth = (t: number, from: number, to: number) => {
     s.set(`depth-${from}`, 'opacity', t, 0);
     s.set(`depth-${to}`, 'opacity', t, 1);
   };
-  const busyUntil = workers.map(() => 0);
+  const busyUntil = g.workers.map(() => 0);
   let depth = 0;
   let end = 0;
   for (const step of steps) {
@@ -157,7 +210,7 @@ export const example: Example = {
   useCase: 'Queues',
   surface: 'dark',
   interaction: 'watch',
-  art: art(build('qworkers-sm', 390, 440, [146, 226], 0.7), build('qworkers-lg', 720, 420, [300, 190], 0.92), 520),
+  art: art(build('qworkers-sm', 390, 440, [146, 226], 0.7, chain), build('qworkers-lg', 1200, 400, [560, 190], 1.3, strip), 720),
 };
 
 export default page(example);

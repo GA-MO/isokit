@@ -71,7 +71,7 @@ function build(l: Layout) {
     s.label({
       id: `tag-${i}`,
       at: { screen: [lx, l.label[1]] },
-      html: `<span style="color:${ui.muted}">epoch</span> ${i + 1}/${losses.length} <span style="color:${ui.muted}">· loss</span> <b style="font-weight:500;color:${i === losses.length - 1 ? accent : ui.ink}">${losses[i]!.toFixed(2)}</b>`,
+      html: `<span style="color:${ui.muted}">epoch</span> ${i + 1}/${losses.length} <span style="color:${ui.muted}">· loss</span> <b style="font-weight:500;color:${i === losses.length - 1 ? '#0f766e' : ui.ink}">${losses[i]!.toFixed(2)}</b>`,
       size: 13,
       anchor: 'right',
     });
