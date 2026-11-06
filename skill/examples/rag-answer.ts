@@ -3,8 +3,10 @@ import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Exampl
 
 const ui = surfaces.light;
 const accent = '#7c3aed';
+const deep = ramps.violet[1];
 const tint = 'rgb(139 92 246 / .2)';
-const line = 'rgb(22 23 27 / .16)';
+const line = 'rgb(22 23 27 / .22)';
+const wire = 'rgb(22 23 27 / .28)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';
@@ -13,7 +15,7 @@ const grid: readonly Vec2[] = [-44, 0, 44].flatMap(x => [-30, 30].map((y): Vec2 
 const matches: readonly number[] = [1, 4, 2];
 const cited = [1, 3] as const;
 
-const cite = (n: number) => `<span style="color:${accent};font-weight:500">[${n}]</span>`;
+const cite = (n: number) => `<span style="display:inline-block;margin-left:.15em;padding:.05em .5em;border-radius:.45em;font-size:.8em;line-height:1.45;vertical-align:.08em;background:#ede9fe;color:${deep};font-weight:600;font-variant-numeric:tabular-nums">${n}</span>`;
 
 interface Layout {
   name: string;
@@ -26,6 +28,7 @@ interface Layout {
   question: { anchor: 'left' | 'right' | 'top' | 'bottom'; dx: number; dy: number };
   answer: { anchor: 'left' | 'right' | 'top' | 'bottom'; dx: number; dy: number };
   textSize: number;
+  rankSize: number;
   legs: { q: Vec2; a: Vec2; qLen: number; aLen: number };
 }
 
@@ -47,10 +50,10 @@ function build(l: Layout) {
   const off = (from: Vec3, d: Vec2, by: number): Vec3 => [from[0] + d[0] * by, from[1] + d[1] * by, wz];
   const qEnd = off(R, l.legs.q, rSize / 2 + l.legs.qLen * k);
   const aEnd = off(M, l.legs.a, mSize / 2 + l.legs.aLen * k);
-  s.wire({ id: 'w-q', points: [qEnd, off(R, l.legs.q, rSize / 2)], stroke: ui.wire, width: 1.25 });
-  s.wire({ id: 'w-r', points: [along(-gap + rSize / 2 / k, wz), along(-sSize / 2 / k, wz)], stroke: ui.wire, width: 1.25 });
-  s.wire({ id: 'w-s', points: [along(sSize / 2 / k, wz), along(gap - mSize / 2 / k, wz)], stroke: ui.wire, width: 1.25 });
-  s.wire({ id: 'w-a', points: [off(M, l.legs.a, mSize / 2), aEnd], stroke: ui.wire, width: 1.25 });
+  s.wire({ id: 'w-q', points: [qEnd, off(R, l.legs.q, rSize / 2)], stroke: wire, width: 1.25 });
+  s.wire({ id: 'w-r', points: [along(-gap + rSize / 2 / k, wz), along(-sSize / 2 / k, wz)], stroke: wire, width: 1.25 });
+  s.wire({ id: 'w-s', points: [along(sSize / 2 / k, wz), along(gap - mSize / 2 / k, wz)], stroke: wire, width: 1.25 });
+  s.wire({ id: 'w-a', points: [off(M, l.legs.a, mSize / 2), aEnd], stroke: wire, width: 1.25 });
   for (const w of ['q', 'r', 'a']) s.pulse({ id: `p-${w}`, wire: `w-${w}`, color: accent, length: 0.3 });
 
   const tiles = [
@@ -58,18 +61,18 @@ function build(l: Layout) {
       at: R,
       draw: () =>
         s.group('retriever', () => {
-          s.slab({ id: 'retriever-slab', at: R, size: [rSize, rSize], height: 22 * k, radius: 15 * k, top: ui.top, side: paints.random(s, ramps.silver, 5), grain: 0.05, edge: ui.edge, outline: line });
+          s.slab({ id: 'retriever-slab', at: R, size: [rSize, rSize], height: 22 * k, radius: 15 * k, top: ui.top, side: paints.dots(s, ramps.graphite), grain: 0.05, edge: ui.edge, outline: line });
           s.face({ id: 'retriever-glow', at: R, size: [rSize, rSize], radius: 15 * k, fill: tint });
-          s.text({ id: 'retriever-name', at: R, text: 'retriever', size: l.textSize, color: ui.muted, on: 'top', anchor: 'middle' });
+          s.text({ id: 'retriever-name', at: R, text: 'retriever', size: l.textSize, weight: 500, color: ui.ink, on: 'top', anchor: 'middle' });
         }),
     },
     {
       at: S,
       draw: () =>
         s.group('store', () => {
-          s.slab({ id: 'store-slab', at: S, size: [sSize, sSize], height: sTop, radius: 24 * k, top: '#fafafa', side: paints.brushed(s, ramps.silver), grain: 0.05, edge: ui.edge, outline: line });
+          s.slab({ id: 'store-slab', at: S, size: [sSize, sSize], height: sTop, radius: 24 * k, top: '#f4f4f5', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge, outline: line });
           s.face({ id: 'store-glow', at: S, size: [sSize, sSize], radius: 24 * k, fill: tint });
-          s.text({ id: 'store-name', at: [S[0] + sSize / 2, S[1] + sSize / 2 - 30 * k, sTop * 0.45], text: 'docs', size: l.textSize, color: ui.muted, on: 'left', anchor: 'middle' });
+          s.text({ id: 'store-name', at: [S[0] + sSize * 0.18, S[1] + sSize / 2, -sTop / 2], text: 'docs', size: l.textSize, weight: 500, color: '#f4f4f5', on: 'left', anchor: 'middle' });
         }),
     },
     {
@@ -78,7 +81,7 @@ function build(l: Layout) {
         s.group('model', () => {
           s.slab({ id: 'model-slab', at: M, size: [mSize, mSize], height: mTop, radius: 20 * k, top: ui.top, side: paints.gradient(s, ramps.violet), grain: 0.06, edge: ui.edge, outline: 'rgb(91 33 182 / .3)' });
           s.face({ id: 'model-glow', at: M, size: [mSize, mSize], radius: 20 * k, fill: 'rgb(139 92 246 / .28)' });
-          s.text({ id: 'model-name', at: M, text: 'model', size: l.textSize, color: '#6d28d9', on: 'top', anchor: 'middle' });
+          s.text({ id: 'model-name', at: M, text: 'model', size: l.textSize, weight: 500, color: deep, on: 'top', anchor: 'middle' });
         }),
     },
   ].sort((a, b) => a.at[0] + a.at[1] - (b.at[0] + b.at[1]));
@@ -91,11 +94,11 @@ function build(l: Layout) {
     const at = docAt(i);
     const rank = matches.indexOf(i);
     s.group(`doc-${i}`, () => {
-      s.slab({ id: `doc-${i}-slab`, at, size: docSize, height: 5 * k, radius: 6 * k, top: ui.top, side: paints.flat('#ececef'), edge: ui.edge, outline: 'rgb(22 23 27 / .22)', shade: false });
-      [-12, -4, 4].forEach((dx, j) => s.face({ id: `doc-${i}-line-${j}`, at: [at[0] + dx * k, at[1] - (j === 2 ? 4 : 0) * k, at[2] + 5 * k], size: [3 * k, (j === 2 ? 20 : 28) * k], radius: 1.5 * k, fill: 'rgb(22 23 27 / .12)' }));
+      s.slab({ id: `doc-${i}-slab`, at, size: docSize, height: 5 * k, radius: 6 * k, top: ui.top, side: paints.flat('#d4d4d8'), edge: ui.edge, outline: 'rgb(22 23 27 / .3)', shade: false });
+      [-12, -4, 4].forEach((dx, j) => s.face({ id: `doc-${i}-line-${j}`, at: [at[0] + dx * k, at[1] - (j === 2 ? 4 : 0) * k, at[2] + 5 * k], size: [3 * k, (j === 2 ? 20 : 28) * k], radius: 1.5 * k, fill: 'rgb(22 23 27 / .2)' }));
       if (rank >= 0) {
         s.face({ id: `doc-${i}-hot`, at: [at[0], at[1], at[2] + 5 * k], size: docSize, radius: 6 * k, fill: 'rgb(139 92 246 / .16)', stroke: accent });
-        s.text({ id: `doc-${i}-rank`, at: [at[0] + 10 * k, at[1], at[2] + 5 * k], text: `${rank + 1}`, size: 11, weight: 600, font: 'sans', color: accent, on: 'top', anchor: 'middle' });
+        s.text({ id: `doc-${i}-rank`, at: [at[0], at[1], at[2] + 5 * k], text: `${rank + 1}`, size: l.rankSize, weight: 600, font: 'sans', color: '#ffffff', anchor: 'middle', pill: { fill: '#6d28d9', padX: l.rankSize * 0.55, padY: l.rankSize * 0.3, radius: l.rankSize * 0.8 } });
       }
     });
     s.pivot(`doc-${i}`, at);
@@ -194,11 +197,11 @@ export const example: Example = {
   art: art(
     build({
       name: 'rag-sm', width: 390, height: 540, origin: [214, 268], k: 0.76, dir: [1, 0], minPx: narrowest,
-      question: { anchor: 'bottom', dx: 0, dy: -2 }, answer: { anchor: 'top', dx: 0, dy: 2 }, textSize: 10, legs: { q: [0, -1], a: [0, 1], qLen: 60, aLen: 96 },
+      question: { anchor: 'bottom', dx: 0, dy: -2 }, answer: { anchor: 'top', dx: 0, dy: 2 }, textSize: 10, rankSize: 11, legs: { q: [0, -1], a: [0, 1], qLen: 60, aLen: 96 },
     }),
     build({
       name: 'rag-lg', width: 1100, height: 520, origin: [556, 268], k: 1.12, dir: [0, -1], minPx: 721,
-      question: { anchor: 'right', dx: -12, dy: 0 }, answer: { anchor: 'left', dx: 12, dy: 0 }, textSize: 12, legs: { q: [0, 1], a: [0, -1], qLen: 62, aLen: 62 },
+      question: { anchor: 'right', dx: -12, dy: 0 }, answer: { anchor: 'left', dx: 12, dy: 0 }, textSize: 13, rankSize: 12, legs: { q: [0, 1], a: [0, -1], qLen: 62, aLen: 62 },
     }),
     720,
   ),
