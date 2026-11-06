@@ -1,0 +1,28 @@
+---
+import { html } from '../../../skill/examples/material-gallery';
+import { finishes } from '../../../skill/examples/materials';
+---
+
+<section id="materials" class="surface-dark border-t border-line py-24 sm:py-32">
+  <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Sides that look made, not filled.</h2>
+      <p class="mt-4 text-lg text-pretty text-muted">
+        Every slab takes a finish on its sides. The kit bends each one around the rounded corner, so a stripe turns as one line.
+      </p>
+    </div>
+    <div class="mt-12 rounded-3xl border border-line bg-panel p-2 sm:mt-16 sm:p-6" set:html={html} />
+    {
+      finishes.length > 0 && (
+        <dl class="mt-12 grid grid-cols-2 gap-x-5 gap-y-6 sm:gap-x-8 sm:gap-y-7 lg:grid-cols-4">
+          {finishes.map(f => (
+            <div class="border-t border-line pt-4">
+              <dt class="text-sm font-semibold text-ink">{f.name}</dt>
+              <dd class="mt-1 text-sm leading-relaxed text-pretty text-muted">{f.note}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </div>
+</section>

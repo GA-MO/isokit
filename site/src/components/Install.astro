@@ -1,0 +1,29 @@
+---
+import CodeBlock from './CodeBlock.astro';
+
+const steps = `git clone https://github.com/GA-MO/isokit.git
+mkdir -p ~/.claude/skills
+ln -s "$PWD/isokit/skill" ~/.claude/skills/iso
+cd isokit/skill/scripts && bun install`;
+---
+
+<section id="install" class="surface-dark py-24 sm:py-32">
+  <div class="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-5 lg:gap-16">
+    <div class="lg:col-span-2">
+      <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Install the skill.</h2>
+      <p class="mt-4 max-w-md text-lg leading-relaxed text-pretty text-muted">
+        Clone the repo, link the skill folder into Claude Code and install the script dependencies. You need Bun.
+      </p>
+      <p class="mt-3 max-w-md text-sm leading-relaxed text-pretty text-muted">
+        Already have a skill at <code class="font-mono text-ink">~/.claude/skills/iso</code>? Move it away first, or the link lands inside it.
+      </p>
+    </div>
+    <div class="flex min-w-0 flex-col gap-6 lg:col-span-3">
+      <CodeBlock code={steps} title="Terminal" copy />
+      <div class="rounded-2xl border border-line px-5 py-4">
+        <p class="text-sm text-muted">Then ask Claude Code</p>
+        <p class="mt-1.5 font-mono text-sm leading-relaxed break-words text-ink">Draw an isometric flow of an order moving from cart to payment to the warehouse.</p>
+      </div>
+    </div>
+  </div>
+</section>

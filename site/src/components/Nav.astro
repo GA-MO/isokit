@@ -1,0 +1,30 @@
+---
+import { repo } from '../content';
+import Mark from './Mark.astro';
+
+const links = [
+  { href: '#showcase', label: 'Showcase', always: true },
+  { href: '#materials', label: 'Materials', always: false },
+  { href: '#how', label: 'How it works', always: false },
+  { href: '#install', label: 'Install', always: true },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-line bg-page/85 backdrop-blur-md">
+  <nav class="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8" aria-label="Main">
+    <a href="#top" class="flex items-center gap-2 text-base font-semibold tracking-tight text-ink">
+      <Mark class="size-5" />
+      isokit
+    </a>
+    <div class="flex items-center gap-5 text-sm text-muted sm:gap-7">
+      {
+        links.map(l => (
+          <a href={l.href} class:list={['transition-colors duration-150 hover:text-ink', !l.always && 'hidden sm:inline']}>
+            {l.label}
+          </a>
+        ))
+      }
+      <a href={repo} class="rounded-full border border-line-strong px-3 py-1 text-ink transition-colors duration-150 hover:border-ink">GitHub</a>
+    </div>
+  </nav>
+</header>

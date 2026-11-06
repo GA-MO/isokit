@@ -1,0 +1,38 @@
+---
+import { html } from '../../../skill/examples/hero';
+import { repo } from '../content';
+
+const facts = ['SVG + WAAPI', 'no animation library', 'pauses off screen', 'still for reduced motion'];
+---
+
+<section id="top" class="surface-dark overflow-hidden pt-16 sm:pt-24 lg:pt-28">
+  <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
+    <div class="max-w-4xl">
+      <h1 class="text-5xl font-semibold tracking-tighter text-balance sm:text-6xl lg:text-display">
+        Isometric explainers, drawn from a prompt.
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-pretty text-muted sm:text-xl">
+        Tell Claude Code the story of your product. The iso skill draws it as an animated isometric scene in plain SVG, ready for your landing page.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-3">
+        <a href="#install" class="inline-flex h-11 items-center rounded-full bg-ink px-6 text-sm font-semibold text-page transition-colors duration-150 hover:bg-white">
+          Get started
+        </a>
+        <a href={repo} class="inline-flex h-11 items-center rounded-full border border-line-strong px-6 text-sm font-semibold text-ink transition-colors duration-150 hover:border-ink">
+          GitHub
+        </a>
+      </div>
+      <ul class="mt-8 flex flex-col gap-1 font-mono text-xs text-muted sm:flex-row sm:flex-wrap sm:gap-x-3" aria-label="Facts">
+        {
+          facts.map((f, i) => (
+            <li class="flex items-center gap-3">
+              {i > 0 && <span class="hidden sm:inline" aria-hidden="true">·</span>}
+              {f}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="-mx-5 mt-12 sm:mx-auto sm:mt-16 sm:max-w-7xl" set:html={html} />
+  </div>
+</section>

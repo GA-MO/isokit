@@ -1,0 +1,9 @@
+node_modules
+dist
+.astro
+bun.lock
+.DS_Store
+*.log
+.twin-scratch
+skill/reference/
+!skill/scripts/bun.lock

@@ -1,0 +1,11 @@
+---
+import { markSvg } from '../content';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg viewBox="0 0 24 24" class={className} aria-hidden="true" set:html={markSvg} />

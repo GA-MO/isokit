@@ -1,0 +1,90 @@
+@import 'tailwindcss/index.css';
+
+@theme {
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Fira Code Variable', 'Fira Code', ui-monospace, monospace;
+
+  --color-page: #0f1013;
+  --color-panel: #141519;
+  --color-raised: #1b1c22;
+  --color-ink: #ececef;
+  --color-muted: #8b8d98;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+  --color-paper: #f5f5f2;
+  --color-paper-card: #f7f7f4;
+  --color-paper-ink: #16171b;
+  --color-paper-muted: #6b6e78;
+  --color-paper-line: rgb(22 23 27 / 0.1);
+  --color-accent: #a78bfa;
+  --color-accent-soft: rgb(167 139 250 / 0.14);
+
+  --text-display: 4.75rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.045em;
+
+  --ease-settle: cubic-bezier(0.39, 0.08, 0.04, 0.91);
+}
+
+@theme inline {
+  --color-surface: var(--surface-bg);
+  --color-surface-ink: var(--surface-ink);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-line: var(--surface-line);
+  --color-surface-well: var(--surface-well);
+}
+
+@layer base {
+  html {
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  pre {
+    font-variant-ligatures: none;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+  }
+
+  a,
+  button,
+  summary {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .surface-dark {
+    --surface-bg: var(--color-panel);
+    --surface-ink: var(--color-ink);
+    --surface-muted: var(--color-muted);
+    --surface-line: var(--color-line);
+    --surface-well: var(--color-raised);
+  }
+
+  .surface-light {
+    --surface-bg: var(--color-paper-card);
+    --surface-ink: var(--color-paper-ink);
+    --surface-muted: var(--color-paper-muted);
+    --surface-line: var(--color-paper-line);
+    --surface-well: #ffffff;
+  }
+}

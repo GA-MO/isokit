@@ -1,0 +1,19 @@
+---
+import type { Level } from '../../../skill/examples/shared';
+import { levels } from '../content';
+
+interface Props {
+  level: Level;
+}
+
+const { name, rank } = levels[Astro.props.level];
+---
+
+<span class="inline-flex items-center gap-2 text-xs font-medium text-surface-ink">
+  <span class="flex items-end gap-0.5" aria-hidden="true">
+    {[1, 2, 3].map(n => (
+      <span class:list={['w-1 rounded-full', n === 1 ? 'h-1.5' : n === 2 ? 'h-2' : 'h-2.5', n <= rank ? 'bg-accent' : 'bg-surface-line']} />
+    ))}
+  </span>
+  {name}
+</span>

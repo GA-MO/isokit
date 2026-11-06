@@ -1,0 +1,12 @@
+---
+import { repo } from '../content';
+import Mark from './Mark.astro';
+---
+
+<footer class="border-t border-line">
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-5 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+    <span class="flex items-center gap-2 font-semibold text-ink"><Mark class="size-4" />isokit</span>
+    <p>MIT license. © 2026 Thawatchai Khuansombat.</p>
+    <a href={repo} class="text-ink underline decoration-line-strong underline-offset-4 transition-colors duration-150 hover:decoration-ink">GitHub</a>
+  </div>
+</footer>

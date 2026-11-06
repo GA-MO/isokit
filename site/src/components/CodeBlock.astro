@@ -1,0 +1,28 @@
+---
+import { Code } from 'astro:components';
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  code: string;
+  title: string;
+  copy?: boolean;
+  highlight?: { lang: 'ts'; theme: 'min-light' | 'min-dark' };
+}
+
+const { code, title, copy = false, highlight } = Astro.props;
+const body = 'px-5 py-4 font-mono text-sm leading-relaxed';
+---
+
+<figure class="overflow-hidden rounded-2xl border border-surface-line bg-surface-well text-surface-ink">
+  <figcaption class="flex h-11 items-center justify-between gap-4 border-b border-surface-line pl-5 pr-2.5 text-xs text-surface-muted">
+    <span class="font-mono">{title}</span>
+    {copy && <CopyButton text={code} label={`Copy ${title}`} />}
+  </figcaption>
+  {
+    highlight ? (
+      <Code code={code} lang={highlight.lang} theme={highlight.theme} class:list={[body, 'overflow-x-auto bg-transparent!']} />
+    ) : (
+      <pre class:list={[body, 'whitespace-pre-wrap wrap-anywhere']}><code>{code}</code></pre>
+    )
+  }
+</figure>

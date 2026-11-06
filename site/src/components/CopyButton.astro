@@ -1,0 +1,47 @@
+---
+interface Props {
+  text: string;
+  label: string;
+}
+
+const { text, label } = Astro.props;
+---
+
+<button
+  type="button"
+  data-copy={text}
+  aria-label={label}
+  class="inline-flex h-7 shrink-0 items-center rounded-md border border-surface-line px-2.5 text-xs font-medium text-surface-muted transition-colors duration-150 hover:border-surface-muted hover:text-surface-ink data-[state=done]:border-accent data-[state=done]:text-accent"
+>
+  <span data-copy-label aria-live="polite">Copy</span>
+</button>
+
+<script>
+  const timers = new WeakMap<HTMLButtonElement, number>();
+
+  function show(button: HTMLButtonElement, text: string, state: 'done' | 'failed') {
+    const label = button.querySelector('[data-copy-label]');
+    if (!label) return;
+    label.textContent = text;
+    button.dataset.state = state;
+    clearTimeout(timers.get(button));
+    timers.set(
+      button,
+      window.setTimeout(() => {
+        label.textContent = 'Copy';
+        delete button.dataset.state;
+      }, 1600),
+    );
+  }
+
+  document.addEventListener('click', async event => {
+    const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button[data-copy]') : null;
+    if (!button) return;
+    try {
+      await navigator.clipboard.writeText(button.dataset.copy ?? '');
+      show(button, 'Copied', 'done');
+    } catch {
+      show(button, 'Select to copy', 'failed');
+    }
+  });
+</script>

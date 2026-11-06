@@ -1,0 +1,263 @@
+import { expect, test } from 'bun:test';
+import { Scene } from './iso';
+
+const scene = () => new Scene({ name: 'demo', width: 400, height: 300 });
+
+test('segments that meet through float error compile to ordered offsets inside [0, 1]', () => {
+  const s = scene().slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+  s.loop(0.3, 0).at('core', 'opacity', 0.1, 0.2, 0, 1).intro('core', 'scale', 0, 0.1, 0.5, 1);
+  const s2 = scene().slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+  s2.loop(5, 0).at('core', 'opacity', 4.65, 0.12, 0, 1).at('core', 'opacity', 4.77, 0.1, 1, 0);
+  for (const spec of [s.motion(), s2.motion()]) {
+    for (const t of spec.tracks) {
+      const offsets = t.keyframes.map(k => Number(k.offset));
+      expect(offsets.every((o, i) => o >= 0 && o <= 1 && (i === 0 || o >= offsets[i - 1]!))).toBe(true);
+    }
+  }
+});
+
+test('overlapping segments on one property are rejected with the id and time', () => {
+  const s = scene().slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+  s.loop(4, 0).at('core', 'opacity', 1, 1, 0, 1).at('core', 'opacity', 1.5, 1, 1, 0);
+  expect(() => s.motion()).toThrow(/core\.opacity segments overlap at 1\.5s/);
+});
+
+test('a value holds across a gap instead of drifting to the next segment', () => {
+  const s = scene().slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+  s.loop(10, 0).at('core', 'opacity', 1, 1, 0, 1).at('core', 'opacity', 6, 1, 0.5, 0);
+  const kf = s.motion().tracks[0]!.keyframes;
+  const at6 = kf.filter(k => Number(k.offset) === 0.6).map(k => k.opacity);
+  expect(at6).toEqual([1, 0.5]);
+});
+
+test('ids the kit makes for itself never collide with author ids', () => {
+  const html = scene()
+    .slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .label({ id: 'core-left', at: [0, 0, 40], text: 'hi' })
+    .render();
+  const ids = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+  expect(new Set(ids).size).toBe(ids.length);
+});
+
+test('quotes in fonts and text cannot break the markup', () => {
+  const html = new Scene({ name: 'q', width: 200, height: 200, font: '"Noto Sans Thai", sans-serif' })
+    .label({ id: 'l', at: { screen: [10, 10] }, text: '<b>"x"</b>', className: 'a" onclick="x' })
+    .render();
+  expect(html).not.toContain('onclick="x');
+  expect(html).not.toContain('<b>');
+  expect(html).toContain('&quot;Noto Sans Thai&quot;');
+});
+
+test('a wire with a repeated point is rejected', () => {
+  expect(() => scene().wire({ id: 'w', points: [[0, 0, 0], [10, 0, 0], [10, 0, 0], [10, 10, 0]], stroke: '#000000' })).toThrow(/repeats point/);
+});
+
+test('non-finite times are rejected', () => {
+  const s = scene().slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+  expect(() => s.at('core', 'opacity', Number.NaN, 1, 0, 1)).toThrow(/finite/);
+  expect(() => s.loop(4, Number.NaN)).toThrow(/still/);
+});
+
+test('slab sides bend around the corner with unique ids for every paint and corner mode', () => {
+  const paint = (_: 'left' | 'right', a: { x: number; y: number; width: number; height: number }, t: string) => `<rect x="${a.x}" y="${a.y}" width="${a.width}" height="${a.height}" fill="#123456" transform="${t}"/>`;
+  const html = new Scene({ name: 'c', width: 400, height: 300 })
+    .slab({ id: 'bend', at: [-80, 0, 0], size: [80, 80], height: 20, radius: 14, top: '#ffffff', side: { kind: 'custom', paint } })
+    .slab({ id: 'fade', at: [80, 0, 0], size: [80, 80], height: 20, radius: 14, top: '#ffffff', side: { kind: 'custom', paint, corner: 'fade', opacity: 0.6 }, translucent: true })
+    .slab({ id: 'mb', at: [0, 80, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'marble', colors: ['#000000', '#777777', '#ffffff'] } })
+    .render();
+  const ids = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(html).toContain('id="c_bend_k12"');
+  expect(html).toContain('mask="url(#c_fade_hole)"');
+  expect(html).toContain('opacity="0.6"');
+  expect(html).not.toContain('NaN');
+});
+
+test('square, oversized-radius and thin slabs still shade the left side and stay finite', () => {
+  const html = new Scene({ name: 'e', width: 400, height: 300 })
+    .slab({ id: 'sq', at: [-80, 0, 0], size: [80, 80], height: 20, radius: 0, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .slab({ id: 'big', at: [80, 0, 0], size: [60, 40], height: 20, radius: 90, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .slab({ id: 'thin', at: [0, 80, 0], size: [60, 60], height: 3, radius: 12, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .render();
+  expect(html).not.toContain('NaN');
+  expect(html).toContain('id="e_sq_shade"');
+  expect(html).not.toContain('id="e_thin_k1"');
+});
+
+const tile = (hover?: { label: string }) =>
+  scene().slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, ...(hover ? { hover: { lift: 12, ...hover } } : {}) });
+
+test('a hover slab lifts by its own amount and reveals its label only on hover or tap', () => {
+  const s = scene().label({ id: 'name', at: [0, 0, 60], text: 'docs' });
+  s.slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, hover: { lift: 12, side: { kind: 'flat', color: '#2563eb' }, label: 'name' } });
+  const html = s.render();
+  expect(html).toContain('class="iso-hover" style="--lift:12"');
+  expect(html).toContain('class="iso-hot"');
+  expect(html).toContain('#demo_name{opacity:0');
+  expect(html).toContain('.iso:has(#demo_tile.is-hot) #demo_name{opacity:1');
+});
+
+test('a hover slab without a new look only lifts, and a plain slab stays plain', () => {
+  const lift = scene().slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, hover: {} });
+  expect(lift.render()).toContain('--lift:16');
+  expect(lift.render()).not.toContain('iso-hot');
+  expect(tile().render()).not.toContain('iso-hover');
+});
+
+test('a hover label must exist before the slab that reveals it', () => {
+  expect(() => tile({ label: 'missing' })).toThrow(/reveals label "missing"/);
+});
+
+test('offset gives the screen move between two plane points', () => {
+  expect(scene().offset([0, 0, 0], [100, 0, 20])).toBe('70.71px 20.82px');
+});
+
+test('dropAt drops inside the loop and needs an exit so the element is hidden before it falls', () => {
+  const s = tile();
+  s.loop(4, 0).dropAt('tile', 1).at('tile', 'opacity', 3, 0.2, 1, 0);
+  const op = s.motion().tracks.find(t => t.prop === 'opacity')!;
+  expect(op.repeat).toBe(true);
+  expect(op.keyframes[0]!.opacity).toBe(0);
+});
+
+test('a hover slab may not fade in the loop, and its label may not be animated', () => {
+  const fades = scene().slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, hover: {} });
+  fades.loop(4, 0).dropAt('tile', 1);
+  expect(() => fades.motion()).toThrow(/hover slab "tile" fades inside the loop/);
+  const s = scene().label({ id: 'name', at: [0, 0, 60], text: 'docs' });
+  s.slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, hover: { label: 'name' } });
+  s.intro('name', 'opacity', 0, 0.3, 0, 1).intro('tile', 'opacity', 0, 0.1, 0, 1);
+  expect(() => s.motion()).toThrow(/label "name" is revealed by hover/);
+});
+
+test('frame draws a dashed box with top, bottom and four upright edges, or three without the back', () => {
+  const s = scene().frame({ id: 'cage', at: [0, 0, 80], size: [100, 100], height: 80, stroke: '#888888' });
+  const html = s.render();
+  expect((html.match(/<path [^>]*stroke-dasharray="3 3"/g) ?? []).length).toBe(4);
+  expect((html.match(/<rect [^>]*stroke-dasharray="3 3"/g) ?? []).length).toBe(2);
+  const noBack = scene().frame({ id: 'cage', at: [0, 0, 80], size: [100, 100], height: 80, stroke: '#888888', back: false }).render();
+  expect((noBack.match(/<path [^>]*stroke-dasharray/g) ?? []).length).toBe(3);
+});
+
+test('tug pulls, holds and eases back to rest inside the loop', () => {
+  const s = tile();
+  s.loop(3, 0).tug('tile', 0.5, '-6px 0');
+  const kf = s.motion().tracks.find(t => t.prop === 'translate')!.keyframes;
+  expect(kf[0]!.translate).toBe('0 0');
+  expect(kf.some(k => k.translate === '-6px 0')).toBe(true);
+  expect(kf[kf.length - 1]!.translate).toBe('0 0');
+});
+
+test('hover guides appear only with the guides option', () => {
+  const g = scene().slab({ id: 'tile', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, hover: { guides: '#ffffff' } }).render();
+  expect((g.match(/class="iso-guides"[^>]*>(<path [^>]*\/>){3}<\/g>/g) ?? []).length).toBe(1);
+  expect(tile().render()).not.toContain('iso-guides');
+});
+
+test('unproject inverts project at any height and ratio', () => {
+  for (const ratio of [Math.tan(Math.PI / 6), 0.55]) {
+    const s = new Scene({ name: 'u', width: 640, height: 320, ratio });
+    const p: readonly [number, number, number] = [37, -12, 25];
+    const back = s.unproject(s.project(p), 25);
+    back.forEach((v, i) => expect(v).toBeCloseTo(p[i]!, 6));
+  }
+});
+
+test('a group wraps everything drawn inside it and refuses HTML labels', () => {
+  const s = scene();
+  s.group('stack', () => {
+    s.slab({ id: 'a', at: [0, 0, 10], size: [60, 60], height: 10, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } });
+    s.text({ id: 't', at: [0, 0, 40], text: 'hi' });
+  });
+  expect(s.render()).toMatch(/<g id="demo_stack"><g id="demo_a">.*<g id="demo_t">/s);
+  expect(() => scene().group('g', () => {}).label({ id: 'l', at: [0, 0, 0], text: 'x' })).not.toThrow();
+  const bad = scene();
+  expect(() => bad.group('g', () => { bad.label({ id: 'l', at: [0, 0, 0], text: 'x' }); })).toThrow(/use text\(\) instead/);
+});
+
+test('pivot sets a view-box transform origin at the projected point and rejects unknown ids', () => {
+  const s = tile();
+  s.pivot('tile', [0, 0, 0]);
+  expect(s.render()).toContain('#demo_tile{transform-box:view-box;transform-origin:200px 150px}');
+  expect(() => tile().pivot('nope', [0, 0, 0]).render()).toThrow(/pivot\(\) names unknown id "nope"/);
+});
+
+test('a flat side is one rect instead of corner strips', () => {
+  const html = tile().render();
+  expect(html).not.toContain('_k0');
+});
+
+test('prism heightTo reveals the column and moves the cap within its reach', () => {
+  const s = scene().prism({ id: 'bar', at: [0, 0, 0], size: [60, 60], height: 10, reach: 80, top: '#ffffff', side: '#3355ff' });
+  s.loop(2, 0).heightTo('bar', 0.2, 0.6, 10, 80).heightTo('bar', 1.2, 0.5, 80, 10);
+  const tracks = s.motion().tracks;
+  expect(tracks.find(t => t.target === 'demo_bar-col')!.keyframes.some(k => k.clipPath === 'inset(0px -4px -4px -4px)')).toBe(true);
+  expect(tracks.find(t => t.target === 'demo_bar-cap')!.keyframes.some(k => k.translate === '0 -70px')).toBe(true);
+  expect(() => scene().prism({ id: 'b', at: [0, 0, 0], size: [60, 60], height: 10, reach: 40, top: '#fff', side: '#000' }).heightTo('b', 0, 1, 10, 90)).toThrow(/between 0 and its reach 40/);
+});
+
+test('turntable spins every layer in its own plane', () => {
+  const s = scene().turntable({ id: 'core', at: [0, 0, 30], size: [80, 80], height: 30, top: '#111111', side: ['#222222', '#7c3aed'], layers: 6 });
+  s.spin('core', 0, 1, 180, 0, undefined, 'intro');
+  const rot = s.motion().tracks.filter(t => t.prop === 'rotate');
+  expect(rot.length).toBe(7);
+  expect(rot[0]!.keyframes[0]!.rotate).toBe('180deg');
+  expect(() => scene().spin('nope', 0, 1, 0, 90)).toThrow(/not a turntable/);
+});
+
+test('a hidden wire draws in and retracts, set() jumps instantly, introUntil pads the intro', () => {
+  const s = scene().slab({ id: 'a', at: [0, 0, 10], size: [40, 40], height: 10, top: '#fff', side: { kind: 'flat', color: '#ccc' } });
+  s.wire({ id: 'w', points: [[0, 0, 0], [80, 0, 0]], stroke: '#888888', hidden: true });
+  expect(s.render()).toContain('stroke-dasharray="1 2"');
+  s.loop(3, 0).draw('w', 0.2, 0.4).retract('w', 2, 0.3).set('a', 'opacity', 1.5, 0.5).introUntil(1.25);
+  const spec = s.motion();
+  expect(spec.intro).toBe(1.25);
+  expect(spec.tracks.find(t => t.prop === 'strokeDashoffset')!.keyframes.map(k => k.strokeDashoffset)).toContain(0);
+  expect(() => scene().draw('nope', 0, 1)).toThrow(/wire\(\{ hidden: true \}\)/);
+});
+
+test('hover timing options reach the element as CSS variables and a hold', () => {
+  const html = scene().slab({ id: 't', at: [0, 0, 10], size: [40, 40], height: 10, top: '#fff', side: { kind: 'flat', color: '#ccc' }, hover: { on: 420, off: 270, onEase: 'linear(0, 1.3 30%, 1)' } }).render();
+  expect(html).toContain('--iso-on:420ms;--iso-off:270ms;--iso-on-ease:linear(0, 1.3 30%, 1)');
+  expect(html).toContain('data-hold="420"');
+});
+
+test('prism follows a slanted top on non-square sizes and starts clipped without JS', () => {
+  for (const size of [[200, 50], [50, 200]] as const) {
+    const s = scene().prism({ id: 'p', at: [0, 0, 0], size, height: 40, reach: 140, top: '#ffffff', side: ['#111111', '#333333'] });
+    const html = s.render();
+    expect(html).toMatch(/#demo_p-col\{clip-path:inset\([\d.]+px -4px -4px -4px\)\}/);
+    expect(html).toContain('_rs)');
+    expect(html).toMatch(/<g id="demo_p-cap"><path d="M[^"]+Z" fill="#111111"\/>/);
+  }
+});
+
+test('hidden wires reject a dash and draw() rejects wires that are not hidden', () => {
+  expect(() => scene().wire({ id: 'w', points: [[0, 0, 0], [10, 0, 0]], stroke: '#000', hidden: true, dash: '2 2' })).toThrow(/cannot also take dash/);
+  const s = scene().wire({ id: 'w', points: [[0, 0, 0], [10, 0, 0]], stroke: '#000' });
+  expect(() => s.draw('w', 0, 1)).toThrow(/wire\(\{ hidden: true \}\)/);
+});
+
+test('ambient tracks run on their own period from the first frame and refuse to share a property with timed segments', () => {
+  const s = tile();
+  s.loop(18, 0).march('tile', 4, 4, 24).at('tile', 'opacity', 1, 0.5, 1, 0).at('tile', 'opacity', 5, 0.5, 0, 1);
+  const t = s.motion().tracks.find(k => k.prop === 'strokeDashoffset')!;
+  expect(t.duration).toBe(333);
+  expect(t.delay).toBe(0);
+  expect(t.repeat).toBe(true);
+  expect(t.keyframes.map(k => k.strokeDashoffset)).toEqual([0, -8]);
+  const clash = tile();
+  clash.loop(4, 0).wobble('tile').at('tile', 'scale', 1, 1, 1, 1.1);
+  expect(() => clash.motion()).toThrow(/ambient track and timed segments/);
+});
+
+test('def refuses a <g> inside a clipPath', () => {
+  expect(() => scene().def('c', '<clipPath id="$ID"><g transform="translate(1 1)"><rect width="4" height="4"/></g></clipPath>')).toThrow(/<g> inside a <clipPath>/);
+});
+
+test('an image side is embedded once and reused by every corner strip', () => {
+  const s = scene().slab({ id: 'b', at: [0, 0, 40], size: [80, 80], height: 40, radius: 14, top: '#fff', side: { kind: 'image', href: 'data:image/webp;base64,AAAA' } });
+  const html = s.render();
+  expect((html.match(/data:image\/webp;base64,AAAA/g) ?? []).length).toBe(1);
+  expect((html.match(/<use href="#demo_b_texl"/g) ?? []).length).toBeGreaterThan(10);
+});

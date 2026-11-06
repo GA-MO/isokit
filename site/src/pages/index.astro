@@ -1,0 +1,48 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/fira-code';
+import '../styles/global.css';
+import { isoCss } from '../../../skill/lib/iso';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Install from '../components/Install.astro';
+import Materials from '../components/Materials.astro';
+import Nav from '../components/Nav.astro';
+import Showcase from '../components/Showcase.astro';
+import { markSvg } from '../content';
+
+const description = 'A Claude Code skill that turns a product story into an animated isometric explainer in plain SVG.';
+const icon = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${markSvg}</svg>`)}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>isokit · animated isometric explainers from a prompt</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0f1013" />
+    <meta property="og:title" content="isokit" />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href={icon} />
+    <link rel="canonical" href={new URL(import.meta.env.BASE_URL, Astro.site)} />
+    <style is:global set:html={isoCss}></style>
+  </head>
+  <body class="min-h-dvh bg-page">
+    <Nav />
+    <main>
+      <Hero />
+      <Showcase />
+      <Materials />
+      <HowItWorks />
+      <Install />
+    </main>
+    <Footer />
+    <script>
+      import { mountAll } from '../../../skill/lib/runtime';
+      mountAll();
+    </script>
+  </body>
+</html>
