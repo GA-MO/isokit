@@ -1,29 +1,165 @@
 ---
-import CodeBlock from './CodeBlock.astro';
+import { tools } from '../install';
+import CopyButton from './CopyButton.astro';
 
-const steps = `git clone https://github.com/GA-MO/isokit.git
-mkdir -p ~/.claude/skills
-ln -s "$PWD/isokit/skill" ~/.claude/skills/iso
-cd isokit/skill/scripts && bun install`;
+const tab =
+  'h-8 shrink-0 rounded-full border border-line px-3.5 text-sm whitespace-nowrap text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-selected:border-ink aria-selected:bg-ink aria-selected:text-page';
+const inline = 'rounded bg-raised px-1 py-0.5 font-mono text-ink';
+
+/** Splits text on backticks; odd runs are inline code. */
+const runs = (text: string) => text.split(/`([^`]+)`/);
 ---
 
 <section id="install" class="surface-dark py-24 sm:py-32">
-  <div class="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-5 lg:gap-16">
-    <div class="lg:col-span-2">
+  <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
       <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Install the skill.</h2>
-      <p class="mt-4 max-w-md text-lg leading-relaxed text-pretty text-muted">
-        Clone the repo, link the skill folder into Claude Code and install the script dependencies. You need Bun.
-      </p>
-      <p class="mt-3 max-w-md text-sm leading-relaxed text-pretty text-muted">
-        Already have a skill at <code class="font-mono text-ink">~/.claude/skills/iso</code>? Move it away first, or the link lands inside it.
+      <p class="mt-4 text-lg leading-relaxed text-pretty text-muted">
+        <code class="font-mono text-ink">iso</code> is an Agent Skill, one folder with a <code class="font-mono text-ink">SKILL.md</code>. Pick the agent you use. The skill's checks need Bun.
       </p>
     </div>
-    <div class="flex min-w-0 flex-col gap-6 lg:col-span-3">
-      <CodeBlock code={steps} title="Terminal" copy />
-      <div class="rounded-2xl border border-line px-5 py-4">
-        <p class="text-sm text-muted">Then ask Claude Code</p>
+
+    <div data-tabs class="mt-8">
+      <div class="-mx-5 scroll-px-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+        <div role="tablist" aria-label="Agent" class="flex w-max gap-2 py-2 sm:w-auto sm:flex-wrap">
+          {
+            tools.map((t, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`install-tab-${t.id}`}
+                aria-controls={`install-panel-${t.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                class={tab}
+              >
+                {t.name}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="mt-6 grid">
+        {
+          tools.map((t, i) => (
+            <div
+              role="tabpanel"
+              id={`install-panel-${t.id}`}
+              aria-labelledby={`install-tab-${t.id}`}
+              tabindex="0"
+              class:list={[
+                'col-start-1 row-start-1 grid min-w-0 content-start gap-8 rounded-2xl border border-line p-5 sm:p-8 lg:grid-cols-5 lg:gap-12',
+                i !== 0 && 'invisible',
+              ]}
+            >
+              <div class="min-w-0 lg:col-span-2">
+                <h3 class="text-2xl font-semibold tracking-tight">{t.name}</h3>
+                <p class="mt-3 text-sm leading-relaxed text-pretty text-muted">
+                  {runs(t.note).map((r, j) => (j % 2 ? <code class={inline}>{r}</code> : r))}
+                </p>
+                <dl class="mt-6 grid gap-3 text-sm">
+                  {t.kind === 'folder' ? (
+                    <>
+                      <div>
+                        <dt class="text-muted">Personal</dt>
+                        <dd class="mt-1 font-mono break-all text-ink">{t.personal}/iso</dd>
+                      </div>
+                      <div>
+                        <dt class="text-muted">Project</dt>
+                        <dd class="mt-1 font-mono break-all text-ink">{t.project}/iso</dd>
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <dt class="text-muted">Upload in</dt>
+                      <dd class="mt-1 text-ink">{t.where}</dd>
+                    </div>
+                  )}
+                </dl>
+                <p class="mt-6 text-xs leading-relaxed text-muted">
+                  From{' '}
+                  {t.sources.map((source, j) => (
+                    <>
+                      {j > 0 && ', '}
+                      <a href={source.url} rel="noreferrer" class="underline decoration-line-strong underline-offset-2 transition-colors duration-150 hover:text-ink">
+                        {source.title}
+                      </a>
+                    </>
+                  ))}
+                </p>
+              </div>
+
+              <ol class="flex min-w-0 flex-col gap-6 lg:col-span-3">
+                {t.steps.map((step, n) => (
+                  <li class="min-w-0">
+                    <div class="flex gap-4">
+                      <span class="flex size-6 shrink-0 items-center justify-center rounded-full border border-line-strong font-mono text-xs text-muted">
+                        {n + 1}
+                      </span>
+                      <p class="min-w-0 flex-1 text-sm leading-relaxed text-pretty text-ink">
+                        {runs(step.text).map((r, j) => (j % 2 ? <code class={inline}>{r}</code> : r))}
+                      </p>
+                    </div>
+                    {step.code && (
+                      <div class="mt-3 flex min-w-0 items-start rounded-xl border border-surface-line bg-surface-well text-surface-ink sm:ml-10">
+                        <pre class="min-w-0 flex-1 overflow-x-auto py-3 pl-4 font-mono text-sm leading-relaxed whitespace-pre"><code>{step.code}</code></pre>
+                        <div class="shrink-0 p-2">
+                          <CopyButton text={step.code} label={`Copy step ${n + 1} for ${t.name}`} />
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-5 lg:gap-12">
+      <div class="rounded-2xl border border-line px-5 py-4 lg:col-span-3">
+        <p class="text-sm text-muted">Then ask your agent</p>
         <p class="mt-1.5 font-mono text-sm leading-relaxed break-words text-ink">Draw an isometric flow of an order moving from cart to payment to the warehouse.</p>
       </div>
+      <p class="text-sm leading-relaxed text-pretty text-muted lg:col-span-2">
+        To update, run <code class={inline}>git pull</code> in your clone. If you copied the folder instead of linking it, copy <code class={inline}>isokit/skill/.</code> over it again.
+      </p>
     </div>
   </div>
 </section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-tabs]')) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role=tab]')];
+
+    const select = (next: HTMLButtonElement) => {
+      for (const t of tabs) {
+        const on = t === next;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls') ?? '')?.classList.toggle('invisible', !on);
+      }
+      next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    };
+
+    root.addEventListener('click', event => {
+      const t = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[role=tab]') : null;
+      if (t) select(t);
+    });
+
+    root.addEventListener('keydown', event => {
+      const at = event.target instanceof HTMLButtonElement ? tabs.indexOf(event.target) : -1;
+      if (at < 0) return;
+      const moves: Record<string, number> = { ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: tabs.length - 1 };
+      const to = moves[event.key];
+      if (to === undefined) return;
+      event.preventDefault();
+      const next = tabs[(to + tabs.length) % tabs.length];
+      if (!next) return;
+      select(next);
+      next.focus();
+    });
+  }
+</script>
