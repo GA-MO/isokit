@@ -1,269 +1,512 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, ramps, surfaces, paints } from './shared';
+import { ISO_X, ISO_Y, Scene, ease, type Material, type Vec2, type Vec3 } from '../lib/iso';
+import { art, fonts, page, paints, ramps, rng, surfaces } from './shared';
 
 const ui = surfaces.dark;
 const accent = '#a78bfa';
-const tint = 'rgb(167 139 250 / .3)';
+const hit = 'rgb(167 139 250 / .5)';
+const liveInk = '#34d399';
 const curve = {
-  snapOff: 'cubic-bezier(.45,.86,.17,.96)',
-  pull: 'cubic-bezier(.41,.27,.05,.79)',
-  settle: 'cubic-bezier(.39,.08,.04,.91)',
+  grow: 'cubic-bezier(.4,.1,.1,1)',
+  spin: 'cubic-bezier(.8,.9,.3,1)',
+  fall: 'cubic-bezier(.5,0,.4,1)',
+  slide: 'cubic-bezier(.15,.6,.6,1)',
+  pan: 'cubic-bezier(.7,0,.2,1)',
   shrink: 'cubic-bezier(.33,0,.91,.03)',
-  exit: 'linear(0, -0.007 11.8%, -0.045 37.8%, -0.048 57%, -0.028 63.2%, 0.018 69.3%, 0.079 74.3%, 0.164 79.3%, 0.27 84%, 0.392 88.3%, 0.459 90.3%, 0.535 92.3%, 0.609 94%, 0.694 95.8%, 0.777 97.3%, 0.859 98.5%, 0.942 99.5%, 1)',
+  snapOff: 'cubic-bezier(.45,.86,.17,.96)',
 } as const;
 
-const prompts = ['draw our deploy flow: build, test, ship', 'map our gateway to its four services'] as const;
-const width = Math.max(...prompts.map(p => p.length));
-const stepTime = 0.03;
+const prompt = 'build an orders API for 1M users';
+const stack = {
+  sans: `${fonts.sans.replace(', sans-serif', '')}, -apple-system, 'Segoe UI', Roboto, sans-serif`,
+  mono: `${fonts.mono.replace(', monospace', '')}, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace`,
+};
+const typeStep = 0.035;
+
+type Service = 'gateway' | 'queue' | 'db' | 'cache';
+type Leaf = 'cdn-a' | 'cdn-b' | 'auth' | 'worker-a' | 'worker-b' | 'worker-c' | 'replica-a' | 'replica-b' | 'shard-a' | 'shard-b';
+type Node = 'core' | Service | Leaf;
+
+const services: readonly Service[] = ['queue', 'db', 'gateway', 'cache'];
+const parents: Record<Leaf, Service> = {
+  'worker-a': 'queue',
+  'worker-b': 'queue',
+  'worker-c': 'queue',
+  'replica-a': 'db',
+  'replica-b': 'db',
+  'cdn-b': 'gateway',
+  'cdn-a': 'gateway',
+  auth: 'gateway',
+  'shard-a': 'cache',
+  'shard-b': 'cache',
+};
+const leaves = Object.keys(parents) as Leaf[];
+const isLeaf = (n: Node): n is Leaf => n in parents;
+
+interface Place {
+  at: Vec2;
+  exit?: 'x' | 'y';
+}
 
 interface Layout {
   name: string;
   width: number;
   height: number;
   origin: Vec2;
-  plate: number;
-  card: { at: Vec2; anchor: 'center' | 'left'; size: number };
-  feed: 'drop' | 'diagonal';
-  feedFrom: Vec2;
-  tile: number;
-  pitch: number;
-  hub: number;
-  sat: number;
-  reach: number;
-  thick: number;
-  text: number;
+  core: { size: number; height: number; text: number };
+  service: { size: number; height: number; text: number };
+  leaf: { size: number; height: number };
+  place: Record<Service | Leaf, Place>;
+  pool: { at: Vec2; cols: number; rows: number; pitch: number; pod: number; empty: readonly number[]; from: Leaf };
+  pan: Vec2;
+  card: { x: number; y: number; w: number; h: number; text: number; head: number };
+  feed: Vec2;
+  ground: { at: Vec2; size: number; pitch: number };
 }
 
-interface Tile {
-  id: string;
-  at: Vec3;
-  size: number;
-  name: string;
-}
-
-function box(body: string, o: { line: string; border: string; bg: string; dot: string; head: boolean; shadow?: string }) {
-  const head = `<div style="display:flex;align-items:center;gap:.55em;font:500 1em/1.45 var(--iso-font);color:${ui.muted};margin-bottom:.3em${o.head ? '' : ';visibility:hidden'}"><span style="width:.5em;height:.5em;border-radius:50%;background:${o.dot}"></span>prompt</div>`;
-  return `<div style="padding:.75em 2ch;border:1px solid ${o.border};border-radius:12px;background:${o.bg};${o.shadow ? `box-shadow:${o.shadow};` : ''}font:400 1em/1.45 var(--iso-mono);color:${o.line}">${head}<div>${body}</div></div>`;
-}
-
-const hidden = (chars: number) => (chars > 0 ? `<span style="visibility:hidden">${'x'.repeat(chars)}</span>` : '');
+const T = {
+  hint: 0.3,
+  type: 0.4,
+  sent: 0.4 + prompt.length * typeStep + 0.25,
+  spin: 2.55,
+  crossfade: 3.55,
+  lean: 3.8,
+  fall: 4.1,
+  landed: 4.73,
+  slide: 5.25,
+  pops: 6.7,
+  pan: 9.6,
+  live: 11.9,
+  collapse: 17.9,
+  end: 20,
+  still: 15.5,
+} as const;
 
 function build(l: Layout) {
-  const s = new Scene({ name: l.name, width: l.width, height: l.height, origin: l.origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
-  const half = l.plate / 2;
-  const mid = l.thick / 2;
-
-  const card = { at: { screen: l.card.at }, anchor: l.card.anchor, size: l.card.size, variant: 'plain' } as const;
-  s.label({ ...card, id: 'frame', html: box(hidden(width), { line: ui.ink, border: 'rgb(255 255 255 / .1)', bg: '#16171c', dot: '#3f414b', head: true, shadow: '0 18px 40px -20px rgb(0 0 0 / .8)' }) });
-  s.label({ ...card, id: 'hot', html: box(hidden(width), { line: ui.ink, border: 'rgb(167 139 250 / .7)', bg: 'transparent', dot: accent, head: true, shadow: '0 0 0 3px rgb(167 139 250 / .12), 0 0 28px -6px rgb(167 139 250 / .55)' }).replace('>prompt<', '><') });
-  s.label({ ...card, id: 'hint', html: box(`<span style="color:#5d606b">describe a scene to draw</span>${hidden(width - 24)}`, { line: ui.ink, border: 'transparent', bg: 'transparent', dot: 'transparent', head: false }) });
-  prompts.forEach((p, i) => s.label({ ...card, id: `p${i}`, html: box(`${p}${hidden(width - p.length)}`, { line: ui.ink, border: 'transparent', bg: 'transparent', dot: 'transparent', head: false }) }));
-
-  const corner = s.unproject(s.extremes([0, 0, 0], [l.plate, l.plate], l.plate * 0.07).back, 0);
-  const start = s.unproject(l.feedFrom, 0);
-  const feed: Vec3[] =
-    l.feed === 'drop'
-      ? [[corner[0], corner[1], s.project(corner)[1] - l.feedFrom[1]], corner]
-      : [start, [-half + 2, start[1], 0]];
-  if (l.feed === 'diagonal' && !(Math.abs(start[1]) < half - l.plate * 0.07)) throw new Error(`hero ${l.name}: the feed wire misses the plate edge (y ${start[1].toFixed(1)})`);
-  s.wire({ id: 'feed', points: feed, stroke: ui.wire, width: 1.25, hidden: true });
-  s.pulse({ id: 'p-feed', wire: 'feed', color: accent, length: 0.18 });
-
-  const grid = s.def('grid', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="20" height="20" x="${half % 20}" y="${half % 20}"><circle cx="10" cy="10" r="1" fill="rgb(255 255 255 / .11)"/></pattern>`);
-  const inset = 14;
-  s.slab({
-    id: 'plate',
-    at: [0, 0, 0],
-    size: [l.plate, l.plate],
-    height: 12,
-    radius: l.plate * 0.07,
-    top: '#131418',
-    grain: 0.05,
-    side: paints.brushed(s, ramps.graphite),
-    edge: 'rgb(255 255 255 / .1)',
-    content: `<rect x="${-half + inset}" y="${-half + inset}" width="${l.plate - inset * 2}" height="${l.plate - inset * 2}" rx="${l.plate * 0.04}" fill="${grid}"/>`,
-  });
-  s.face({ id: 'rim', at: [0, 0, 0], size: [l.plate, l.plate], radius: l.plate * 0.07, stroke: accent, strokeWidth: 1.5 });
-  s.text({ id: 'canvas', at: [-half + 22, half - 14, 0], text: 'scene.svg', size: 11, color: '#5d606b', on: 'top' });
-
-  const flow: Tile[] = ['build', 'test', 'ship'].map((name, i) => ({ id: name, at: [(i - 1) * l.pitch, 0, l.thick], size: l.tile, name }));
-  const hub: Tile = { id: 'gateway', at: [0, 0, l.thick], size: l.hub, name: 'gateway' };
-  const sats: Tile[] = (
-    [
-      ['auth', 0, -1],
-      ['users', 1, 0],
-      ['files', 0, 1],
-      ['search', -1, 0],
-    ] as const
-  ).map(([name, dx, dy]) => ({ id: name, at: [dx * l.reach, dy * l.reach, l.thick], size: l.sat, name }));
-
-  flow.slice(1).forEach((b, i) => {
-    const a = flow[i]!;
-    s.wire({ id: `w-${a.id}`, points: [[a.at[0] + a.size / 2, 0, mid], [b.at[0] - b.size / 2, 0, mid]], stroke: ui.wire, width: 1.25, hidden: true });
-    s.pulse({ id: `p-${a.id}`, wire: `w-${a.id}`, color: accent, length: 0.3 });
-  });
-  sats.forEach(t => {
-    const [dx, dy] = [Math.sign(t.at[0]), Math.sign(t.at[1])];
-    const from: Vec3 = [(dx * hub.size) / 2, (dy * hub.size) / 2, mid];
-    const to: Vec3 = [t.at[0] - (dx * t.size) / 2, t.at[1] - (dy * t.size) / 2, mid];
-    s.wire({ id: `w-${t.id}`, points: [from, to], stroke: ui.wire, width: 1.25, hidden: true });
-    s.pulse({ id: `p-${t.id}`, wire: `w-${t.id}`, color: accent, length: 0.3 });
-  });
-
-  const tile = (t: Tile) => {
-    const [x, y] = t.at;
-    const r = t.size * 0.18;
-    s.group(`g-${t.id}`, () => {
-      s.svg(`${t.id}-glow`, `<g filter="${s.blur(t.size * 0.16)}">${s.plane([x, y, 0], `<rect x="${-t.size * 0.55}" y="${-t.size * 0.55}" width="${t.size * 1.1}" height="${t.size * 1.1}" rx="${r}" fill="${accent}" opacity=".55"/>`)}</g>`);
-      s.slab({ id: t.id, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: paints.brushed(s, ramps.graphite), edge: ui.edge });
-      s.slab({ id: `${t.id}-hot`, at: t.at, size: [t.size, t.size], height: l.thick, radius: r, top: ui.top, grain: 0.06, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
-      s.face({ id: `${t.id}-hit`, at: t.at, size: [t.size, t.size], radius: r, fill: tint });
-      s.text({ id: `${t.id}-name`, at: t.at, text: t.name, size: l.text, color: '#d4d4d8', on: 'top', anchor: 'middle', font: 'sans' });
-    });
-    s.pivot(`g-${t.id}`, [x, y, 0]);
-    s.set(`${t.id}-glow`, 'opacity', 0, 0);
-    s.set(`${t.id}-hit`, 'opacity', 0, 0);
-    s.set(`${t.id}-hot`, 'opacity', 0, 0);
-  };
-  [...flow, ...sats, hub].sort((a, b) => a.at[0] + a.at[1] - (b.at[0] + b.at[1])).forEach(tile);
-
-  s.intro('frame', 'opacity', 0.1, 0.35, 0, 1, ease.out);
-  s.intro('hint', 'opacity', 0.1, 0.35, 0, 1, ease.out);
-  s.intro('frame', 'translate', 0.1, 0.5, '0 10px', '0 0', ease.out);
-  s.intro('hint', 'translate', 0.1, 0.5, '0 10px', '0 0', ease.out);
-  s.dropIn('plate', 0.25);
-  s.dropIn('canvas', 0.25);
-  s.draw('feed', 0.85, 0.4, ease.out, 'intro');
-
+  const s = new Scene({ name: l.name, width: l.width, height: l.height, origin: l.origin, font: stack.sans, mono: stack.mono, label: ui.label });
+  const flashed = new Map<string, number>();
   const flash = (id: string, t: number) => {
+    if ((flashed.get(id) ?? -1) > t) return;
+    flashed.set(id, t + 0.72);
     s.at(id, 'opacity', t, 0.1, 0, 1, ease.linear);
     s.at(id, 'opacity', t + 0.1, 0.6, 1, 0, ease.linear);
   };
-  const feedTime = Math.max(0.3, s.wireLength('feed') / 270);
-  const steps = width + 4;
-  const send = (i: number, t0: number) => {
-    s.typeIn(`p${i}`, t0, steps * stepTime, steps);
-    const sent = t0 + steps * stepTime + 0.2;
-    flash('hot', sent);
-    s.travel('p-feed', sent + 0.05, feedTime);
-    const landed = sent + 0.05 + feedTime;
-    flash('rim', landed - 0.05);
-    return landed;
+
+  const ground = l.ground;
+  const dots = s.def('ground-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${ground.pitch}" height="${ground.pitch}"><circle cx="${ground.pitch / 2}" cy="${ground.pitch / 2}" r="1.1" fill="rgb(255 255 255 / .09)"/></pattern>`);
+  const vignette = s.def('ground-vignette', `<radialGradient id="$ID"><stop offset=".35" stop-color="${ui.page}" stop-opacity="0"/><stop offset=".72" stop-color="${ui.page}"/></radialGradient>`);
+  const groundAt = s.unproject(ground.at, 0);
+  s.face({ id: 'ground', at: groundAt, size: [ground.size, ground.size], radius: 0, fill: dots });
+  s.face({ id: 'ground-fade', at: groundAt, size: [ground.size * 1.02, ground.size * 1.02], radius: 0, fill: vignette });
+  const card = l.card;
+  const rect = (paint: string) => `<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="12" ${paint}/>`;
+  const dot = (fill: string) => `<circle cx="${card.x + 20}" cy="${card.y + 22}" r="3.5" fill="${fill}"/>`;
+  s.svg('card', rect('fill="#16171c" stroke="rgb(255 255 255 / .1)"') + dot('#3f414b'));
+  s.svg('card-hot', rect('fill="none" stroke="rgb(167 139 250 / .16)" stroke-width="6"') + rect(`fill="none" stroke="${accent}" stroke-opacity=".8"`) + dot(accent));
+  s.text({ id: 'card-head', at: { screen: [card.x + 32, card.y + 22] }, text: 'prompt', size: card.head, color: ui.muted, font: 'sans', weight: 500 });
+  const line: Vec2 = [card.x + 20, card.y + card.h - 26];
+  s.text({ id: 'hint', at: { screen: line }, text: 'describe a system to build', size: card.text, color: '#5d606b' });
+  s.text({ id: 'prompt', at: { screen: line }, text: prompt, size: card.text, color: ui.ink });
+  const charW = card.text * 0.6;
+  s.group('caret', () => s.svg('caret-blink', `<rect x="${line[0] + 1.5}" y="${line[1] - card.text * 0.62}" width="${Math.max(1.5, card.text * 0.09)}" height="${card.text * 1.24}" rx="1" fill="${accent}"/>`));
+  s.ambient('caret-blink', 'opacity', 1.1, [1, 1, 0, 0, 1], 'steps(1, end)');
+
+  const head: Vec2 = [card.x + card.w - 20, card.y + 22];
+  const counts = [
+    { id: 'count-1', text: '1 node', at: T.landed },
+    { id: 'count-5', text: '5 nodes', at: T.slide + 0.3 },
+    { id: 'count-15', text: '15 nodes', at: T.pops + 1.3 },
+  ] as const;
+  counts.forEach(c => s.text({ id: c.id, at: { screen: head }, text: c.text, size: card.head, color: ui.muted, font: 'sans', anchor: 'end' }));
+  const liveText = '40 nodes · live';
+  const pad = card.head * 0.7;
+  s.text({ id: 'count-live', at: { screen: [head[0] + 6 - pad - (liveText.length * card.head * 0.6) / 2, head[1]] }, text: liveText, size: card.head, color: liveInk, pill: { fill: 'rgb(52 211 153 / .1)', stroke: 'rgb(52 211 153 / .32)', padX: pad, radius: card.head * 0.8 } });
+
+  const placeOf = (n: Node): Vec2 => (n === 'core' ? [0, 0] : l.place[n].at);
+  const sizeOf = (n: Node) => (n === 'core' ? l.core.size : isLeaf(n) ? l.leaf.size : l.service.size);
+  const heightOf = (n: Node) => (n === 'core' ? l.core.height : isLeaf(n) ? l.leaf.height : l.service.height);
+  const route = (a: Node, b: Service | Leaf): Vec3[] => {
+    const [ax, ay] = placeOf(a);
+    const [bx, by] = placeOf(b);
+    const [ar, br] = [sizeOf(a) / 2 + 2, sizeOf(b) / 2 + 2];
+    const [sx, sy] = [Math.sign(bx - ax), Math.sign(by - ay)];
+    if (Math.abs(by - ay) < 0.5) return [[ax + sx * ar, ay, 0], [bx - sx * br, by, 0]];
+    if (Math.abs(bx - ax) < 0.5) return [[ax, ay + sy * ar, 0], [bx, by - sy * br, 0]];
+    const exit = l.place[b].exit ?? (Math.abs(bx - ax) >= Math.abs(by - ay) ? 'x' : 'y');
+    return exit === 'x' ? [[ax + sx * ar, ay, 0], [bx, ay, 0], [bx, by - sy * br, 0]] : [[ax, ay + sy * ar, 0], [ax, by, 0], [bx - sx * br, by, 0]];
   };
-  const clear = (i: number, t: number) => {
-    s.at(`p${i}`, 'opacity', t, 0.35, 1, 0, ease.linear);
-    s.set(`p${i}`, 'clipPath', t + 0.5, 'inset(-20% 100% -20% 0)');
-    s.set(`p${i}`, 'opacity', t + 0.55, 1);
+  const depth = (n: Node) => placeOf(n)[0] + placeOf(n)[1];
+
+  const coreAir = l.core.size * Math.SQRT2 * 1.2;
+  const beam = l.origin[1] - l.feed[1];
+  const reach = (l.feed[0] - l.origin[0]) / (2 * ISO_X);
+  const feed: Vec3[] = Math.abs(reach) < 1 ? [[0, 0, beam], [0, 0, 0]] : [[reach, -reach, beam], [0, 0, beam], [0, 0, 0]];
+  s.wire({ id: 'feed', points: feed, stroke: accent, width: 1.5, hidden: true, corner: 14 });
+
+  s.group('world', () => {
+    const edges = [...services.map(n => ['core', n] as const), ...leaves.map(n => [parents[n], n] as const)];
+    for (const [a, b] of edges) s.wire({ id: `w-${b}`, points: route(a, b), stroke: ui.wire, width: 1.25, hidden: true });
+    for (const [, b] of edges) s.pulse({ id: `p-${b}`, wire: `w-${b}`, color: accent, length: 0.28, glow: !isLeaf(b) });
+
+    const ring = l.core.size * 1.14;
+    s.face({ id: 'core-target', at: [0, 0, 0], size: [ring, ring], radius: ring * 0.22, stroke: 'rgb(167 139 250 / .55)', dash: '4 4' });
+    s.march('core-target', 4, 4, 24);
+    const shadow = s.def('shadow-fill', '<radialGradient id="$ID"><stop offset=".4" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>');
+    const sh = l.core.size * 0.7;
+    s.svg('core-shadow', s.plane([8, 8, 0], `<rect x="${-sh}" y="${-sh}" width="${sh * 2}" height="${sh * 2}" rx="${sh * 0.5}" fill="${shadow}"/>`));
+    s.face({ id: 'core-ring', at: [0, 0, 0], size: [l.core.size, l.core.size], radius: l.core.size * 0.22, stroke: accent, strokeWidth: 1.5 });
+
+    const tile = (n: Service | Leaf, side: Material, name?: string) => {
+      const [x, y] = placeOf(n);
+      const [size, h] = [sizeOf(n), heightOf(n)];
+      s.group(`g-${n}`, () => {
+        s.slab({ id: n, at: [x, y, h], size: [size, size], height: h, radius: size * 0.2, top: ui.top, side, edge: ui.edge, shadow: false });
+        s.face({ id: `${n}-hit`, at: [x, y, h], size: [size, size], radius: size * 0.2, fill: hit });
+        if (name) s.text({ id: `${n}-name`, at: [x, y, h], text: name, size: l.service.text, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle', font: 'sans' });
+      });
+      s.pivot(`g-${n}`, [x, y, 0]);
+      s.set(`${n}-hit`, 'opacity', 0, 0);
+    };
+    [...services].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n, paints.gradient(s, ramps.graphite), n));
+
+    const { size, height } = l.core;
+    s.group('core-fall', () =>
+      s.group('core-lean', () =>
+        s.group('core-live', () => {
+          s.turntable({ id: 'core-spin', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: ['#2e1065', '#3b1580', '#4a1c9b', '#5b21b6', '#7046d0', '#8b5cf6'], edge: 'rgb(196 181 253 / .5)', layers: 8 });
+          s.group('core-body', () => {
+            s.slab({ id: 'core', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
+            s.face({ id: 'core-hit', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: hit });
+            s.text({ id: 'core-name', at: [0, 0, height], text: 'orders-api', size: l.core.text, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle', weight: 500 });
+          });
+        }),
+      ),
+    );
+    s.pivot('core-spin', [0, 0, height / 2]);
+    s.pivot('core-lean', s.unproject(s.extremes([0, 0, 0], [size, size], size * 0.2).front, 0));
+    s.pivot('core-live', [0, 0, 0]);
+    s.set('core-hit', 'opacity', 0, 0);
+
+    [...leaves].sort((a, b) => depth(a) - depth(b)).forEach(n => tile(n, paints.flat('#26272d')));
+  });
+
+  const panAt = s.unproject([l.origin[0] + l.pan[0], l.origin[1] + l.pan[1]], 0);
+  const pool = l.pool;
+  const centre: Vec2 = [pool.at[0] + panAt[0], pool.at[1] + panAt[1]];
+  const span: Vec2 = [(pool.cols + 0.4) * pool.pitch, (pool.rows + 0.4) * pool.pitch];
+  const src = placeOf(pool.from);
+  const srcAt: Vec2 = [src[0] + panAt[0], src[1] + panAt[1]];
+  const dir = Math.sign(centre[0] - srcAt[0]);
+  if (Math.abs(srcAt[1] - centre[1]) > span[1] / 2 - pool.pitch / 2) throw new Error(`hero ${l.name}: the wire from ${pool.from} misses the pool`);
+  s.wire({ id: 'w-pool', points: [[srcAt[0] + dir * (l.leaf.size / 2 + 2), srcAt[1], 0], [centre[0] - (dir * span[0]) / 2 - dir * 2, srcAt[1], 0]], stroke: ui.wire, width: 1.25, hidden: true });
+  s.pulse({ id: 'p-pool', wire: 'w-pool', color: accent, length: 0.28, glow: false });
+  s.slab({ id: 'pool', at: [centre[0], centre[1], 6], size: span, height: 6, radius: pool.pitch * 0.35, top: '#141519', side: paints.flat('#202127'), edge: 'rgb(255 255 255 / .09)', shadow: false });
+  const slots = Array.from({ length: pool.cols * pool.rows }, (_, i) => {
+    const [c, r] = [i % pool.cols, Math.floor(i / pool.cols)];
+    const at: Vec2 = [centre[0] + (c - (pool.cols - 1) / 2) * pool.pitch, centre[1] + (r - (pool.rows - 1) / 2) * pool.pitch];
+    return { i, wave: c + r, at };
+  });
+  const empty = slots.filter(sl => pool.empty.includes(sl.i));
+  const pods = slots.filter(sl => !pool.empty.includes(sl.i));
+  if (1 + services.length + leaves.length + 1 + pods.length !== 40) throw new Error(`hero ${l.name}: the system must end at 40 objects, the pool holds ${pods.length} pods`);
+  s.group('slots', () => empty.forEach(sl => s.face({ id: `slot-${sl.i}`, at: [sl.at[0], sl.at[1], 6], size: [pool.pod, pool.pod], radius: pool.pod * 0.22, stroke: 'rgb(167 139 250 / .4)', dash: '3 3' })));
+  s.march('slots', 3, 3, 18);
+  const podH = Math.round(pool.pod * 0.36);
+  const lit = pods.filter((_, k) => k % 3 === 1).map(p => p.i);
+  const waves = [...new Set(pods.map(p => p.wave))].sort((a, b) => a - b);
+  for (const w of waves) {
+    s.group(`wave-${w}`, () =>
+      pods
+        .filter(p => p.wave === w)
+        .forEach(p => {
+          const at: Vec3 = [p.at[0], p.at[1], 6 + podH];
+          s.slab({ id: `pod-${p.i}`, at, size: [pool.pod, pool.pod], height: podH, radius: pool.pod * 0.22, top: '#1d1e24', side: paints.flat('#2a2b32'), edge: 'rgb(255 255 255 / .1)', shadow: false });
+          if (lit.includes(p.i)) s.face({ id: `pod-${p.i}-hit`, at, size: [pool.pod, pool.pod], radius: pool.pod * 0.22, fill: hit });
+        }),
+    );
+  }
+  lit.forEach(i => s.set(`pod-${i}-hit`, 'opacity', 0, 0));
+
+  const gone = 1.04;
+  const draw = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, gone, 0, easing);
+  const retract = (wire: string, t: number, dur: number, toward: 'start' | 'end', easing: string) => s.at(wire, 'strokeDashoffset', t, dur, 0, toward === 'start' ? gone : -gone, easing);
+  s.intro('card', 'opacity', 0.1, 0.4, 0, 1, ease.out);
+  s.intro('card-head', 'opacity', 0.1, 0.4, 0, 1, ease.out);
+  for (const n of [...services, ...leaves, 'pool']) s.intro(`p-${n}`, 'opacity', 0, 0.01, 1, 1, ease.linear);
+
+  s.set('card-hot', 'opacity', 0, 0);
+  flash('card-hot', T.sent);
+  s.at('hint', 'opacity', T.hint, 0.15, 1, 0, ease.linear);
+  const steps = prompt.length;
+  s.typeIn('prompt', T.type, steps * typeStep, steps);
+  s.at('caret', 'translate', T.type, steps * typeStep, '0 0', `${steps * charW}px 0`, `steps(${steps}, end)`);
+
+  draw('feed', T.sent + 0.05, 0.3, ease.out);
+  retract('feed', T.sent + 0.6, 0.3, 'end', curve.snapOff);
+  s.at('core-target', 'opacity', T.sent + 0.3, 0.2, 0, 1, ease.linear);
+  s.at('core-target', 'opacity', T.landed, 0.2, 1, 0, ease.linear);
+
+  s.set('core-spin', 'opacity', T.spin, 1);
+  s.at('core-spin', 'scale', T.spin, 1.0, 0, 1, curve.grow);
+  s.spin('core-spin', T.spin, 1.0, 180, 0, curve.spin);
+  s.set('core-spin', 'opacity', T.crossfade, 0);
+  s.set('core-body', 'opacity', T.crossfade, 1);
+  const over = 10 * (coreAir / 278);
+  s.set('core-fall', 'translate', T.spin - 0.05, `0 ${-coreAir}px`);
+  s.at('core-fall', 'translate', T.fall, 0.63, `0 ${-coreAir}px`, `0 ${over}px`, curve.fall);
+  s.at('core-fall', 'translate', T.landed, 0.4, `0 ${over}px`, '0 0', ease.io);
+  s.at('core-lean', 'scale', T.lean, 0.3, '1 1', '1 1.1', ease.out);
+  s.at('core-lean', 'scale', T.fall, 0.63, '1 1.1', '1 0.96', curve.fall);
+  s.at('core-lean', 'scale', T.landed, 0.4, '1 0.96', '1 1', ease.io);
+  s.at('core-shadow', 'opacity', T.spin, 0.6, 0, 0.25, ease.out);
+  s.at('core-shadow', 'opacity', T.fall, 0.63, 0.25, 1, curve.fall);
+  s.at('core-ring', 'opacity', T.landed, 0.05, 0, 0.7, ease.linear);
+  s.at('core-ring', 'opacity', T.landed + 0.05, 0.8, 0.7, 0, ease.out);
+  s.at('core-ring', 'scale', T.landed, 0.85, 1, 1.7, ease.out);
+
+  const fade = (id: string, on: number, off: number) => {
+    s.at(id, 'opacity', on, 0.25, 0, 1, ease.linear);
+    s.at(id, 'opacity', off, 0.2, 1, 0, ease.linear);
   };
-  const light = (t: Tile, on: number, off: number) => {
-    for (const id of [`${t.id}-glow`, `${t.id}-hit`, `${t.id}-hot`]) {
-      s.at(id, 'opacity', on, 0.25, 0, 1, ease.linear);
-      s.at(id, 'opacity', off, 0.5, 1, 0, ease.linear);
+  fade('count-1', counts[0].at, counts[1].at - 0.1);
+  fade('count-5', counts[1].at, counts[2].at - 0.1);
+  fade('count-15', counts[2].at, T.live - 0.1);
+  fade('count-live', T.live, T.collapse + 0.9);
+
+  const pulseFree = new Map<string, number>();
+  const free = (pulse: string, t: number, dur: number) => (pulseFree.get(pulse) ?? -1) <= t && t + dur <= T.collapse + 0.1;
+  const travel = (pulse: string, t: number, dur: number, back: boolean) => {
+    pulseFree.set(pulse, t + dur + 0.05);
+    s.at(pulse, 'strokeDashoffset', t, dur, back ? -1.06 : 0.34, back ? 0.34 : -1.06, ease.linear);
+  };
+  const hop = (wire: string) => Math.min(0.75, Math.max(0.32, s.wireLength(wire) / 300));
+
+  const slideFrom = (n: Service) => s.offset([...placeOf(n), 0], [0, 0, 0]);
+  services.forEach((n, i) => {
+    const t = T.slide + i * 0.05;
+    s.set(`g-${n}`, 'opacity', t, 1);
+    s.at(`g-${n}`, 'translate', t, 0.355, slideFrom(n), '0 0', curve.slide);
+    draw(`w-${n}`, t, 0.355, curve.slide);
+  });
+  flash('core-hit', T.slide + 0.55);
+  services.forEach((n, i) => {
+    const t = T.slide + 0.7 + i * 0.08;
+    const d = hop(`w-${n}`);
+    travel(`p-${n}`, t, d, false);
+    flash(`${n}-hit`, t + d);
+  });
+
+  leaves.forEach((n, i) => {
+    const t = T.pops + i * 0.12;
+    s.at(`g-${n}`, 'scale', t, 0.23, 0.05, 1.14, ease.out);
+    s.at(`g-${n}`, 'scale', t + 0.23, 0.24, 1.14, 1, ease.io);
+    draw(`w-${n}`, t + 0.3, 0.3, ease.out);
+    flash(`${n}-hit`, t + 0.55);
+  });
+
+  s.at('world', 'translate', T.pan, 1.4, '0 0', `${l.pan[0]}px ${l.pan[1]}px`, curve.pan);
+  s.dropAt('pool', T.pan + 0.7, 75, 0.8);
+  waves.forEach(w => s.dropAt(`wave-${w}`, T.pan + 1.2 + w * 0.09));
+  s.at('slots', 'opacity', T.pan + 1.2 + Math.min(...empty.map(sl => sl.wave)) * 0.09, 0.4, 0, 1, ease.linear);
+  draw('w-pool', T.pan + 1.7, 0.35, ease.out);
+
+  type Hop = readonly [wire: Service | Leaf, back: boolean];
+  const into = (cdn: 'cdn-a' | 'cdn-b'): Hop[] => [[cdn, true], ['gateway', true]];
+  const routes: { hops: Hop[]; pool?: true }[] = [
+    { hops: [...into('cdn-a'), ['queue', false], ['worker-c', false]], pool: true },
+    { hops: [...into('cdn-b'), ['db', false], ['replica-a', false]] },
+    { hops: [...into('cdn-a'), ['cache', false], ['shard-b', false]] },
+    { hops: [['auth', false], ['auth', true]] },
+    { hops: [...into('cdn-b'), ['queue', false], ['worker-a', false]] },
+    { hops: [...into('cdn-a'), ['db', false], ['replica-b', false]] },
+    { hops: [...into('cdn-b'), ['cache', false], ['shard-a', false]] },
+    { hops: [...into('cdn-a'), ['queue', false], ['worker-b', false]] },
+  ];
+  const lands = (n: Service | Leaf, back: boolean): Node => (!back ? n : isLeaf(n) ? parents[n] : 'core');
+  const r = rng(7);
+  let k = 0;
+  let podTurn = 0;
+  for (let t = T.pops + 1.9; t < T.collapse - 0.4; t += 0.42 + r() * 0.2) {
+    const route = routes[k % routes.length]!;
+    let at = t;
+    const plan = route.hops.map(([n, back]) => {
+      const dur = hop(`w-${n}`);
+      const h = { n, back, at, dur };
+      at += dur + 0.02;
+      return h;
+    });
+    const tail = route.pool && t > T.pan + 1.9 ? { at, dur: hop('w-pool') } : null;
+    if (!plan.every(h => free(`p-${h.n}`, h.at, h.dur)) || (tail && !free('p-pool', tail.at, tail.dur))) continue;
+    k++;
+    for (const h of plan) {
+      travel(`p-${h.n}`, h.at, h.dur, h.back);
+      flash(`${lands(h.n, h.back)}-hit`, h.at + h.dur);
     }
-  };
-
-  s.at('hint', 'opacity', 0.25, 0.15, 1, 0, ease.linear);
-
-  const land1 = send(0, 0.35);
-  const drops = flow.map((_, i) => land1 + 0.05 + i * 0.2);
-  flow.forEach((t, i) => {
-    s.set(`g-${t.id}`, 'scale', drops[i]!, 1);
-    s.dropAt(`g-${t.id}`, drops[i]!);
-  });
-  flow.slice(0, -1).forEach((t, i) => s.draw(`w-${t.id}`, drops[i + 1]! + 0.45, 0.24));
-  let run = drops[2]! + 0.75;
-  flow.slice(0, -1).forEach((t, i) => {
-    const dur = Math.max(0.3, s.wireLength(`w-${t.id}`) / 270);
-    s.travel(`p-${t.id}`, run, dur);
-    run += dur;
-    const next = flow[i + 1]!;
-    if (i < flow.length - 2) {
-      flash(`${next.id}-hit`, run);
-      run += 0.1;
+    if (tail) {
+      travel('p-pool', tail.at, tail.dur, false);
+      flash(`pod-${lit[podTurn++ % lit.length]}-hit`, tail.at + tail.dur);
     }
-  });
-  const ship = flow[2]!;
-  s.at(`g-${ship.id}`, 'translate', run, 0.3, '0 0', '0 -6px', curve.pull);
-  s.at(`g-${ship.id}`, 'translate', run + 0.3, 0.74, '0 -6px', '0 0', curve.settle);
-  const exit1 = run + 1.45;
-  light(ship, run, exit1);
-  const still = run + 0.6;
+  }
 
-  flow.slice(0, -1).forEach(t => s.retract(`w-${t.id}`, exit1, 0.23, 'start', curve.snapOff));
-  flow.forEach((t, i) => {
-    const t0 = exit1 + 0.1 + i * 0.08;
-    s.at(`g-${t.id}`, 'scale', t0, 0.745, 1, 0, curve.exit);
-    s.set(`g-${t.id}`, 'opacity', t0 + 0.8, 0);
-  });
-  clear(0, exit1 + 0.1);
+  s.at('core-live', 'scale', T.live + 1.25, 1.25, '1 1', '1 0.92', ease.io);
+  s.at('core-live', 'scale', T.live + 2.5, 1.25, '1 0.92', '1 1', ease.io);
+  s.at('core-live', 'rotate', T.live + 1.25, 1.25, '0deg', '1deg', ease.io);
+  s.at('core-live', 'rotate', T.live + 2.5, 1.25, '1deg', '-1deg', ease.io);
+  s.at('core-live', 'rotate', T.live + 3.75, 1.25, '-1deg', '0deg', ease.io);
 
-  const t2 = exit1 + 0.55;
-  const land2 = send(1, t2);
-  const pop = (t: Tile, at: number) => {
-    s.at(`g-${t.id}`, 'scale', at, 0.23, 0.05, 1.14, ease.out);
-    s.at(`g-${t.id}`, 'scale', at + 0.23, 0.24, 1.14, 1, ease.io);
-  };
-  pop(hub, land2 + 0.05);
-  const satPops = sats.map((_, i) => land2 + 0.4 + i * 0.167);
-  sats.forEach((t, i) => {
-    pop(t, satPops[i]!);
-    s.draw(`w-${t.id}`, satPops[i]! + 0.3, 0.3, ease.out);
+  const c = T.collapse;
+  retract('w-pool', c, 0.23, 'start', curve.snapOff);
+  [...waves].reverse().forEach((w, i) => s.at(`wave-${w}`, 'opacity', c + 0.05 + i * 0.066, 0.18, 1, 0, ease.linear));
+  s.at('slots', 'opacity', c + 0.05, 0.2, 1, 0, ease.linear);
+  s.at('pool', 'opacity', c + 0.85, 0.25, 1, 0, ease.linear);
+  [...leaves].reverse().forEach((n, i) => {
+    const t = c + 0.15 + i * 0.05;
+    retract(`w-${n}`, t, 0.23, 'start', curve.snapOff);
+    s.at(`g-${n}`, 'scale', t + 0.1, 0.42, 1, 0, curve.shrink);
   });
-  const fan = satPops[3]! + 0.85;
-  const exit2 = fan + 1.4;
-  light(hub, fan - 0.15, exit2);
-  sats.forEach(t => {
-    const dur = Math.max(0.3, s.wireLength(`w-${t.id}`) / 270);
-    s.travel(`p-${t.id}`, fan, dur);
-    flash(`${t.id}-hit`, fan + dur);
+  services.forEach((n, i) => {
+    const t = c + 0.8 + i * 0.05;
+    s.at(`g-${n}`, 'translate', t, 0.355, '0 0', slideFrom(n), curve.slide);
+    retract(`w-${n}`, t, 0.355, 'start', curve.slide);
+    s.set(`g-${n}`, 'opacity', t + 0.4, 0);
   });
-
-  sats.forEach(t => s.retract(`w-${t.id}`, exit2, 0.23, 'start', curve.snapOff));
-  [...sats].reverse().forEach((t, i) => s.at(`g-${t.id}`, 'scale', exit2 + 0.1 + i * 0.06, 0.42, 1, 0, curve.shrink));
-  s.at(`g-${hub.id}`, 'scale', exit2 + 0.4, 0.45, 1, 0, curve.shrink);
-  clear(1, exit2 + 0.1);
-  const end = Math.ceil((exit2 + 1.2) * 10) / 10;
-  s.at('hint', 'opacity', exit2 + 0.85, 0.3, 0, 1, ease.linear);
-  s.loop(end, still);
+  s.at('core-live', 'scale', c + 1.3, 0.45, '1 1', '0 0', curve.shrink);
+  s.at('core-shadow', 'opacity', c + 1.3, 0.4, 1, 0, ease.linear);
+  s.set('core-body', 'opacity', c + 1.8, 0);
+  s.set('core-live', 'scale', c + 1.85, '1 1');
+  s.set('world', 'translate', c + 1.85, '0 0');
+  s.at('prompt', 'opacity', c + 1.2, 0.3, 1, 0, ease.linear);
+  s.set('prompt', 'clipPath', c + 1.55, 'inset(-20% 100% -20% 0)');
+  s.set('prompt', 'opacity', c + 1.6, 1);
+  s.set('caret', 'translate', c + 1.55, '0 0');
+  s.at('hint', 'opacity', c + 1.6, 0.25, 0, 1, ease.linear);
+  s.loop(T.end, T.still);
   return s;
 }
 
-export const hero = art(
-  build({
-    name: 'hero-sm',
-    width: 390,
-    height: 500,
-    origin: [195, 318],
-    plate: 256,
-    card: { at: [195, 62], anchor: 'center', size: 13 },
-    feed: 'drop',
-    feedFrom: [195, 80],
-    tile: 64,
-    pitch: 94,
-    hub: 72,
-    sat: 52,
-    reach: 94,
-    thick: 20,
-    text: 11,
-  }),
-  build({
-    name: 'hero-lg',
-    width: 1200,
-    height: 560,
-    origin: [850, 290],
-    plate: 440,
-    card: { at: [56, 150], anchor: 'left', size: 14 },
-    feed: 'diagonal',
-    feedFrom: [380, 150],
-    tile: 100,
-    pitch: 152,
-    hub: 116,
-    sat: 84,
-    reach: 160,
-    thick: 26,
-    text: 13,
-  }),
-  640,
-);
+const sp = (dx: number, dy: number): Vec2 => {
+  const [a, b] = [dx / ISO_X, dy / ISO_Y];
+  return [(a + b) / 2, (b - a) / 2];
+};
 
-export default { ...page({ title: 'Prompt to scene', surface: 'dark', art: hero }), background: ui.page };
+const wide = build({
+  name: 'hero-lg',
+  width: 1200,
+  height: 560,
+  origin: [660, 320],
+  core: { size: 112, height: 52, text: 13 },
+  service: { size: 64, height: 22, text: 12 },
+  leaf: { size: 42, height: 16 },
+  place: {
+    queue: { at: [0, -205] },
+    'worker-a': { at: [-90, -330], exit: 'y' },
+    'worker-b': { at: [0, -330] },
+    'worker-c': { at: [90, -330], exit: 'y' },
+    db: { at: [205, 0] },
+    'replica-a': { at: [330, -60], exit: 'x' },
+    'replica-b': { at: [330, 80], exit: 'x' },
+    gateway: { at: [0, 205] },
+    'cdn-a': { at: [-80, 330], exit: 'y' },
+    'cdn-b': { at: [80, 330], exit: 'y' },
+    auth: { at: [-150, 205] },
+    cache: { at: [-205, 0] },
+    'shard-a': { at: [-205, -130] },
+    'shard-b': { at: [-330, 60], exit: 'x' },
+  },
+  pool: { at: [300, -300], cols: 6, rows: 5, pitch: 40, pod: 28, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
+  pan: [-216, 0],
+  card: { x: 40, y: 32, w: 484, h: 104, text: 22, head: 15 },
+  feed: [526, 84],
+  ground: { at: [560, 330], size: 1100, pitch: 26 },
+});
+
+const compact = build({
+  name: 'hero-sm',
+  width: 390,
+  height: 580,
+  origin: [195, 380],
+  core: { size: 72, height: 34, text: 10 },
+  service: { size: 42, height: 15, text: 9 },
+  leaf: { size: 28, height: 11 },
+  place: {
+    queue: { at: sp(-95, 55) },
+    'worker-a': { at: sp(-160, 35), exit: 'x' },
+    'worker-b': { at: sp(-135, 110), exit: 'y' },
+    'worker-c': { at: sp(-70, 125), exit: 'y' },
+    db: { at: sp(95, 55) },
+    'replica-a': { at: sp(160, 35), exit: 'y' },
+    'replica-b': { at: sp(130, 112), exit: 'x' },
+    gateway: { at: sp(95, -55) },
+    'cdn-a': { at: sp(55, -125), exit: 'x' },
+    'cdn-b': { at: sp(150, -105), exit: 'y' },
+    auth: { at: sp(160, -30) },
+    cache: { at: sp(-95, -55) },
+    'shard-a': { at: sp(-50, -125), exit: 'y' },
+    'shard-b': { at: sp(-160, -40), exit: 'x' },
+  },
+  pool: { at: sp(0, 205), cols: 6, rows: 5, pitch: 26, pod: 18, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
+  pan: [0, -70],
+  card: { x: 16, y: 16, w: 358, h: 80, text: 14, head: 12 },
+  feed: [195, 96],
+  ground: { at: [195, 360], size: 640, pitch: 18 },
+});
+
+const tilt = `<script type="module">
+const fine = matchMedia('(hover: hover) and (pointer: fine)');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const rest = [${T.live}, ${T.collapse - 0.1}];
+const max = 3.5;
+const bind = (wrap) => {
+  if (wrap.dataset.tilt) return;
+  wrap.dataset.tilt = '1';
+  wrap.style.transition = 'transform 1.1s cubic-bezier(.22,1,.36,1)';
+  const clocks = new WeakMap();
+  const loopTime = () => {
+    const root = [...wrap.querySelectorAll('.iso')].find(r => r.offsetParent !== null && r.iso);
+    if (!root) return -1;
+    let a = clocks.get(root);
+    if (!a) {
+      a = root.getAnimations({ subtree: true }).find(x => x.effect?.getTiming().iterations === Infinity && x.effect.getTiming().duration === root.iso.spec.loop * 1000);
+      if (!a) return -1;
+      clocks.set(root, a);
+    }
+    const t = Number(a.currentTime) / 1000 - root.iso.spec.intro;
+    return t < 0 ? -1 : t % root.iso.spec.loop;
+  };
+  let pointer = null;
+  let frame = 0;
+  let timer = 0;
+  const flat = 'perspective(1800px) rotateX(0deg) rotateY(0deg)';
+  const update = () => {
+    frame = 0;
+    const t = loopTime();
+    if (!pointer || reduce.matches || !fine.matches || t < rest[0] || t > rest[1]) {
+      wrap.style.transform = flat;
+      return;
+    }
+    const r = wrap.getBoundingClientRect();
+    const x = Math.max(-1, Math.min(1, (pointer[0] - r.left - r.width / 2) / (r.width / 2)));
+    const y = Math.max(-1, Math.min(1, (pointer[1] - r.top - r.height / 2) / (r.height / 2)));
+    wrap.style.transform = 'perspective(1800px) rotateX(' + (y * max * 0.8).toFixed(2) + 'deg) rotateY(' + (-x * max).toFixed(2) + 'deg)';
+  };
+  const queue = () => frame || (frame = requestAnimationFrame(update));
+  wrap.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    pointer = [e.clientX, e.clientY];
+    if (!timer) timer = setInterval(queue, 250);
+    queue();
+  }, { passive: true });
+  wrap.addEventListener('pointerleave', () => {
+    pointer = null;
+    clearInterval(timer);
+    timer = 0;
+    queue();
+  });
+};
+const scan = () => document.querySelectorAll('.iso-switch-${compact.name}').forEach(bind);
+scan();
+new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+</script>`;
+
+export const hero = art(compact, wide, 640, tilt);
+
+export default { ...page({ title: 'One prompt, a whole system', surface: 'dark', art: hero }), background: ui.page };
