@@ -22,8 +22,8 @@ Every image here is a real scene from `skill/examples/`, written by `exportSvg()
   </tr>
   <tr>
     <td><img src="docs/svg/inbox-fill.svg" alt="Letters stack in a glass tray" width="100%"></td>
-    <td><img src="docs/svg/bell-ring.svg" alt="A bell rocks and rings spread" width="100%"></td>
-    <td></td>
+    <td><img src="docs/svg/alert-stack.svg" alt="Notification cards stack on a tile while a badge counts up" width="100%"></td>
+    <td><img src="docs/svg/keycard-slot.svg" alt="A keycard slides into a reader and its light turns green" width="100%"></td>
   </tr>
 </table>
 
@@ -191,7 +191,7 @@ s.exportSvg();   // one standalone SVG, animated with CSS @keyframes, no script
 
 There are 39 scenes for fictional products at four levels, in four categories (the showcase tabs: Product, Security, Infra, Data & AI). Every tab has at least one scene at every level.
 
-- Spot: small one- or two-object scenes for feature lists, empty states and loaders: a lock, a sync loop, a filling inbox, a charging battery, a bell, a table scan, a tile loader and an empty box.
+- Spot: small one- or two-object scenes for feature lists, empty states and loaders: a keycard reader, a sync loop, a filling inbox, a charging battery, an alert stack, a table scan, a tile loader and an empty box.
 - Simple: CI/CD, notifications, file upload, database branching, a service map you can hover, an audit ledger, DNS resolution and cron jobs.
 - Medium: auth, ETL, queue and workers, search index, a feature flag rollout you can play, key rotation, a firewall, zero-trust access, a workload scheduler, autoscaling, health checks, a blue-green release, a snapshot restore, embedding clusters, a training loss curve, a re-ranking shelf and an A/B test.
 - Complex: an AI agent calling tools, payments, edge cache, observability, a data erasure request and a retrieval-backed answer.
@@ -204,11 +204,11 @@ All numbers were measured on 2026-11-06 on an Apple silicon Mac with Chrome. 1 k
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero inline, 45 empty scene boxes, the install tabs) | 580.6 kB | 49.3 kB |
-| Showcase CSS | 24.2 kB | 5.5 kB |
+| Showcase `index.html` (the hero inline, 45 empty scene boxes, folded prompts, the install tabs) | 607.7 kB | 50.4 kB |
+| Showcase CSS | 25.3 kB | 5.7 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 5.6 kB | 2.2 kB |
-| Showcase inline JS (copy buttons, filter, install tabs, flag demo, hero tilt) | 7.0 kB | 2.6 kB |
-| All 82 scene files in `site/dist/scenes/` (compact and wide copies) | 9545.6 kB | 738.6 kB |
+| Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag demo, hero tilt) | 7.4 kB | 2.7 kB |
+| All 82 scene files in `site/dist/scenes/` (compact and wide copies) | 9558.7 kB | 739.6 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 3.3 kB | 1.4 kB |
 | Runtime with `mountLazy()` | 4.8 kB | 2.0 kB |
@@ -216,12 +216,12 @@ All numbers were measured on 2026-11-06 on an Apple silicon Mac with Chrome. 1 k
 
 The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (45), not all 82.
 
-Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome:
+Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load (the same hero alone on a page measured 24.6 % and 27.4 % an hour apart); the frame rate did not:
 
 | Viewport | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy |
 |---|---|---|---|---|---|
-| 393 px (phone) | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 36.2 % |
-| 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 43.8 % |
+| 393 px (phone) | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 42.4 % (41.9 to 46.6) |
+| 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 54.5 % (53.6 to 55.7) |
 
 How they were measured:
 

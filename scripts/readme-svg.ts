@@ -17,7 +17,7 @@ const card = (surface: Example['surface']) => ({ background: surfaces[surface].c
 if (!hero.wide) throw new Error('readme-svg: the hero needs a wide scene');
 await write('hero.svg', hero.wide.scene.exportSvg({ title: 'One prompt becomes a whole system', background: surfaces.dark.page, radius: 24 }));
 await write('hero-phone.svg', hero.compact.scene.exportSvg({ title: 'One prompt becomes a whole system', background: surfaces.dark.page, radius: 24 }));
-for (const slug of ['battery-charge', 'sync-loop', 'tile-loader', 'inbox-fill', 'bell-ring']) {
+for (const slug of ['battery-charge', 'sync-loop', 'tile-loader', 'inbox-fill', 'alert-stack', 'keycard-slot']) {
   const e = examples.find(x => x.slug === slug);
   if (!e) throw new Error(`readme-svg: no example ${slug}`);
   await write(`${slug}.svg`, e.art.compact.scene.exportSvg({ title: e.title, ...card(e.surface) }));

@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const target = args.page;
-if (!target) throw new Error('usage: node perf.mjs page=<file.html | http(s)://url> [width=393] [throttle=4] [seconds=20] [selector=.iso] [scroll=0]');
+if (!target) throw new Error('usage: node perf.mjs page=<file.html | http(s)://url> [width=393] [throttle=4] [seconds=20] [selector=.iso] [remove=<css selector of parts to take off the page first, to find what costs>]');
 const width = Number(args.width ?? 393);
 const throttle = Number(args.throttle ?? 4);
 const seconds = Number(args.seconds ?? 20);
@@ -15,6 +15,7 @@ const cdp = await page.context().newCDPSession(page);
 await cdp.send('Performance.enable');
 await page.goto(/^https?:/.test(target) ? target : pathToFileURL(resolve(target)).href, { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
+if (args.remove) await page.evaluate(sel => document.querySelectorAll(sel).forEach(e => e.remove()), args.remove);
 await page.locator(selector).first().scrollIntoViewIfNeeded();
 await page.waitForTimeout(500);
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });

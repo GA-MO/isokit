@@ -36,8 +36,8 @@ Pick the example closest to your story and read it before drawing:
 | `checkout-payment.ts` | complex | a ring of steps with a dashed return path and a status line that crossfades |
 | `edge-cache.ts` | complex | the same request twice: a warm miss to the origin, then a cool hit at the edge |
 | `observability.ts` | complex | three signal looks (dashes, dots, spans), `prism` bars with `heightTo`, an alert and recovery |
-| `key-lock.ts`, `battery-charge.ts`, `tile-loader.ts`, `empty-box.ts` | spot | one small object for a feature list, loader or empty state; clip-path legs, `heightTo` cells, a diagonal drop wave, marching dashes |
-| `sync-loop.ts`, `inbox-fill.ts`, `bell-ring.ts`, `table-scan.ts` | spot | arrows squashed onto the plane, a glass-fronted tray, raw SVG on a slab base, a lens gliding row by row |
+| `keycard-slot.ts`, `battery-charge.ts`, `tile-loader.ts`, `empty-box.ts` | spot | one small object for a feature list, loader or empty state; an upright `panel()` card clipped at a slot's lip, `heightTo` cells, a diagonal drop wave, marching dashes |
+| `sync-loop.ts`, `inbox-fill.ts`, `alert-stack.ts`, `table-scan.ts` | spot | arrows squashed onto the plane, a glass-fronted tray, cards sliding onto a stack with a badge that counts and rides the top card, a lens gliding row by row |
 | `audit-ledger.ts`, `dns-resolve.ts`, `cron-jobs.ts` | simple | pages stacking with seals, one hop at a time with replies, a dial that triggers jobs |
 | `vault-rotate.ts`, `firewall-filter.ts`, `zero-trust.ts` | medium | a key swap with the slot pattern, a rejected packet bouncing back, every request stamped |
 | `workload-scheduler.ts`, `autoscale.ts`, `health-check.ts` | medium | placement from a small rule table, make room for a new node, a node pulled out and rejoined |
