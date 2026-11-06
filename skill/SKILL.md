@@ -15,7 +15,7 @@ The kit lives next to this file:
 - `scripts/shots.mjs`: screenshots any page at chosen times and widths and writes `sheet.png`.
 - `scripts/check.ts`: strict type-check of scene files anywhere on disk against the kit (`bun scripts/check.ts scene.ts`).
 - `scripts/study-rive.mjs`, `scripts/compare-rive.mjs`: optional tools for studying a `.riv` animation of your own frame by frame and comparing it with a kit scene. Both need `runtime=<folder with canvas_advanced.mjs and rive.wasm>`.
-- `examples/`: 14 scenes for fictional products, each one file that exports `example` (title, story, prompt, level) and a default `Page`, so `scripts/render.ts` renders any of them. `hero.ts` and `material-gallery.ts` export `html` and a default `Page` instead. `examples/shared.ts` holds the surfaces, colour ramps, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
+- `examples/`: 39 scenes for fictional products, each one file that exports `example` (title, story, prompt, level, category, and `art`: the compact and wide scenes from `art(compact, wide, breakpoint)`) and a default `Page`, so `scripts/render.ts` renders any of them. A `spot` scene is a single small scene, `art(compact)`. `hero.ts` and `material-gallery.ts` export `hero` and `gallery` (an `Art`) and a default `Page` instead. `examples/shared.ts` holds the surfaces, colour ramps, `paints`, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
 
 Pick the example closest to your story and read it before drawing:
 
@@ -35,6 +35,14 @@ Pick the example closest to your story and read it before drawing:
 | `checkout-payment.ts` | complex | a ring of steps with a dashed return path and a status line that crossfades |
 | `edge-cache.ts` | complex | the same request twice: a warm miss to the origin, then a cool hit at the edge |
 | `observability.ts` | complex | three signal looks (dashes, dots, spans), `prism` bars with `heightTo`, an alert and recovery |
+| `key-lock.ts`, `battery-charge.ts`, `tile-loader.ts`, `empty-box.ts` | spot | one small object for a feature list, loader or empty state; clip-path legs, `heightTo` cells, a diagonal drop wave, marching dashes |
+| `sync-loop.ts`, `inbox-fill.ts`, `bell-ring.ts`, `table-scan.ts` | spot | arrows squashed onto the plane, a glass-fronted tray, raw SVG on a slab base, a lens gliding row by row |
+| `audit-ledger.ts`, `dns-resolve.ts`, `cron-jobs.ts` | simple | pages stacking with seals, one hop at a time with replies, a dial that triggers jobs |
+| `vault-rotate.ts`, `firewall-filter.ts`, `zero-trust.ts` | medium | a key swap with the slot pattern, a rejected packet bouncing back, every request stamped |
+| `workload-scheduler.ts`, `autoscale.ts`, `health-check.ts` | medium | placement from a small rule table, make room for a new node, a node pulled out and rejoined |
+| `blue-green.ts`, `snapshot-restore.ts` | medium | a re-targeted wire, a cursor sliding back along a timeline |
+| `embedding-clusters.ts`, `training-loss.ts`, `recs-rerank.ts`, `ab-test.ts` | medium | points settling into clusters, falling `prism` bars, a slot shelf re-ordering, a split with a winner |
+| `data-erasure.ts`, `rag-answer.ts` | complex | one request fanning out to six systems with a counter, retrieved cards flying into a model and an answer typing in |
 | `hero.ts` | complex | two prompts per loop, each building and clearing a scene on an artboard plate |
 | `materials.ts`, `material-gallery.ts` | | 15 side finishes as `(scene) => Material` factories, shown on a hover grid. Copy a finish rather than inventing one |
 
@@ -166,6 +174,8 @@ const html = responsive(buildCompact(), buildWide());
   mountAll();
 </script>
 ```
+
+A page with many scenes should not ship them all inline. Render each compact and wide scene to its own file at build time and mount the one that fits its box when the box nears the screen: the showcase does this with `art()` from `examples/shared.ts`, `site/src/pages/scenes/[name].html.ts` and `site/src/scripts/arts.ts` (`mount()` from `lib/runtime.ts` on each fetched scene).
 
 Copy `lib/iso.ts` and `lib/runtime.ts` into the project as `src/lib/iso/` (they have no dependencies). With Astro's ClientRouter, call `mountAll()` on `astro:page-load` and `el.iso?.destroy()` on `astro:before-swap`. Scenes are built at build time, so the page ships only the SVG and the small runtime. The isokit showcase site (`site/` in the repo) renders every example this way.
 

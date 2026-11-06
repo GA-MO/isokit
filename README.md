@@ -7,7 +7,7 @@ Showcase: https://ga-mo.github.io/isokit/
 The repo has two parts:
 
 - `skill/` is the skill. Point `~/.claude/skills/iso` at it and Claude Code can use it.
-- `site/` is the showcase website. It renders every example in `skill/examples/` at build time.
+- `site/` is the showcase website. It renders every example in `skill/examples/` at build time, each into its own file that the page mounts when it scrolls near.
 
 ## Install
 
@@ -44,13 +44,14 @@ To use scenes in your own site, import `Scene` and `responsive` from `skill/lib/
 
 ## What is in `skill/examples/`
 
-There are 14 scenes for fictional products at three levels:
+There are 39 scenes for fictional products at four levels, in four categories (the showcase tabs: Product, Security, Infra, Data & AI). Every tab has at least one scene at every level.
 
-- Simple: CI/CD, notifications, file upload, database branching, and a service map you can hover.
-- Medium: auth, ETL, queue and workers, search index, and a feature flag rollout you can play.
-- Complex: an AI agent calling tools, payments, edge cache, and observability.
+- Spot: small one- or two-object scenes for feature lists, empty states and loaders: a lock, a sync loop, a filling inbox, a charging battery, a bell, a table scan, a tile loader and an empty box.
+- Simple: CI/CD, notifications, file upload, database branching, a service map you can hover, an audit ledger, DNS resolution and cron jobs.
+- Medium: auth, ETL, queue and workers, search index, a feature flag rollout you can play, key rotation, a firewall, zero-trust access, a workload scheduler, autoscaling, health checks, a blue-green release, a snapshot restore, embedding clusters, a training loss curve, a re-ranking shelf and an A/B test.
+- Complex: an AI agent calling tools, payments, edge cache, observability, a data erasure request and a retrieval-backed answer.
 
-There are also the hero scene and 15 side finishes in `materials.ts`.
+There are also the hero scene and 15 side finishes in `materials.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
 
 ## Numbers
 
@@ -58,15 +59,20 @@ All numbers were measured on 2026-11-06.
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (32 scenes: compact and wide copies of 16) | 2346.8 kB | 208.6 kB |
-| Showcase CSS | 23.2 kB | 5.3 kB |
-| Showcase inline JS (scene runtime, copy buttons, filter, flag demo) | 7.4 kB | 2.8 kB |
+| Showcase `index.html` (the hero inline, 40 empty scene boxes) | 588.9 kB | 45.0 kB |
+| Showcase CSS | 23.4 kB | 5.4 kB |
+| Showcase JS bundle (scene runtime, lazy mounting, copy buttons, filter) | 4.9 kB | 1.9 kB |
+| Showcase inline JS (flag demo and the rest of the module scripts) | 4.2 kB | 1.7 kB |
+| All 72 scene files in `site/dist/scenes/` (compact and wide copies) | 8310.1 kB | 648.0 kB |
+| Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
 | Scene runtime alone (`skill/lib/entry.ts`) | 3.3 kB | 1.4 kB |
+
+The page does not grow with the number of scenes. Each card holds an empty box. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits the box, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (40), not all 72. Before this change the page shipped every copy inline: 208.6 kB gzip for 16 scenes.
 
 How they were measured:
 
-- Showcase rows: `bun run build && bun run size` at the repo root. `site/scripts/size.ts` gzips every file in `site/dist` at level 9 and sums the inline module scripts.
-- Runtime row: `bun build skill/lib/entry.ts --minify --target browser > /tmp/iso.js`, then `wc -c < /tmp/iso.js` for raw and `gzip -9 -c /tmp/iso.js | wc -c` for gzip. All rows use 1 kB = 1024 bytes.
+- Showcase rows: `bun run build && bun run size` at the repo root. `site/scripts/size.ts` gzips each file in `site/dist` at level 9, sums the inline module scripts and the scene files.
+- Runtime row: `bun build skill/lib/entry.ts --minify --target browser > out.js`, then `wc -c < out.js` for raw and `gzip -9 -c out.js | wc -c` for gzip. All rows use 1 kB = 1024 bytes.
 
 Fonts are not counted. The site self-hosts Inter and Fira Code as `woff2`.
 
