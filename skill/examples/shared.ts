@@ -203,7 +203,7 @@ function glass(s: Scene, tint: string, opacity = 0.6): Material {
   return {
     kind: 'custom',
     opacity,
-    paint: (_, a, t, band) => fill(a, t, vertical(s, `glass-${k}`, band, [[0, '#ffffff', 0.95], [0.06, '#ffffff', 0.5], [0.2, tint, 0.55], [1, tint, 0.9]])),
+    paint: (_, a, t, band) => fill(a, t, vertical(s, `glass-${k}`, band, [[0, '#ffffff'], [0.14, tint], [1, tint]])),
   };
 }
 

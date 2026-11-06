@@ -68,6 +68,4 @@ export const galleries: readonly Gallery[] = finishCategories.map(c => {
   return { ...c, finishes: list, art: art(build(`finish-${c.slug}-sm`, list, compact), build(`finish-${c.slug}-lg`, list, wide), 640) };
 });
 
-export const gallery = galleries[0]!.art;
-
-export default { ...page({ title: 'Side finishes', surface: 'dark', art: gallery }), background: ui.page, body: `<main>${galleries.map(g => g.art.html).join('')}</main>` };
+export default { ...page({ title: 'Side finishes', surface: 'dark', art: galleries[0]!.art }), background: ui.page, body: `<main>${galleries.map(g => g.art.html).join('')}</main>` };

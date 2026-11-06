@@ -9,13 +9,14 @@ A scene tells one product story in one 6 to 14 second loop: things arrive, light
 
 The kit lives next to this file:
 
-- `lib/iso.ts`: the `Scene` builder (projection, slabs, faces, wires, pulses, labels, motion tracks) and `responsive()`.
+- `lib/iso.ts`: the `Scene` builder (projection, slabs, faces, wires, pulses, labels, motion tracks), `scene.exportSvg()`, `responsive()` and `lazyBox()`.
 - `lib/runtime.ts`: plays a rendered scene with WAAPI, starts its intro once 40 % of it (or half the screen height, for a tall scene) is in view, pauses it off screen, stills it for reduced motion, exposes `window.isoSeek(t)`.
 - `scripts/render.ts`: renders a scene module (default export `Page`) to one standalone HTML file with the runtime inlined.
 - `scripts/shots.mjs`: screenshots any page at chosen times and widths and writes `sheet.png`.
 - `scripts/check.ts`: strict type-check of scene files anywhere on disk against the kit (`bun scripts/check.ts scene.ts`).
+- `scripts/perf.mjs`: plays a page in Chrome at a phone width with the CPU throttled (`node scripts/perf.mjs page=<out.html> width=393 throttle=4 seconds=20`) and prints frame rate, frame-time percentiles, late frames, long tasks and main-thread time. Run it on any scene with 30 or more moving objects.
 - `scripts/study-rive.mjs`, `scripts/compare-rive.mjs`: optional tools for studying a `.riv` animation of your own frame by frame and comparing it with a kit scene. Both need `runtime=<folder with canvas_advanced.mjs and rive.wasm>`.
-- `examples/`: 39 scenes for fictional products, each one file that exports `example` (title, story, prompt, level, category, and `art`: the compact and wide scenes from `art(compact, wide, breakpoint)`) and a default `Page`, so `scripts/render.ts` renders any of them. A `spot` scene is a single small scene, `art(compact)`. `hero.ts` and `material-gallery.ts` export `hero` and `gallery` (an `Art`) and a default `Page` instead. `examples/shared.ts` holds the surfaces, colour ramps, `paints`, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
+- `examples/`: 39 scenes for fictional products, each one file that exports `example` (title, story, prompt, level, category, and `art`: the compact and wide scenes from `art(compact, wide, breakpoint)`) and a default `Page`, so `scripts/render.ts` renders any of them. A `spot` scene is a single small scene, `art(compact)`. `hero.ts` exports `hero` (an `Art`) and `material-gallery.ts` exports `galleries` (one `Art` per finish family), each with a default `Page`. `examples/shared.ts` holds the surfaces, colour ramps, `paints`, fonts and `fitX()`, which keeps a label inside its scene on the narrowest card it will sit in.
 
 Pick the example closest to your story and read it before drawing:
 
@@ -43,8 +44,8 @@ Pick the example closest to your story and read it before drawing:
 | `blue-green.ts`, `snapshot-restore.ts` | medium | a re-targeted wire, a cursor sliding back along a timeline |
 | `embedding-clusters.ts`, `training-loss.ts`, `recs-rerank.ts`, `ab-test.ts` | medium | points settling into clusters, falling `prism` bars, a slot shelf re-ordering, a split with a winner |
 | `data-erasure.ts`, `rag-answer.ts` | complex | one request fanning out to six systems with a counter, retrieved cards flying into a model and an answer typing in |
-| `hero.ts` | complex | two prompts per loop, each building and clearing a scene on an artboard plate |
-| `materials.ts`, `material-gallery.ts` | | 15 side finishes as `(scene) => Material` factories, shown on a hover grid. Copy a finish rather than inventing one |
+| `hero.ts` | complex | one prompt grows a system in tiers of 1, 5, 15 and 40: a turntable spin-in and a weighted drop, outputs sliding out from under, pops, a make-room pan with a grid fill, endless requests, a tilt toward the mouse at rest; SVG `text()` only, so `exportSvg()` works on it |
+| `materials-*.ts`, `material-gallery.ts` | | 49 side finishes in six families (Metal, Glass, Natural, Tech pattern, Retro, Generative) as `(scene) => Material` factories, one label-free gallery per family. Generative finishes take a seed. Copy a finish rather than inventing one |
 
 Setup once: `cd <this dir>/scripts && bun install && bunx playwright install webkit` (screenshots use the installed Google Chrome for Chromium). Type-check: `scripts/node_modules/.bin/tsc -p <this dir>`.
 
@@ -90,7 +91,7 @@ Same ids are fine in both because each scene has its own `name` prefix. `respons
   - `{ kind: 'flat', color }`: the plain colour behind `paints.flat`.
   - `{ kind: 'marble', colors, streak? }`: an `feTurbulence` stone texture the kit still draws. The examples never use it; reach for it only when a brand asks for stone.
   - `{ kind: 'image', href, right?, corner?, opacity? }`: a raster texture (WebP data URL) sheared onto each face, embedded once and reused by every corner strip. Use it when a designer supplies the texture or the look needs baked lighting; set `shade: false` on the slab when the lighting is already in the image. Export at 2x the size the side is shown, quality 0.9 or more for grain (0.8 erases it). Measured on two scenes: a raster copy of a filter paint looks the same and costs the same, so filters stay the default; what makes a textured side look better is its design (fine streaks, lighting along the face, a bright rim), not the format.
-  - `{ kind: 'custom', paint, corner?, opacity? }`: any SVG paint. `paint(face, area, transform, band)` returns markup for one side: fill `area` and put `transform` on what you draw, so stripes, patterns and gradients lie on the face (`band.y0` to `band.y1` is the side's height on screen, for vertical gradients). Copy a finish from `examples/materials.ts` (each is a `(scene) => Material` factory that registers its patterns with `def()`) rather than inventing one.
+  - `{ kind: 'custom', paint, corner?, opacity? }`: any SVG paint. `paint(face, area, transform, band)` returns markup for one side: fill `area` and put `transform` on what you draw, so stripes, patterns and gradients lie on the face (`band.y0` to `band.y1` is the side's height on screen, for vertical gradients). Copy a finish from `examples/materials-*.ts` (each is a `(scene) => Material` factory that registers its patterns with `def()`) rather than inventing one.
   - The kit bends every material around the rounded front corner: the corner is cut into 12 strips, each sheared to the curve's slope, and the two sides' paints crossfade along it, so a stripe turns the corner as one line instead of breaking at a seam. Paints built from `feTurbulence` noise re-render per strip and show vertical lines, so they crossfade the corner instead (`corner: 'fade'`; `kind: 'marble'` does this by itself). Every paint in `paints` is built from gradients and patterns, so it bends.
   - For see-through sides (glass) paint them opaque and set `opacity` on the material: translucent strips stack and show hairlines where they overlap. Set `translucent: true` on the slab when its top is see-through, so the side paint is cut out under the top face instead of showing through it.
   - The left side darkens by 10 % and fades to the right side across the corner.
@@ -175,7 +176,18 @@ const html = responsive(buildCompact(), buildWide());
 </script>
 ```
 
-A page with many scenes should not ship them all inline. Render each compact and wide scene (`scene.render()`) to its own static file at build time, put an empty box with the scene's `aspect-ratio` in its place, and when an `IntersectionObserver` (`rootMargin: '75% 0px'`) sees the box near the screen, fetch only the copy that fits the box's width (wide above the breakpoint), parse it with a `<template>`, insert it and call `mount(root)` from `lib/runtime.ts`. On a resize across the breakpoint, `root.iso.destroy()` the old copy and mount the other. `art(compact, wide, breakpoint)` in `examples/shared.ts` returns both copies' markup and sizes for this.
+A page with many scenes should not ship them all inline. Write each compact and wide copy (`scene.render()`) to its own static file at build time, put `lazyBox(compact, wide, breakpoint)` where the scene goes (an empty box that reserves the scene's aspect ratio at each width), and call `mountLazy({ src: name => url })` from `lib/runtime.ts` once in the browser:
+
+```ts
+// build time, for each scene: write compact.render() to /scenes/<compact.name>.html, the same for wide
+const box = lazyBox(compact, wide, 520); // or lazyBox(compact) for a single scene
+// browser
+mountLazy({ src: name => `/scenes/${name}.html`, rootMargin: '75% 0px', onError: (box, retry) => { /* your retry UI */ } });
+```
+
+When a box comes within `rootMargin` of the screen, `mountLazy()` fetches only the copy that fits its width (wide from `breakpoint + 1` px), mounts it, and swaps copies when a resize crosses the breakpoint. A failed fetch calls `onError` with a `retry`; without one it shows a plain retry button. A box hidden with `display: none` waits until it is shown. `art(compact, wide, breakpoint)` in `examples/shared.ts` returns both copies' markup, names and sizes for this.
+
+To put a scene where no script runs (a GitHub README, docs, an email), `scene.exportSvg({ title?, background?, radius?, color? })` returns one standalone SVG file. Its motion is the same timeline compiled to CSS `@keyframes`, the pivots ride along, and `prefers-reduced-motion` holds the still frame. A standalone SVG cannot hold HTML, so every piece of text must be `text()` (with `pill` for a pill): `exportSvg()` throws and names the `label()` it found. Hover and tap do not work in an exported file, and web fonts do not load inside an `<img>`, so give the scene a font stack that ends in system fonts.
 
 Copy `lib/iso.ts` and `lib/runtime.ts` into the project as `src/lib/iso/` (they have no dependencies). With Astro's ClientRouter, call `mountAll()` on `astro:page-load` and `el.iso?.destroy()` on `astro:before-swap`. Scenes are built at build time, so the page ships only the SVG and the small runtime. The isokit showcase site (`site/` in the repo) renders every example this way.
 

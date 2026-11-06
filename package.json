@@ -10,6 +10,7 @@
     "build": "bun run --cwd site build",
     "test": "cd skill && bun test ./lib ./examples",
     "size": "bun run --cwd site size",
-    "check:names": "sh scripts/check-names.sh"
+    "check:names": "sh scripts/check-names.sh",
+    "readme:svg": "bun scripts/readme-svg.ts"
   }
 }

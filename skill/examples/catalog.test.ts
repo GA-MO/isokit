@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test';
 import { examples } from './catalog';
-import { gallery } from './material-gallery';
+import { galleries } from './material-gallery';
 import { hero } from './hero';
 import { categories, levels } from './shared';
 
-const arts = [...examples.map(e => e.art), hero, gallery];
+const arts = [...examples.map(e => e.art), hero, ...galleries.map(g => g.art)];
 
 test('every category tab has a scene at every level', () => {
   const missing = categories.flatMap(c => levels.filter(l => !examples.some(e => e.category === c && e.level === l)).map(l => `${c}/${l}`));

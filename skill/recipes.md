@@ -80,6 +80,7 @@ Every number here was measured frame by frame from production motion design, and
 | Border shimmer | a static label stays alive | a band of light slides along the pill's top and bottom edges together (bottom about half as bright), masked to the border, at about 22 px/s on its own `ambient()` clock (a 40 s ping-pong works well), never tied to the beat loop |
 | Living border | a glowing edge | a mask of the border stroke over a wide repeating gradient translating linearly across the loop, about 70 % opacity |
 | Sway | a whole field | rotate or translate the `<svg>`'s wrapper, not every tile (a moving parent over many animated children is the expensive case) |
+| Cheap at scale | 40 or more animated objects | a long track on a large group repaints that whole group every frame it moves, so keep pans and wobbles on the smallest group that tells the story, put objects that move together (a wave of tiles) in one group, and drive pulses by dash offset alone; measure with `scripts/perf.mjs` at 393 px and CPU throttle 4x |
 
 ## Interaction
 
