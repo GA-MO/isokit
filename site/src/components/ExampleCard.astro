@@ -11,11 +11,13 @@ interface Props {
 
 const { example } = Astro.props;
 const hint = hints[example.interaction];
+const panel = `prompt-${example.slug}`;
 ---
 
 <article
   data-card
   data-category={example.category}
+  data-slug={example.slug}
   class:list={[`surface-${example.surface}`, 'flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line bg-surface text-surface-ink']}
 >
   <div class="relative px-2 pt-2 sm:px-4 sm:pt-4">
@@ -30,21 +32,46 @@ const hint = hints[example.interaction];
       )
     }
   </div>
-  <div class="flex flex-1 flex-col gap-5 border-t border-surface-line p-5 sm:p-7">
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+  <div class="flex flex-1 flex-col gap-3 border-t border-surface-line p-5 sm:px-7 sm:py-6">
+    <div class="flex items-center justify-between gap-3">
       <LevelBadge level={example.level} />
-      <span class="rounded-full border border-surface-line px-2.5 py-0.5 text-xs text-surface-muted">{example.useCase}</span>
+      <button
+        type="button"
+        data-prompt-toggle
+        aria-expanded="false"
+        aria-controls={panel}
+        class="group inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-surface-line px-3 text-xs font-medium text-surface-muted transition-colors duration-150 hover:border-surface-muted hover:text-surface-ink aria-expanded:border-surface-muted aria-expanded:text-surface-ink"
+      >
+        Prompt
+        <svg viewBox="0 0 12 12" class="size-3 transition-transform duration-300 ease-settle group-aria-expanded:rotate-180" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
     </div>
     <div>
       <h4 class="text-lg font-semibold tracking-tight text-balance">{example.title}</h4>
-      <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-pretty text-surface-muted">{example.story}</p>
+      <p class="mt-1 max-w-xl text-sm leading-relaxed text-pretty text-surface-muted">{example.story}</p>
     </div>
-    <div class="mt-auto rounded-2xl border border-surface-line bg-surface-well">
-      <div class="flex items-center justify-between gap-3 py-2 pl-4 pr-2">
-        <span class="text-xs font-medium text-surface-muted">Prompt</span>
-        <CopyButton text={example.prompt} label={`Copy the prompt for ${example.title}`} />
+    <div id={panel} class="disclose" inert>
+      <div class="min-h-0 overflow-hidden">
+        <div class="mt-2 rounded-2xl border border-surface-line bg-surface-well">
+          <div class="flex items-center justify-between gap-3 py-2 pl-4 pr-2">
+            <span class="text-xs font-medium text-surface-muted">Prompt</span>
+            <CopyButton text={example.prompt} label={`Copy the prompt for ${example.title}`} />
+          </div>
+          <p class="px-4 pb-4 font-mono text-sm leading-relaxed break-words text-surface-ink">{example.prompt}</p>
+        </div>
       </div>
-      <p class="px-4 pb-4 font-mono text-sm leading-relaxed break-words text-surface-ink">{example.prompt}</p>
     </div>
   </div>
 </article>
+
+<script>
+  document.addEventListener('click', event => {
+    const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button[data-prompt-toggle]') : null;
+    const panel = button ? document.getElementById(button.getAttribute('aria-controls') ?? '') : null;
+    if (!button || !panel) return;
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(open));
+    panel.toggleAttribute('data-open', open);
+    panel.inert = !open;
+  });
+</script>

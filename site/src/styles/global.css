@@ -72,6 +72,26 @@
 }
 
 @layer components {
+  .disclose {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.34s var(--ease-settle),
+      opacity 0.2s linear;
+  }
+
+  .disclose[data-open] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disclose {
+      transition: none;
+    }
+  }
+
   .surface-dark {
     --surface-bg: var(--color-panel);
     --surface-ink: var(--color-ink);
