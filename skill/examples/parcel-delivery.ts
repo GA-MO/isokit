@@ -99,7 +99,7 @@ function build(l: Layout) {
   s.face({ id: 'mat-ok', at: mat, size: [44 * k, 24 * k], radius: 5 * k, fill: 'rgb(16 185 129 / .3)', stroke: 'rgb(4 120 87 / .55)' });
 
   const wheels = (id: string, points: readonly Vec3[], on: 'left' | 'right') => s.svg(id, points.map(p => s.plane(p, `<circle r="${7.5 * k}" fill="#3f3f46"/><circle r="${3 * k}" fill="#a1a1aa"/>`, on)).join(''));
-  const vehicle = (id: string, parts: readonly { at: Vec3; size: Vec2; height: number; key: string }[], wheel: () => void) => {
+  const vehicle = (id: string, parts: readonly { at: Vec3; size: Vec2; height: number; key: string }[], wheel: () => unknown) => {
     s.group(id, () => {
       s.group(`${id}-body`, () => {
         wheel();

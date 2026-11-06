@@ -38,22 +38,33 @@ import { example as ragAnswer } from './rag-answer';
 import { example as trainingLoss } from './training-loss';
 import { example as recsRerank } from './recs-rerank';
 import { example as abTest } from './ab-test';
+import { example as funnelLive } from './funnel-live';
+import { example as billingCycle } from './billing-cycle';
+import { example as parcelDelivery } from './parcel-delivery';
+import { example as testShards } from './test-shards';
+import { example as kanbanMove } from './kanban-move';
+import { example as stockSync } from './stock-sync';
+import { example as diffMerge } from './diff-merge';
+import { example as refundFlow } from './refund-flow';
+import { example as liveCursors } from './live-cursors';
+import { example as twoApprovals } from './two-approvals';
+import { example as designComments } from './design-comments';
+import { example as translateSix } from './translate-six';
+import { example as cmsPublish } from './cms-publish';
+import { example as sensorGateway } from './sensor-gateway';
+import { example as smartHome } from './smart-home';
+import { example as currencyConvert } from './currency-convert';
+import { example as otaRollout } from './ota-rollout';
+import { example as buildCache } from './build-cache';
+import { example as calendarBooking } from './calendar-booking';
+import { example as loadSlider } from './load-slider';
+import { example as videoTranscode } from './video-transcode';
+import { example as imageResize } from './image-resize';
+import { example as fraudGauge } from './fraud-gauge';
+import { example as dataLineage } from './data-lineage';
+import { example as drillDown } from './drill-down';
 
 export const examples: readonly Example[] = [
-  ciDeploy,
-  notifications,
-  fileUpload,
-  dbBranching,
-  serviceMap,
-  authFlow,
-  etlPipeline,
-  queueWorkers,
-  searchIndex,
-  featureFlags,
-  agentTools,
-  checkoutPayment,
-  edgeCache,
-  observability,
   keycardSlot,
   syncLoop,
   inboxFill,
@@ -62,21 +73,60 @@ export const examples: readonly Example[] = [
   tableScan,
   tileLoader,
   emptyBox,
+  notifications,
+  fileUpload,
+  ciDeploy,
+  dbBranching,
+  serviceMap,
+  auditLedger,
+  dnsResolve,
+  kanbanMove,
+  diffMerge,
+  calendarBooking,
+  designComments,
+  cronJobs,
+  currencyConvert,
+  imageResize,
+  fraudGauge,
+  authFlow,
+  featureFlags,
+  liveCursors,
+  cmsPublish,
+  funnelLive,
+  searchIndex,
+  embeddingClusters,
+  trainingLoss,
+  abTest,
+  etlPipeline,
   vaultRotate,
   firewallFilter,
   zeroTrust,
-  auditLedger,
-  dataErasure,
+  twoApprovals,
+  billingCycle,
+  refundFlow,
+  recsRerank,
+  smartHome,
+  translateSix,
+  queueWorkers,
   workloadScheduler,
   autoscale,
   healthCheck,
-  dnsResolve,
   blueGreen,
+  testShards,
   snapshotRestore,
-  cronJobs,
-  embeddingClusters,
+  sensorGateway,
+  buildCache,
+  videoTranscode,
+  agentTools,
+  checkoutPayment,
+  parcelDelivery,
+  edgeCache,
+  observability,
+  dataErasure,
+  stockSync,
+  otaRollout,
+  loadSlider,
+  dataLineage,
   ragAnswer,
-  trainingLoss,
-  recsRerank,
-  abTest,
+  drillDown,
 ];

@@ -88,7 +88,7 @@ function build(l: Layout) {
     s.slab({ id: 'box', at: top, size: [box, box], height: 38 * k, radius: 8 * k, top: '#3f3f46', side: paints.gradient(s, ramps.graphite), edge: 'rgb(255 255 255 / .18)', grain: 0.06, shadow: false });
     s.svg('cone', s.plane([at[0], at[1] + box / 2, 19 * k], `<circle r="${9 * k}" fill="#18181b" stroke="#71717a" stroke-width="1" vector-effect="non-scaling-stroke"/><circle r="${3 * k}" fill="#52525b"/>`, 'left'));
   };
-  const draw: Record<Kind, (at: Vec3) => void> = { lights, blinds, thermostat, speaker };
+  const draw: Record<Kind, (at: Vec3) => unknown> = { lights, blinds, thermostat, speaker };
   const drawDevice = (d: (typeof devices)[number]) => {
     const at = atOf(d.dir);
     s.group(`${d.id}-g`, () => draw[d.id](at));
