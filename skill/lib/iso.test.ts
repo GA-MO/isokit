@@ -417,3 +417,49 @@ test('a panel with an empty or negative size, a negative or non-finite thickness
   for (const o of bad)
     expect(() => scene().panel({ id: 'odd', at: [0, 0, 0], size: o.size ?? [120, 80], thickness: o.thickness ?? 7, radius: o.radius ?? 14, facing: 'left', front: '#ffffff', side: '#e7e7ea' })).toThrow(/panel "odd"/);
 });
+
+test('every corner of a panel side is an outward arc of the panel radius centred on its swept inner rectangle', () => {
+  const cases = [
+    { size: [120, 80], radius: 14 },
+    { size: [40, 40], radius: 20 },
+    { size: [60, 40], radius: 20 },
+    { size: [120, 80], radius: 0 },
+  ] as const;
+  for (const facing of ['left', 'right'] as const)
+    for (const c of cases)
+      for (const thickness of [0.5, 7, 40]) {
+        const at = [10, -20, 30] as const;
+        const s = scene().panel({ id: 'p', at, size: c.size, radius: c.radius, thickness, facing, front: '#ffffff', side: '#e7e7ea' });
+        const side = sideOf(s, '#e7e7ea');
+        const [a, b] = side.matrix;
+        const back = facing === 'left' ? s.project([at[0], at[1] - thickness, at[2]]) : s.project([at[0] - thickness, at[1], at[2]]);
+        const front = s.project(at);
+        const du = (back[0] - front[0]) / a!;
+        const dv = back[1] - front[1] - b! * du;
+        const [hx, hy] = [c.size[0] / 2 - c.radius, c.size[1] / 2 - c.radius];
+        const inner = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]] as const;
+        const onSweep = (x: number, y: number) =>
+          inner.some(([ix, iy]) => {
+            const t = Math.max(0, Math.min(1, ((x - ix) * du + (y - iy) * dv) / (du * du + dv * dv)));
+            return Math.hypot(x - ix - t * du, y - iy - t * dv) < 0.05;
+          });
+        let cur: [number, number] = [0, 0];
+        let arcs = 0;
+        for (const [, cmd, args] of side.d.matchAll(/([MLA])([^MLAZ]+)/g)) {
+          const n = args!.trim().split(/[ ,]+/).map(Number);
+          const end: [number, number] = cmd === 'A' ? [n[5]!, n[6]!] : [n[0]!, n[1]!];
+          if (cmd === 'A' && c.radius > 0) {
+            arcs++;
+            expect(n[0]).toBe(c.radius);
+            const [mx, my] = [(cur[0] + end[0]) / 2, (cur[1] + end[1]) / 2];
+            const half = Math.hypot(end[0] - cur[0], end[1] - cur[1]) / 2;
+            const k = Math.sqrt(Math.max(0, c.radius ** 2 - half ** 2));
+            const [px, py] = [-(end[1] - cur[1]) / (2 * half), (end[0] - cur[0]) / (2 * half)];
+            const centre = [[mx + k * px, my + k * py], [mx - k * px, my - k * py]].find(([x, y]) => Math.sign((cur[0] - x!) * (end[1] - y!) - (cur[1] - y!) * (end[0] - x!)) === (n[4] ? 1 : -1))!;
+            expect(onSweep(centre[0]!, centre[1]!)).toBe(true);
+          }
+          cur = end;
+        }
+        if (c.radius > 0) expect(arcs).toBeGreaterThanOrEqual(4);
+      }
+});

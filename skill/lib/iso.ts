@@ -299,16 +299,25 @@ function sweptRoundRect(w: number, h: number, r: number, from: Vec2, to: Vec2): 
   const corners: Vec2[] = [[-x, -y], [x, -y], [x, y], [-x, y]];
   const hull = convexHull([from, to].flatMap(([du, dv]) => corners.map(([a, b]): Vec2 => [a + du, b + dv])));
   const p = (v: Vec2) => `${fmt(v[0])} ${fmt(v[1])}`;
-  const arc = (end: Vec2) => `A${fmt(r)} ${fmt(r)} 0 0 1 ${p(end)}`;
+  const at = (v: Vec2, n: Vec2): Vec2 => [v[0] + r * n[0], v[1] + r * n[1]];
+  const arc = (v: Vec2, n: Vec2) => `A${fmt(r)} ${fmt(r)} 0 0 1 ${p(at(v, n))}`;
   const [c] = hull;
-  if (hull.length === 1 && c) return `M${p([c[0] - r, c[1]])}${arc([c[0] + r, c[1]])}${arc([c[0] - r, c[1]])}Z`;
+  if (hull.length === 1 && c) return `M${p(at(c, [1, 0]))}${arc(c, [0, 1])}${arc(c, [-1, 0])}${arc(c, [0, -1])}${arc(c, [1, 0])}Z`;
   const edges = hull.map((a, i) => {
     const b = hull[(i + 1) % hull.length]!;
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    const n: Vec2 = [(b[1] - a[1]) / len, (a[0] - b[0]) / len];
-    return { start: [a[0] + r * n[0], a[1] + r * n[1]] as const, end: [b[0] + r * n[0], b[1] + r * n[1]] as const };
+    const dir: Vec2 = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+    return { a, b, dir, n: [dir[1], -dir[0]] as const };
   });
-  return `M${p(edges[0]!.start)}${edges.map((e, i) => `L${p(e.end)}${arc(edges[(i + 1) % edges.length]!.start)}`).join('')}Z`;
+  return `M${p(at(edges[0]!.a, edges[0]!.n))}${edges
+    .map((e, i) => {
+      const next = edges[(i + 1) % edges.length]!;
+      const sum: Vec2 = [e.n[0] + next.n[0], e.n[1] + next.n[1]];
+      const len = Math.hypot(sum[0], sum[1]);
+      const mid: Vec2 = len > 1e-9 ? [sum[0] / len, sum[1] / len] : e.dir;
+      return `L${p(at(e.b, e.n))}${arc(e.b, mid)}${arc(e.b, next.n)}`;
+    })
+    .join('')}Z`;
 }
 
 export class Scene {
@@ -471,13 +480,7 @@ export class Scene {
       throw new Error(`iso: panel "${o.id}" needs a positive finite size, a finite thickness >= 0 and a radius >= 0, got size ${w}x${h}, thickness ${o.thickness}, radius ${o.radius}`);
     const r = Math.min(o.radius ?? Math.min(w, h) * 0.14, w / 2, h / 2);
     const rect = (extra: Record<string, string | number | undefined>) => `<rect ${attr({ x: -w / 2, y: -h / 2, width: w, height: h, rx: r, ...extra })}/>`;
-    const front = this.project(o.at);
-    const slope = o.facing === 'left' ? this.iy : -this.iy;
-    const behind = (d: number): Vec2 => {
-      const [bx, by] = this.project(o.facing === 'left' ? [o.at[0], o.at[1] - d, o.at[2]] : [o.at[0] - d, o.at[1], o.at[2]]);
-      const du = (bx - front[0]) / ISO_X;
-      return [du, by - front[1] - slope * du];
-    };
+    const behind = (d: number): Vec2 => [o.facing === 'left' ? d : -d, -2 * d * this.iy];
     const side = o.thickness > 0 ? `<path ${attr({ d: sweptRoundRect(w, h, r, behind(Math.min(o.thickness, 1)), behind(o.thickness)), fill: o.side })}/>` : '';
     this.layers.push(`<g id="${id}"${cls(o.className)}><g transform="${this.planeTransform(o.at, o.facing)}">${side}${rect({ fill: o.front })}${rect({ fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${o.content ?? ''}</g></g>`);
     return this;
