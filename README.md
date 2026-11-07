@@ -46,8 +46,8 @@ Every scene also ships a phone copy that tells the same story re-composed for a 
 |---|---|
 | A storyboard first | The skill writes the beats (what moves, when, how long) before it draws, from recipes measured frame by frame: arrivals, hand-offs, pulses, slot stacks, fills |
 | Phone and desktop | Every scene ships a compact (390 wide) and a wide copy. They switch on the width of their own container, so a scene also works in a narrow column |
-| No animation library | SVG, HTML text, CSS and WAAPI. The runtime is 1.5 kB gzip |
-| Calm by default | Plays when scrolled into view, pauses off screen, costs nothing far off screen, shows a still that tells the whole story under reduced motion |
+| No animation library | SVG, HTML text, CSS and WAAPI. The runtime is 1.7 kB gzip |
+| Calm by default | Plays when scrolled into view, pauses off screen, drops its animations far off screen, shows a still that tells the whole story under reduced motion |
 | Labels that never overflow | Text has a 13 px floor on phones, and `fitX()` keeps each label inside its scene at the narrowest width it will be shown |
 | Readable text, checked | `skill/scripts/contrast.mjs` measures every text in every scene against the pixels behind it at five moments; CI fails under 4.5:1. The kit throws when a side label would sit on a face nobody can see |
 | Six compositions | Wide strips, diagonal rows, upright panels, radial cores, high fields and exploded stacks, plus single objects for feature lists |
@@ -214,12 +214,12 @@ All numbers were measured on 2026-11-07 on an Apple silicon Mac with Chrome. 1 k
 |---|---|---|
 | Showcase `index.html` (the hero inline, 70 empty scene boxes, folded prompts, the install tabs) | 563.7 kB | 51.9 kB |
 | Showcase CSS | 25.7 kB | 5.8 kB |
-| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.0 kB | 2.3 kB |
+| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.3 kB | 2.5 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
 | All 132 scene files in `site/dist/scenes/` (compact and wide copies) | 14150.0 kB | 1110.0 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
-| Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 3.7 kB | 1.5 kB |
-| Runtime with `mountLazy()` | 5.2 kB | 2.1 kB |
+| Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.1 kB | 1.7 kB |
+| Runtime with `mountLazy()` | 5.5 kB | 2.2 kB |
 | `docs/svg/hero.svg` (the image at the top) | 88.8 kB | 10.0 kB |
 
 The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (70), not all 132.
@@ -231,7 +231,7 @@ Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome,
 | 393 px (phone) | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 22.9 % (18.3 to 23.5) |
 | 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 24.9 % (24.2 to 26.9) |
 
-The whole showcase at rest, after scrolling through it once so all 72 scenes are mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s, median of five runs per side alternated with the build before this change, range in brackets. Before, every mounted scene stayed painted and kept its paused animations (1,594 at 1280 px), and Chrome walked all of them every frame. Now a scene off screen skips rendering and one more than half a screen away drops its animations, so only the scenes in view cost anything:
+The whole showcase at rest, after scrolling through it once so all 72 scenes are mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s, median of five runs per side alternated with the build before this change, range in brackets. Before, every mounted scene stayed painted and kept its paused animations (1,594 in effect at 1280 px in one run), and Chrome walked all of them every frame. Now a scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. Every median is under 25 %; two single runs went over (25.6 % at 1280 px, 50 %, and 26.4 % at 393 px, 35 %), because a 4 s window catches a busier or quieter part of a scene's loop:
 
 | Stop | 1280 px, DPR 2 | 393 px, DPR 3 |
 |---|---|---|
@@ -242,7 +242,7 @@ The whole showcase at rest, after scrolling through it once so all 72 scenes are
 | 60 % | 47.6 → 12.4 % (12.0 to 21.9) | 93.9 → 15.1 % (14.6 to 21.9) |
 | 80 % | 16.1 → 7.3 % (5.7 to 8.1) | 33.3 → 20.2 % (17.8 to 22.5) |
 
-With the CPU throttled 4x the same stops go from 27 to 96 % down to 7 to 50 % at 1280 px, and from 42 to 99.9 % down to 14 to 65 % at 393 px (medians). Scrolling the whole 393 px page in 5 s at 4x drops 0 to 5 frames past 20 ms in a run, against 70 to 93 before. The page height stays the same while scenes mount and park (34,250 px at 1280, 49,558 px at 393), and the layout shift score stays at 0.0001 or under. What is left is the scenes in view: Chrome's trace at 50 % shows layerize, style and paint for their 114 running tracks.
+With the CPU throttled 4x the same stops go from 27 to 96 % down to 7 to 50 % at 1280 px, and from 42 to 99.9 % down to 14 to 65 % at 393 px (medians). Scrolling the whole 393 px page in 5 s at 4x drops 0 to 5 frames past 20 ms in a run, against 70 to 93 before. The page height stays the same while scenes mount and park (34,250 px at 1280, 49,558 px at 393), and the layout shift score stays at 0.0001 or under. What is left is the scenes in view: Chrome's trace at 50 % shows layerize, style and paint for their 114 running tracks. In WebKit (Playwright, iPhone 15 profile, a probe that measures how much of the main thread a script can still get, three runs) the same stops go from 58 to 85 % busy down to 13 to 43 %, with scenes still loading and playing when scrolled to.
 
 How they were measured:
 
