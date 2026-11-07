@@ -214,12 +214,12 @@ All numbers were measured on 2026-11-07 on an Apple silicon Mac with Chrome. 1 k
 |---|---|---|
 | Showcase `index.html` (the hero inline, 70 empty scene boxes, folded prompts, the install tabs) | 563.7 kB | 51.9 kB |
 | Showcase CSS | 25.7 kB | 5.8 kB |
-| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.3 kB | 2.5 kB |
+| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.5 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
 | All 132 scene files in `site/dist/scenes/` (compact and wide copies) | 14150.0 kB | 1110.0 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
-| Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.1 kB | 1.7 kB |
-| Runtime with `mountLazy()` | 5.5 kB | 2.2 kB |
+| Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
+| Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
 | `docs/svg/hero.svg` (the image at the top) | 88.8 kB | 10.0 kB |
 
 The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (70), not all 132.
@@ -242,7 +242,7 @@ The whole showcase at rest, after scrolling through it once so all 72 scenes are
 | 60 % | 47.6 → 12.4 % (12.0 to 21.9) | 93.9 → 15.1 % (14.6 to 21.9) |
 | 80 % | 16.1 → 7.3 % (5.7 to 8.1) | 33.3 → 20.2 % (17.8 to 22.5) |
 
-With the CPU throttled 4x the same stops go from 27 to 96 % down to 7 to 50 % at 1280 px, and from 42 to 99.9 % down to 14 to 65 % at 393 px (medians). Scrolling the whole 393 px page in 5 s at 4x drops 0 to 5 frames past 20 ms in a run, against 70 to 93 before. The page height stays the same while scenes mount and park (34,250 px at 1280, 49,558 px at 393), and the layout shift score stays at 0.0001 or under. What is left is the scenes in view: Chrome's trace at 50 % shows layerize, style and paint for their 114 running tracks. In WebKit (Playwright, iPhone 15 profile, a probe that measures how much of the main thread a script can still get, three runs) the same stops go from 58 to 85 % busy down to 13 to 43 %, with scenes still loading and playing when scrolled to.
+With the CPU throttled 4x the same stops go from 27 to 96 % down to 7 to 50 % at 1280 px, and from 42 to 99.9 % down to 14 to 65 % at 393 px (medians). Scrolling the whole 393 px page in 5 s at 4x drops 0 to 5 frames past 20 ms in a run, against 70 to 93 before (a run now and then reaches 20 to 28 on a busy machine, with this build and the one before the final wake fixes alike). The page height stays the same while scenes mount and park (34,250 px at 1280, 49,558 px at 393), and the layout shift score stays at 0.0001 or under. What is left is the scenes in view: Chrome's trace at 50 % shows layerize, style and paint for their 114 running tracks. In WebKit (Playwright, iPhone 15 profile, a probe that measures how much of the main thread a script can still get, three runs) the same stops go from 58 to 85 % busy down to 13 to 43 %, with scenes still loading and playing when scrolled to.
 
 How they were measured:
 
