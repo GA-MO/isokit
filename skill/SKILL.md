@@ -10,10 +10,11 @@ A scene tells one product story in one 6 to 14 second loop: things arrive, light
 The kit lives next to this file:
 
 - `lib/iso.ts`: the `Scene` builder (projection, slabs, faces, wires, pulses, labels, motion tracks), `scene.exportSvg()`, `responsive()` and `lazyBox()`.
-- `lib/runtime.ts`: plays a rendered scene with WAAPI, starts its intro once 40 % of it (or half the screen height, for a tall scene) is in view, pauses it off screen, stills it for reduced motion, exposes `window.isoSeek(t)`.
+- `lib/runtime.ts`: plays a rendered scene with WAAPI, starts its intro once 40 % of it (or half the screen height, for a tall scene) is in view, pauses it off screen, drops its animations once it is more than half a screen away and puts them back on the same frame before it returns, stills it for reduced motion, exposes `window.isoSeek(t)`.
 - `scripts/render.ts`: renders a scene module (default export `Page`) to one standalone HTML file with the runtime inlined.
 - `scripts/shots.mjs`: screenshots any page at chosen times and widths and writes `sheet.png`.
 - `scripts/check.ts`: strict type-check of scene files anywhere on disk against the kit (`bun scripts/check.ts scene.ts`).
+- `scripts/page-idle.mjs`: scrolls a page with many scenes through once, then stops at 0, 20, 35, 50, 60 and 80 % and prints main-thread time at each, with the CPU at 1x and 4x (`node scripts/page-idle.mjs page=<url> width=393 dpr=3 scroll=4`). Run it on any page with more than a few scenes.
 - `scripts/perf.mjs`: plays a page in Chrome at a phone width with the CPU throttled (`node scripts/perf.mjs page=<out.html> width=393 throttle=4 seconds=20`) and prints frame rate, frame-time percentiles, late frames, long tasks and main-thread time. Run it on any scene with 30 or more moving objects.
 - `scripts/contrast.mjs`, `scripts/render-all.ts`: measure every text in a rendered page against the pixels right behind its glyphs at the still frame and four more moments, and fail under 4.5:1 (`node scripts/contrast.mjs <out.html>`; `bun scripts/render-all.ts <dir>` writes every catalog example first). Run it on every scene before you call it done.
 - `scripts/study-rive.mjs`, `scripts/compare-rive.mjs`: optional tools for studying a `.riv` animation of your own frame by frame and comparing it with a kit scene. Both need `runtime=<folder with canvas_advanced.mjs and rive.wasm>`.
@@ -198,6 +199,14 @@ mountLazy({ src: name => `/scenes/${name}.html`, rootMargin: '75% 0px', onError:
 ```
 
 When a box comes within `rootMargin` of the screen, `mountLazy()` fetches only the copy that fits its width (wide from `breakpoint + 1` px), mounts it, and swaps copies when a resize crosses the breakpoint. A failed fetch calls `onError` with a `retry`; without one it shows a plain retry button. A box hidden with `display: none` waits until it is shown. `art(compact, wide, breakpoint)` in `examples/shared.ts` returns both copies' markup, names and sizes for this.
+
+A page with many scenes stays light only if scenes nobody can see cost nothing. The kit does this on its own, so a page needs no extra code:
+
+- `isoCss` gives each `.iso` root `content-visibility: auto`, so the browser skips style, layout and paint for a scene off screen. It sets `overflow-clip-margin: 32px` with it, because that containment clips at the scene's edge, and a pill placed right at the edge or a card's shadow would lose a few pixels. A browser without `overflow-clip-margin` (Safari) does not get the containment.
+- The runtime cancels every animation of a scene that is more than half a screen away and restores each one at the frame it left before the scene comes back. Chrome and Safari pay every frame for each paused animation on the page, so 70 paused scenes cost as much as several playing ones.
+- A scene you hold with `el.iso.pause()` or `el.iso.seek(t)` keeps its animations wherever it is, so a script that drives a scene (a slider, a drill-down) finds them. `el.iso.play()` releases it.
+
+Do not wrap scenes in your own `content-visibility` or `contain: paint` box that is the scene's exact size, or edge labels clip again. Check a page with `scripts/page-idle.mjs`: at rest it should stay under 25 % main thread at every stop.
 
 To put a scene where no script runs (a GitHub README, docs, an email), `scene.exportSvg({ title?, background?, radius?, color? })` returns one standalone SVG file. Its motion is the same timeline compiled to CSS `@keyframes`, the pivots ride along, and `prefers-reduced-motion` holds the still frame. A standalone SVG cannot hold HTML, so every piece of text must be `text()` (with `pill` for a pill): `exportSvg()` throws and names the `label()` it found. Hover and tap do not work in an exported file, and web fonts do not load inside an `<img>`, so give the scene a font stack that ends in system fonts.
 
