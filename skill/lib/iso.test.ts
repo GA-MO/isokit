@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
-import { Scene, lazyBox } from './iso';
+import { Scene, isoCss, lazyBox } from './iso';
+import { mount } from './runtime';
 
 const scene = () => new Scene({ name: 'demo', width: 400, height: 300 });
 
@@ -462,4 +463,101 @@ test('every corner of a panel side is an outward arc of the panel radius centred
         }
         if (c.radius > 0) expect(arcs).toBeGreaterThanOrEqual(4);
       }
+});
+
+class FakeAnimation {
+  playState: 'idle' | 'paused' | 'running' = 'idle';
+  #time: number | null = null;
+  get currentTime() {
+    return this.#time;
+  }
+  set currentTime(t: number | null) {
+    this.#time = t;
+    if (t !== null && this.playState === 'idle') this.playState = 'paused';
+  }
+  play() {
+    this.#time ??= 0;
+    this.playState = 'running';
+  }
+  pause() {
+    this.#time ??= 0;
+    this.playState = 'paused';
+  }
+  cancel() {
+    this.#time = null;
+    this.playState = 'idle';
+  }
+}
+
+function stage() {
+  const observers: Array<{ margin: string; report: (entries: Array<{ isIntersecting: boolean; intersectionRatio: number }>) => void }> = [];
+  Object.assign(globalThis, {
+    innerHeight: 800,
+    CSS: { escape: (s: string) => s },
+    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+    document: { hidden: false, addEventListener() {}, removeEventListener() {} },
+    IntersectionObserver: class {
+      constructor(report: (typeof observers)[number]['report'], options: { rootMargin?: string } = {}) {
+        observers.push({ margin: options.rootMargin ?? '', report });
+      }
+      observe() {}
+      disconnect() {}
+    },
+  });
+  const spec = scene()
+    .slab({ id: 'core', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } })
+    .loop(4, 1)
+    .at('core', 'opacity', 0.5, 1, 0, 1)
+    .intro('core', 'scale', 0, 0.5, 0.5, 1)
+    .motion();
+  const animations: FakeAnimation[] = [];
+  const target = { animate: () => animations[animations.push(new FakeAnimation()) - 1] };
+  const root = {
+    dataset: {},
+    querySelector: (sel: string) => (sel === 'script.iso-spec' ? { textContent: JSON.stringify(spec) } : target),
+    querySelectorAll: () => [],
+    getBoundingClientRect: () => ({ height: 400 }),
+  };
+  const handle = mount(root as unknown as HTMLElement);
+  const report = (near: boolean, ratio: number) => {
+    for (const o of observers) o.report([{ isIntersecting: o.margin ? near : ratio > 0, intersectionRatio: ratio }]);
+  };
+  return { handle, animations, report, states: () => animations.map(a => a.playState) };
+}
+
+test('a scene far off screen holds no live animations and comes back on the frame it left', () => {
+  const { animations, report, states } = stage();
+  expect(animations.length).toBe(2);
+  report(true, 1);
+  expect(states()).toEqual(['running', 'running']);
+  for (const a of animations) a.currentTime = 2300;
+  report(true, 0);
+  expect(states()).toEqual(['paused', 'paused']);
+  report(false, 0);
+  expect(states()).toEqual(['idle', 'idle']);
+  report(true, 0);
+  expect(states()).toEqual(['paused', 'paused']);
+  expect(animations.map(a => a.currentTime)).toEqual([2300, 2300]);
+  report(true, 1);
+  expect(states()).toEqual(['running', 'running']);
+  expect(animations.map(a => a.currentTime)).toEqual([2300, 2300]);
+});
+
+test('a scene a script holds stays live off screen, and parks once released', () => {
+  const { handle, report, states } = stage();
+  report(false, 0);
+  expect(states()).toEqual(['idle', 'idle']);
+  handle.seek(1.5);
+  expect(states()).toEqual(['paused', 'paused']);
+  report(true, 0);
+  report(false, 0);
+  expect(states()).toEqual(['paused', 'paused']);
+  handle.play();
+  expect(states()).toEqual(['idle', 'idle']);
+  report(true, 1);
+  expect(states()).toEqual(['running', 'running']);
+});
+
+test('scene roots skip rendering off screen only where the clip margin keeps edge labels whole', () => {
+  expect(isoCss).toContain('@supports (overflow-clip-margin:1px){.iso{content-visibility:auto;overflow-clip-margin:32px}}');
 });
