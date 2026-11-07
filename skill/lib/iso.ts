@@ -1075,7 +1075,8 @@ export const isoCss = `.iso{position:relative;container-type:inline-size;width:1
 .iso-hover.is-hot .iso-lift{translate:0 calc(var(--lift) * -1px);transition-duration:var(--iso-on,270ms);transition-timing-function:var(--iso-on-ease,${ease.out})}
 .iso-hover.is-hot .iso-hot{opacity:1;transition-duration:var(--iso-on,270ms);transition-timing-function:var(--iso-on-ease,${ease.out})}
 .iso-hover.is-hot>.iso-shadow{opacity:.1;transition-duration:var(--iso-on,270ms);transition-timing-function:var(--iso-on-ease,${ease.out})}
-@media (prefers-reduced-motion:reduce){.iso-hover .iso-lift{translate:none!important}}`;
+@media (prefers-reduced-motion:reduce){.iso-hover .iso-lift{translate:none!important}}
+@supports (overflow-clip-margin:1px){.iso{content-visibility:auto;overflow-clip-margin:32px}}`;
 
 export function responsive(compact: Scene, wide: Scene, breakpoint = 720): string {
   const cls = `iso-switch-${compact.name}`;

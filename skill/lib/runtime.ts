@@ -38,7 +38,23 @@ export function mount(root: HTMLElement): IsoHandle {
     a.currentTime = 0;
     return [a];
   });
+  let parked: Array<CSSNumberish | null> | null = null;
+  const park = () => {
+    if (parked) return;
+    parked = animations.map(a => a.currentTime);
+    for (const a of animations) a.cancel();
+  };
+  const wake = () => {
+    const times = parked;
+    if (!times) return;
+    parked = null;
+    animations.forEach((a, i) => (a.currentTime = times[i] ?? null));
+  };
   const seek = (s: number) => {
+    if (parked) {
+      parked = animations.map(() => s * 1000);
+      return;
+    }
     for (const a of animations) {
       a.pause();
       a.currentTime = s * 1000;
@@ -48,8 +64,11 @@ export function mount(root: HTMLElement): IsoHandle {
   let started = false;
   let visible = false;
   let held = false;
+  let near = false;
+  const settle = () => (near || held ? wake() : park());
   const play = () => {
     if (reduce.matches) return still();
+    wake();
     if (!started) {
       seek(0);
       started = true;
@@ -57,6 +76,7 @@ export function mount(root: HTMLElement): IsoHandle {
     for (const a of animations) a.play();
   };
   const pause = () => {
+    if (parked) return;
     for (const a of animations) a.pause();
   };
   let ratio = 0;
@@ -74,6 +94,11 @@ export function mount(root: HTMLElement): IsoHandle {
     sync();
   }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5] });
   observer.observe(root);
+  const parker = new IntersectionObserver(entries => {
+    near = entries[entries.length - 1]?.isIntersecting ?? false;
+    settle();
+  }, { rootMargin: '50% 0px' });
+  parker.observe(root);
   let press: { id: number; x: number; y: number } | null = null;
   const onDown = (e: PointerEvent) => {
     press = e.pointerType === 'mouse' ? null : { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -119,6 +144,7 @@ export function mount(root: HTMLElement): IsoHandle {
   if (reduce.matches) still();
   const destroy = () => {
     observer.disconnect();
+    parker.disconnect();
     for (const h of hovers) {
       h.removeEventListener('pointerenter', onEnter);
       h.removeEventListener('pointerleave', onLeave);
@@ -138,15 +164,18 @@ export function mount(root: HTMLElement): IsoHandle {
     seek: (s: number) => {
       held = true;
       started = true;
+      wake();
       seek(s);
     },
     play: () => {
       held = false;
       started = true;
       play();
+      settle();
     },
     pause: () => {
       held = true;
+      wake();
       pause();
     },
     destroy,
