@@ -489,9 +489,11 @@ class FakeAnimation {
   }
 }
 
+const onScroll = new Set<() => void>();
+const onResize = new Set<() => void>();
+
 function stage() {
   const observers: Array<{ margin: string; report: (entries: Array<{ isIntersecting: boolean; intersectionRatio: number }>) => void }> = [];
-  const onScroll = new Set<() => void>();
   const box = { top: 5000, bottom: 5400, left: 0, right: 400, height: 400 };
   Object.assign(globalThis, {
     innerHeight: 800,
@@ -500,7 +502,17 @@ function stage() {
     removeEventListener: (type: string, f: () => void) => type === 'scroll' && onScroll.delete(f),
     CSS: { escape: (s: string) => s },
     matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
-    document: { hidden: false, addEventListener() {}, removeEventListener() {} },
+    document: { hidden: false, documentElement: {}, addEventListener() {}, removeEventListener() {} },
+    ResizeObserver: class {
+      #report: () => void;
+      constructor(report: () => void) {
+        this.#report = report;
+      }
+      observe() {
+        onResize.add(this.#report);
+      }
+      unobserve() {}
+    },
     IntersectionObserver: class {
       constructor(report: (typeof observers)[number]['report'], options: { rootMargin?: string } = {}) {
         observers.push({ margin: options.rootMargin ?? '', report });
@@ -531,7 +543,11 @@ function stage() {
     Object.assign(box, { top, bottom: top + box.height });
     for (const f of [...onScroll]) f();
   };
-  return { handle, animations, report, jump, listening: () => onScroll.size, states: () => animations.map(a => a.playState) };
+  const move = (top: number, height = box.height) => {
+    Object.assign(box, { top, height, bottom: top + height });
+    for (const f of onResize) f();
+  };
+  return { handle, animations, report, jump, move, listening: () => onScroll.size, states: () => animations.map(a => a.playState) };
 }
 
 test('a scene far off screen holds no live animations and comes back on the frame it left', () => {
@@ -568,6 +584,19 @@ test('a parked scene jumped into view wakes on the scroll, before the observers 
   report(false, 0);
   handle.destroy();
   expect(listening()).toBe(0);
+});
+
+test('a parked scene a layout change brings into view (a filter, a fold, a shown copy) wakes before paint', () => {
+  const { animations, report, move, states } = stage();
+  report(true, 1);
+  for (const a of animations) a.currentTime = 1200;
+  report(false, 0);
+  move(300, 0);
+  expect(states()).toEqual(['idle', 'idle']);
+  move(300, 400);
+  expect(states()).toEqual(['paused', 'paused']);
+  expect(animations.map(a => a.currentTime)).toEqual([1200, 1200]);
+  report(true, 1);
 });
 
 test('a scene a script holds stays live off screen, and parks once released', () => {
