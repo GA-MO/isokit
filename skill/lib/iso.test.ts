@@ -392,6 +392,36 @@ test('content drawn on a panel is clipped to its rounded face, so nothing pokes 
     expect(scene().panel({ id: 'p', at: [0, 0, 0], size: [120, 80], thickness: 7, facing: 'left', front: '#ffffff', side: '#e7e7ea', content }).render()).not.toContain('clip');
 });
 
+test('content drawn on a slab top is clipped to its rounded top, hover copy included', () => {
+  const content = '<rect x="-60" y="-40" width="120" height="22" fill="#f4f4f5"/>';
+  const cases = [
+    { size: [120, 80], radius: 14, rx: 14 },
+    { size: [120, 80], radius: 99, rx: 40 },
+    { size: [120, 80], radius: 0, rx: 0 },
+    { size: [100, 50], radius: undefined, rx: 6 },
+  ] as const;
+  for (const hover of [undefined, { top: '#eeeeee' }])
+    for (const c of cases) {
+      const slab = (id: string, x: number) => ({ id, at: [x, 0, 0] as const, size: c.size, radius: c.radius, height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } as const, content, hover });
+      const svg = scene().slab(slab('p', 0)).slab(slab('q', 200)).render();
+      const groups = { p: svg.slice(svg.indexOf('<g id="demo_p"'), svg.indexOf('<g id="demo_q"')), q: svg.slice(svg.indexOf('<g id="demo_q"')) };
+      const refs = Object.values(groups).map(group => {
+        const tops = [...group.matchAll(new RegExp(`<g transform="translate[^"]+">(?:<rect [^>]+/>){2}(?:<g clip-path="url\\(#([^)]+)\\)">)?${content}`, 'g'))];
+        expect(tops.length).toBe(hover ? 2 : 1);
+        const [w, h] = c.size;
+        for (const t of tops) {
+          expect(t[1]).toBeDefined();
+          expect(t[1]).toBe(tops[0]![1]);
+          expect(svg).toContain(`<clipPath id="${t[1]}"><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${c.rx}"/></clipPath>`);
+        }
+        return tops[0]![1];
+      });
+      expect(refs[0]).not.toBe(refs[1]);
+    }
+  for (const content of [undefined, ''])
+    expect(scene().slab({ id: 'p', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, content }).render()).not.toContain('_face');
+});
+
 const endpoints = (d: string) =>
   [...d.matchAll(/([MLA])([^MLAZ]+)/g)].map(([, cmd, args]) => {
     const n = args!.trim().split(/[ ,]+/).map(Number);
