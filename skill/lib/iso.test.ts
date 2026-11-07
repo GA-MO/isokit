@@ -364,6 +364,32 @@ const sideOf = (s: Scene, color: string) => {
   return { count: shapes.length, matrix: m?.[1]?.split(' ').map(Number) ?? [], d: m?.[2] ?? '' };
 };
 
+test('content drawn on a panel is clipped to its rounded face, so nothing pokes past a corner', () => {
+  const content = '<rect x="-60" y="-40" width="120" height="22" fill="#f4f4f5"/>';
+  const cases = [
+    { size: [120, 80], radius: 14, rx: 14 },
+    { size: [120, 80], radius: 99, rx: 40 },
+    { size: [120, 80], radius: 0, rx: 0 },
+    { size: [100, 50], radius: undefined, rx: 7 },
+  ] as const;
+  for (const facing of ['left', 'right'] as const)
+    for (const c of cases) {
+      const svg = scene()
+        .panel({ id: 'p', at: [10, -20, 30], size: c.size, radius: c.radius, thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
+        .panel({ id: 'q', at: [90, -20, 30], size: c.size, radius: c.radius, thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
+        .render();
+      const refs = ['p', 'q'].map(id => {
+        const face = new RegExp(`<g id="demo_${id}"><g transform="[^"]+">.*?<g clip-path="url\\(#([^)]+)\\)">${content}</g></g></g>`).exec(svg);
+        expect(face).not.toBeNull();
+        const ref = face![1]!;
+        const [w, h] = c.size;
+        expect(svg).toContain(`<clipPath id="${ref}"><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${c.rx}"/></clipPath>`);
+        return ref;
+      });
+      expect(refs[0]).not.toBe(refs[1]);
+    }
+});
+
 const endpoints = (d: string) =>
   [...d.matchAll(/([MLA])([^MLAZ]+)/g)].map(([, cmd, args]) => {
     const n = args!.trim().split(/[ ,]+/).map(Number);
