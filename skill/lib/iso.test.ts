@@ -355,3 +355,58 @@ test('side-plane text floating just over a slab top throws; text well above it d
   expect(() => box().text({ id: 'float', at: [40, 20, 14], text: 'docs', on: 'left', size: 10 }).render()).toThrow(/left plane at y = 20, floating over the top of "box"/);
   expect(() => box().text({ id: 'sign', at: [40, 20, 60], text: 'docs', on: 'left', size: 10 }).render()).not.toThrow();
 });
+
+const sideOf = (s: Scene, color: string) => {
+  const svg = s.render();
+  const shapes = [...svg.matchAll(new RegExp(`<\\w+ [^>]*fill="${color}"`, 'g'))];
+  const m = new RegExp(`<g transform="matrix\\(([^)]+)\\)"><path d="([^"]+)" fill="${color}"`).exec(svg);
+  return { count: shapes.length, matrix: m?.[1]?.split(' ').map(Number) ?? [], d: m?.[2] ?? '' };
+};
+
+const endpoints = (d: string) =>
+  [...d.matchAll(/([MLA])([^MLAZ]+)/g)].map(([, cmd, args]) => {
+    const n = args!.trim().split(/[ ,]+/).map(Number);
+    return cmd === 'A' ? [n[5]!, n[6]!] : [n[0]!, n[1]!];
+  });
+
+test('a panel draws its thickness as one shape spanning exactly its front and back faces', () => {
+  for (const facing of ['left', 'right'] as const)
+    for (const thickness of [0, 0.5, 7, 40, 5000]) {
+      const at = [10, -20, 30] as const;
+      const s = scene().panel({ id: 'p', at, size: [120, 80], thickness, facing, radius: 14, front: '#ffffff', side: '#e7e7ea' });
+      const side = sideOf(s, '#e7e7ea');
+      expect(side.count).toBe(1);
+      const [a, b] = side.matrix;
+      const back = facing === 'left' ? s.project([at[0], at[1] - thickness, at[2]]) : s.project([at[0] - thickness, at[1], at[2]]);
+      const front = s.project(at);
+      const du = (back[0] - front[0]) / a!;
+      const dv = back[1] - front[1] - b! * du;
+      const pts = endpoints(side.d);
+      const tol = 0.02 + thickness * 1e-5;
+      expect(Math.min(...pts.map(p => p[0]!))).toBeCloseTo(-60 + Math.min(0, du), 1);
+      expect(Math.max(...pts.map(p => p[0]!))).toBeCloseTo(60 + Math.max(0, du), 1);
+      expect(Math.abs(Math.min(...pts.map(p => p[1]!)) - (-40 + Math.min(0, dv)))).toBeLessThan(tol);
+      expect(Math.abs(Math.max(...pts.map(p => p[1]!)) - (40 + Math.max(0, dv)))).toBeLessThan(tol);
+    }
+});
+
+test('a round panel with no thickness and a square panel with no radius still draw', () => {
+  expect(sideOf(scene().panel({ id: 'p', at: [0, 0, 0], size: [40, 40], radius: 20, thickness: 0, facing: 'left', front: '#ffffff', side: '#e7e7ea' }), '#e7e7ea').count).toBe(1);
+  expect(sideOf(scene().panel({ id: 'p', at: [0, 0, 0], size: [40, 30], radius: 0, thickness: 6, facing: 'right', front: '#ffffff', side: '#e7e7ea' }), '#e7e7ea').count).toBe(1);
+  expect(sideOf(scene().panel({ id: 'p', at: [0, 0, 0], size: [40, 30], radius: 99, thickness: 6, facing: 'left', front: '#ffffff', side: '#e7e7ea' }), '#e7e7ea').count).toBe(1);
+});
+
+test('a panel with an empty or negative size, a negative or non-finite thickness, or a negative radius is rejected with its id', () => {
+  const bad: { size?: readonly [number, number]; thickness?: number; radius?: number }[] = [
+    { size: [0, 80] },
+    { size: [120, -5] },
+    { size: [Number.NaN, 80] },
+    { thickness: -1 },
+    { thickness: Number.NaN },
+    { thickness: Number.POSITIVE_INFINITY },
+    { radius: -2 },
+    { radius: Number.NaN },
+  ];
+  for (const o of bad)
+    expect(() => scene().panel({ id: 'odd', at: [0, 0, 0], size: o.size ?? [120, 80], thickness: o.thickness ?? 7, radius: o.radius ?? 14, facing: 'left', front: '#ffffff', side: '#e7e7ea' })).toThrow(/panel "odd"/);
+});
