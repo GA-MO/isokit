@@ -491,8 +491,13 @@ class FakeAnimation {
 
 function stage() {
   const observers: Array<{ margin: string; report: (entries: Array<{ isIntersecting: boolean; intersectionRatio: number }>) => void }> = [];
+  const onScroll = new Set<() => void>();
+  const box = { top: 5000, bottom: 5400, left: 0, right: 400, height: 400 };
   Object.assign(globalThis, {
     innerHeight: 800,
+    innerWidth: 1280,
+    addEventListener: (type: string, f: () => void) => type === 'scroll' && onScroll.add(f),
+    removeEventListener: (type: string, f: () => void) => type === 'scroll' && onScroll.delete(f),
     CSS: { escape: (s: string) => s },
     matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
     document: { hidden: false, addEventListener() {}, removeEventListener() {} },
@@ -516,13 +521,17 @@ function stage() {
     dataset: {},
     querySelector: (sel: string) => (sel === 'script.iso-spec' ? { textContent: JSON.stringify(spec) } : target),
     querySelectorAll: () => [],
-    getBoundingClientRect: () => ({ height: 400 }),
+    getBoundingClientRect: () => box,
   };
   const handle = mount(root as unknown as HTMLElement);
   const report = (near: boolean, ratio: number) => {
     for (const o of observers) o.report([{ isIntersecting: o.margin ? near : ratio > 0, intersectionRatio: ratio }]);
   };
-  return { handle, animations, report, states: () => animations.map(a => a.playState) };
+  const jump = (top: number) => {
+    Object.assign(box, { top, bottom: top + box.height });
+    for (const f of [...onScroll]) f();
+  };
+  return { handle, animations, report, jump, listening: () => onScroll.size, states: () => animations.map(a => a.playState) };
 }
 
 test('a scene far off screen holds no live animations and comes back on the frame it left', () => {
@@ -541,6 +550,24 @@ test('a scene far off screen holds no live animations and comes back on the fram
   report(true, 1);
   expect(states()).toEqual(['running', 'running']);
   expect(animations.map(a => a.currentTime)).toEqual([2300, 2300]);
+});
+
+test('a parked scene jumped into view wakes on the scroll, before the observers report after paint', () => {
+  const { handle, animations, report, jump, listening, states } = stage();
+  report(true, 1);
+  for (const a of animations) a.currentTime = 2300;
+  report(false, 0);
+  expect(states()).toEqual(['idle', 'idle']);
+  expect(listening()).toBe(1);
+  jump(2000);
+  expect(states()).toEqual(['idle', 'idle']);
+  jump(100);
+  expect(states()).toEqual(['paused', 'paused']);
+  expect(animations.map(a => a.currentTime)).toEqual([2300, 2300]);
+  expect(listening()).toBe(0);
+  report(false, 0);
+  handle.destroy();
+  expect(listening()).toBe(0);
 });
 
 test('a scene a script holds stays live off screen, and parks once released', () => {
