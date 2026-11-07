@@ -482,13 +482,15 @@ export class Scene {
     const rect = (extra: Record<string, string | number | undefined>) => `<rect ${attr({ x: -w / 2, y: -h / 2, width: w, height: h, rx: r, ...extra })}/>`;
     const behind = (d: number): Vec2 => [o.facing === 'left' ? d : -d, -2 * d * this.iy];
     const side = o.thickness > 0 ? `<path ${attr({ d: sweptRoundRect(w, h, r, behind(Math.min(o.thickness, 1)), behind(o.thickness)), fill: o.side })}/>` : '';
-    let content = '';
-    if (o.content) {
-      this.defs.set(`${id}_face`, `<clipPath id="${id}_face">${rect({})}</clipPath>`);
-      content = `<g clip-path="url(#${id}_face)">${o.content}</g>`;
-    }
+    const content = this.clipToFace(id, o.size, r, o.content);
     this.layers.push(`<g id="${id}"${cls(o.className)}><g transform="${this.planeTransform(o.at, o.facing)}">${side}${rect({ fill: o.front })}${rect({ fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${content}</g></g>`);
     return this;
+  }
+
+  private clipToFace(key: string, size: Vec2, radius: number, content: string | undefined): string {
+    if (!content) return '';
+    this.defs.set(`${key}_face`, `<clipPath id="${key}_face">${this.faceRect(size, radius)}</clipPath>`);
+    return `<g clip-path="url(#${key}_face)">${content}</g>`;
   }
 
   private faceRect(size: Vec2, radius: number, extra: Record<string, string | number | undefined> = {}) {
@@ -535,11 +537,7 @@ export class Scene {
     const line = o.outline ? { fill: 'none', stroke: o.outline, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' } : null;
     const under = line ? `<g transform="${this.faceTransform(bottom)}">${this.faceRect(o.size, radius, line)}</g>` : '';
     const over = line ? [top.left, top.right].map((v, i) => `<path ${attr({ d: `M${fmt(v[0])} ${fmt(v[1])}V${fmt((i ? bot.right : bot.left)[1])}`, ...line })}/>`).join('') : '';
-    let content = '';
-    if (o.content) {
-      this.defs.set(`${id}_face`, `<clipPath id="${id}_face">${this.faceRect(o.size, radius)}</clipPath>`);
-      content = `<g clip-path="url(#${id}_face)">${o.content}</g>`;
-    }
+    const content = this.clipToFace(id, o.size, radius, o.content);
     const body = (key: string, topFill: string, side: Material, edge: string | undefined) =>
       `${under}<g clip-path="url(#${id}_side)"${hole}>${this.sides(key, side, area, tall, top.front, radius, o.height, o.size, o.shade !== false)}</g>${over}<g transform="${this.faceTransform(o.at)}">${this.faceRect(o.size, radius, { fill: topFill, filter: o.grain ? this.grain(o.grain) : undefined })}${this.faceRect(o.size, radius, { fill: 'none', stroke: edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${content}</g>`;
     const base = body(id, o.top, o.side, o.edge);
@@ -649,7 +647,7 @@ export class Scene {
     const id = this.claim(o.id);
     const radius = o.radius ?? Math.min(o.size[0], o.size[1]) * 0.12;
     this.layers.push(
-      `<g id="${id}"${cls(o.className)} style="${escAttr(`fill:${o.fill ?? 'none'}${o.stroke ? `;stroke:${o.stroke}` : ''}`)}"><g transform="${this.faceTransform(o.at)}">${this.faceRect(o.size, radius, { 'stroke-width': o.stroke ? (o.strokeWidth ?? 1) : undefined, 'stroke-dasharray': o.dash, 'vector-effect': 'non-scaling-stroke' })}${o.content ? `<g style="fill:initial;stroke:initial">${o.content}</g>` : ''}</g></g>`,
+      `<g id="${id}"${cls(o.className)} style="${escAttr(`fill:${o.fill ?? 'none'}${o.stroke ? `;stroke:${o.stroke}` : ''}`)}"><g transform="${this.faceTransform(o.at)}">${this.faceRect(o.size, radius, { 'stroke-width': o.stroke ? (o.strokeWidth ?? 1) : undefined, 'stroke-dasharray': o.dash, 'vector-effect': 'non-scaling-stroke' })}${this.clipToFace(id, o.size, radius, o.content && `<g style="fill:initial;stroke:initial">${o.content}</g>`)}</g></g>`,
     );
     return this;
   }
@@ -822,7 +820,7 @@ export class Scene {
     this.group(o.id, () => {
       this.svg(`${o.id}-base`, `${paint(fill => `<path ${attr({ d: seat, fill })}/>`)}${o.stroke ? `<path ${attr({ d: path, fill: 'none', ...pen(o.stroke) })}/>` : ''}`);
       this.svg(`${o.id}-col`, `${paint(fill => `<path ${attr({ d: column, fill })}/>`)}${o.stroke ? `<path ${attr({ d: `M${pt(l, -reach)}V${fmt(l[1])}M${pt(rt, -reach)}V${fmt(rt[1])}`, fill: 'none', ...pen(o.stroke) })}/>` : ''}`);
-      this.svg(`${o.id}-cap`, `${slant > 0.01 ? `${paint(fill => `<path ${attr({ d: skirt, fill })}/>`)}${o.stroke ? `<path ${attr({ d: `M${pt(hi, -o.height)}v${fmt(slant)}`, fill: 'none', ...pen(o.stroke) })}/>` : ''}` : ''}${this.plane([x, y, z0 + o.height], `${this.faceRect(o.size, radius, { fill: o.top, ...pen(o.capStroke ?? o.stroke) })}${o.content ?? ''}`)}`);
+      this.svg(`${o.id}-cap`, `${slant > 0.01 ? `${paint(fill => `<path ${attr({ d: skirt, fill })}/>`)}${o.stroke ? `<path ${attr({ d: `M${pt(hi, -o.height)}v${fmt(slant)}`, fill: 'none', ...pen(o.stroke) })}/>` : ''}` : ''}${this.plane([x, y, z0 + o.height], `${this.faceRect(o.size, radius, { fill: o.top, ...pen(o.capStroke ?? o.stroke) })}${this.clipToFace(this.ref(o.id), o.size, radius, o.content)}`)}`);
     }, o.className);
     this.prismClips.set(o.id, `#${this.ref(`${o.id}-col`)}{clip-path:${clip(o.height)}}`);
     this.prisms.set(o.id, { rest: o.height, reach, slant });
@@ -854,7 +852,7 @@ export class Scene {
         const last = i === n;
         const fill = last ? o.top : sides[Math.min(sides.length - 1, Math.floor((i / n) * sides.length))]!;
         const face = last
-          ? `${this.faceRect(o.size, radius, { fill, filter: o.grain ? this.grain(o.grain) : undefined })}${this.faceRect(o.size, radius, { fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${o.content ?? ''}`
+          ? `${this.faceRect(o.size, radius, { fill, filter: o.grain ? this.grain(o.grain) : undefined })}${this.faceRect(o.size, radius, { fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${this.clipToFace(this.ref(o.id), o.size, radius, o.content)}`
           : this.faceRect(o.size, radius, { fill });
         this.layers.push(`<g transform="translate(${fmt(px)} ${fmt(py)}) scale(1 ${fmt4(this.ratio)})"><g id="${this.claim(lid)}" style="transform-box:view-box;transform-origin:0 0"><g transform="rotate(45)">${face}</g></g></g>`);
       }
