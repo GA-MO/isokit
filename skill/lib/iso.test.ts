@@ -422,6 +422,40 @@ test('content drawn on a slab top is clipped to its rounded top, hover copy incl
     expect(scene().slab({ id: 'p', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, content }).render()).not.toContain('_face');
 });
 
+test('content on a face, a prism cap or a turntable top is clipped to that rounded face', () => {
+  const content = '<rect x="-60" y="-40" width="120" height="22" fill="#f4f4f5"/>';
+  const draw = {
+    face: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.face({ id, at: [x, 0, 0], size, radius, fill: '#ffffff', content: c }),
+    prism: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.prism({ id, at: [x, 0, 0], size, radius, height: 20, top: '#ffffff', side: '#cccccc', content: c }),
+    turntable: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.turntable({ id, at: [x, 0, 0], size, radius, height: 20, top: '#ffffff', side: '#cccccc', content: c }),
+  };
+  const cases = [
+    { size: [120, 80], radius: 14, rx: 14 },
+    { size: [120, 80], radius: 99, rx: 40 },
+    { size: [120, 80], radius: 0, rx: 0 },
+    { size: [100, 50], radius: undefined, rx: 6 },
+  ] as const;
+  for (const [kind, add] of Object.entries(draw))
+    for (const c of cases) {
+      const s = scene();
+      add(s, 'p', 0, c.size, c.radius, content);
+      add(s, 'q', 200, c.size, c.radius, content);
+      const svg = s.render();
+      const [w, h] = c.size;
+      const face = `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${c.rx}"`;
+      const hits = [...svg.matchAll(new RegExp(`${face}[^>]*/>(?:<rect [^>]*/>)?<g clip-path="url\\(#([^)]+)\\)">(?:<g style="fill:initial;stroke:initial">)?${content}`, 'g'))].map(m => m[1]!);
+      expect({ kind, clipped: hits.length }).toEqual({ kind, clipped: 2 });
+      expect(new Set(hits).size).toBe(2);
+      for (const ref of hits) expect(svg).toContain(`<clipPath id="${ref}">${face}/></clipPath>`);
+    }
+  for (const add of Object.values(draw))
+    for (const c of [undefined, '']) {
+      const s = scene();
+      add(s, 'p', 0, [80, 80], 10, c);
+      expect(s.render()).not.toContain('_face');
+    }
+});
+
 const endpoints = (d: string) =>
   [...d.matchAll(/([MLA])([^MLAZ]+)/g)].map(([, cmd, args]) => {
     const n = args!.trim().split(/[ ,]+/).map(Number);
