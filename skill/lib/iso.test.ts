@@ -388,6 +388,8 @@ test('content drawn on a panel is clipped to its rounded face, so nothing pokes 
       });
       expect(refs[0]).not.toBe(refs[1]);
     }
+  for (const content of [undefined, ''])
+    expect(scene().panel({ id: 'p', at: [0, 0, 0], size: [120, 80], thickness: 7, facing: 'left', front: '#ffffff', side: '#e7e7ea', content }).render()).not.toContain('clip');
 });
 
 const endpoints = (d: string) =>

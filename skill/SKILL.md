@@ -149,7 +149,7 @@ More building blocks:
 - `s.group(id, () => { ... })` wraps everything drawn inside into one animatable group (a stack that moves, a tile with its icon). HTML labels cannot join a group; use `text()`.
 - `s.pivot(id, at)` sets the point an element scales or rotates around (default: its own centre).
 - `s.text({ id, at, text, size, on, along, pill })` is SVG text: flat on screen (`on: 'screen'`), printed on a top face (`'top'`, reading down-right, or `along: 'y'` reading up-right) or on a side face (`'left'`, `'right'`). Use it for text that moves in a group, sits on a surface, or must be smaller than 13 px; use `label()` for readable copy. On a side (`on: 'left' | 'right'`) it must sit on the face you see, the slab's front: `y = centre + depth / 2` for `left`, `x = centre + width / 2` for `right`, `z` between its bottom and top. The kit throws, naming that face, when it sits inside a slab or prism, on its back or just over its top.
-- `s.panel({ at, size, thickness, facing })` is a tile standing upright, its face toward the viewer's left or right.
+- `s.panel({ at, size, thickness, facing, content })` is a tile standing upright, its face toward the viewer's left or right. `content` is markup in face coordinates (centre at 0 0, `size` wide), clipped to the rounded face, so a square header bar can run edge to edge without poking past a corner.
 - `slab({ outline })` strokes the silhouette for line-art boxes (white sides, dark outline).
 - `s.plane(at, markup, 'left' | 'right')` lays markup on a side face; `s.planeTransform(at, on)` gives the transform for your own elements.
 - `s.unproject([x, y], z)` turns a screen point back into a 3D point, for things placed by screen layout.

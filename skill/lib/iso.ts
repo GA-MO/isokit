@@ -482,7 +482,12 @@ export class Scene {
     const rect = (extra: Record<string, string | number | undefined>) => `<rect ${attr({ x: -w / 2, y: -h / 2, width: w, height: h, rx: r, ...extra })}/>`;
     const behind = (d: number): Vec2 => [o.facing === 'left' ? d : -d, -2 * d * this.iy];
     const side = o.thickness > 0 ? `<path ${attr({ d: sweptRoundRect(w, h, r, behind(Math.min(o.thickness, 1)), behind(o.thickness)), fill: o.side })}/>` : '';
-    this.layers.push(`<g id="${id}"${cls(o.className)}><g transform="${this.planeTransform(o.at, o.facing)}">${side}${rect({ fill: o.front })}${rect({ fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${o.content ?? ''}</g></g>`);
+    let content = '';
+    if (o.content) {
+      this.defs.set(`${id}_face`, `<clipPath id="${id}_face">${rect({})}</clipPath>`);
+      content = `<g clip-path="url(#${id}_face)">${o.content}</g>`;
+    }
+    this.layers.push(`<g id="${id}"${cls(o.className)}><g transform="${this.planeTransform(o.at, o.facing)}">${side}${rect({ fill: o.front })}${rect({ fill: 'none', stroke: o.edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${content}</g></g>`);
     return this;
   }
 
