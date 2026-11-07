@@ -535,8 +535,13 @@ export class Scene {
     const line = o.outline ? { fill: 'none', stroke: o.outline, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' } : null;
     const under = line ? `<g transform="${this.faceTransform(bottom)}">${this.faceRect(o.size, radius, line)}</g>` : '';
     const over = line ? [top.left, top.right].map((v, i) => `<path ${attr({ d: `M${fmt(v[0])} ${fmt(v[1])}V${fmt((i ? bot.right : bot.left)[1])}`, ...line })}/>`).join('') : '';
+    let content = '';
+    if (o.content) {
+      this.defs.set(`${id}_face`, `<clipPath id="${id}_face">${this.faceRect(o.size, radius)}</clipPath>`);
+      content = `<g clip-path="url(#${id}_face)">${o.content}</g>`;
+    }
     const body = (key: string, topFill: string, side: Material, edge: string | undefined) =>
-      `${under}<g clip-path="url(#${id}_side)"${hole}>${this.sides(key, side, area, tall, top.front, radius, o.height, o.size, o.shade !== false)}</g>${over}<g transform="${this.faceTransform(o.at)}">${this.faceRect(o.size, radius, { fill: topFill, filter: o.grain ? this.grain(o.grain) : undefined })}${this.faceRect(o.size, radius, { fill: 'none', stroke: edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${o.content ?? ''}</g>`;
+      `${under}<g clip-path="url(#${id}_side)"${hole}>${this.sides(key, side, area, tall, top.front, radius, o.height, o.size, o.shade !== false)}</g>${over}<g transform="${this.faceTransform(o.at)}">${this.faceRect(o.size, radius, { fill: topFill, filter: o.grain ? this.grain(o.grain) : undefined })}${this.faceRect(o.size, radius, { fill: 'none', stroke: edge ?? 'rgb(255 255 255 / .6)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' })}${content}</g>`;
     const base = body(id, o.top, o.side, o.edge);
     const h = o.hover;
     if (!h) {
