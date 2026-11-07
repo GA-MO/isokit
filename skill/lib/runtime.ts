@@ -29,17 +29,28 @@ const LIFT_MS = 270;
 
 const asleep = new Map<HTMLElement, () => void>();
 const wakeNear = () => {
-  for (const [root, approach] of asleep) {
+  const near = [...asleep].filter(([root]) => {
     const r = root.getBoundingClientRect();
-    if (r.height && r.right > 0 && r.left < innerWidth && r.bottom > -innerHeight / 2 && r.top < innerHeight * 1.5) approach();
-  }
+    return r.height && r.right > 0 && r.left < innerWidth && r.bottom > -innerHeight / 2 && r.top < innerHeight * 1.5;
+  });
+  for (const [, approach] of near) approach();
 };
+let resized: ResizeObserver | undefined;
 const sleep = (root: HTMLElement, approach: () => void) => {
-  if (!asleep.size) addEventListener('scroll', wakeNear, { capture: true, passive: true });
+  resized ??= new ResizeObserver(wakeNear);
+  if (!asleep.size) {
+    addEventListener('scroll', wakeNear, { capture: true, passive: true });
+    resized.observe(document.documentElement);
+  }
   asleep.set(root, approach);
+  resized.observe(root);
 };
 const rouse = (root: HTMLElement) => {
-  if (asleep.delete(root) && !asleep.size) removeEventListener('scroll', wakeNear, { capture: true });
+  if (!asleep.delete(root)) return;
+  resized?.unobserve(root);
+  if (asleep.size) return;
+  removeEventListener('scroll', wakeNear, { capture: true });
+  resized?.unobserve(document.documentElement);
 };
 
 export function mount(root: HTMLElement): IsoHandle {
