@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import { Scene, type Material } from '../lib/iso';
-import { galleries } from './material-gallery';
+import { galleries, sampler } from './material-gallery';
 import { finishCategories, finishes } from './materials';
 
 const onSlab = (paint: (s: Scene) => Material) => {
@@ -56,4 +56,13 @@ test('gallery scenes have no labels, so each exports as a standalone SVG', () =>
       expect(v.scene.exportSvg()).toStartWith('<svg');
     }
   }
+});
+
+test('the README sampler holds 6 to 8 finishes from every family and exports as one SVG', () => {
+  const shown = sampler().motion().tracks.map(t => t.target);
+  const picked = finishes.filter(f => shown.some(id => id.endsWith(`_${f.slug}`)));
+  expect(picked.length).toBeGreaterThanOrEqual(6);
+  expect(picked.length).toBeLessThanOrEqual(8);
+  expect(finishCategories.filter(c => !picked.some(f => f.category === c.slug)).map(c => c.slug)).toEqual([]);
+  expect(sampler().exportSvg({ title: 'Side finishes' })).toStartWith('<svg');
 });

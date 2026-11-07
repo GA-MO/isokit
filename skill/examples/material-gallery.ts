@@ -68,4 +68,15 @@ export const galleries: readonly Gallery[] = finishCategories.map(c => {
   return { ...c, finishes: list, art: art(build(`finish-${c.slug}-sm`, list, compact), build(`finish-${c.slug}-lg`, list, wide), 640) };
 });
 
+const sampled = ['brushed', 'dichroic', 'oak', 'circuit', 'sunset', 'scatter', 'anodized', 'random'];
+
+export function sampler(): Scene {
+  const list = sampled.map(slug => {
+    const f = finishes.find(x => x.slug === slug);
+    if (!f) throw new Error(`material-gallery: sampler has no finish ${slug}`);
+    return f;
+  });
+  return build('finish-sampler-lg', list, wide);
+}
+
 export default { ...page({ title: 'Side finishes', surface: 'dark', art: galleries[0]!.art }), background: ui.page, body: `<main>${galleries.map(g => g.art.html).join('')}</main>` };

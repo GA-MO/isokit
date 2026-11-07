@@ -31,14 +31,9 @@ Every scene also ships a phone copy that tells the same story re-composed for a 
 
 <p align="center"><img src="docs/svg/hero-phone.svg" alt="The hero re-composed for a phone" width="360"></p>
 
-49 side finishes in six families. Generative finishes take a seed, and the same seed always draws the same pattern.
+<p><img src="docs/svg/finish-sampler.svg" alt="Eight side finishes: brushed, dichroic, oak, circuit, sunset, scatter, anodized and random" width="100%"></p>
 
-<p><img src="docs/svg/finish-metal.svg" alt="Metal finishes" width="100%"></p>
-<p><img src="docs/svg/finish-glass.svg" alt="Glass finishes" width="100%"></p>
-<p><img src="docs/svg/finish-natural.svg" alt="Natural finishes" width="100%"></p>
-<p><img src="docs/svg/finish-tech-pattern.svg" alt="Tech pattern finishes" width="100%"></p>
-<p><img src="docs/svg/finish-retro.svg" alt="Retro finishes" width="100%"></p>
-<p><img src="docs/svg/finish-generative.svg" alt="Generative finishes" width="100%"></p>
+Eight of the 49 side finishes, from all six families: metal, glass, natural, tech pattern, retro and generative. Generative finishes take a seed, and the same seed always draws the same pattern. [See all 49 on the showcase](https://ga-mo.github.io/isokit/#materials).
 
 ## What you get
 

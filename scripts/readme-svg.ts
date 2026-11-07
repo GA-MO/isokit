@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { examples } from '../skill/examples/catalog';
 import { hero } from '../skill/examples/hero';
-import { galleries } from '../skill/examples/material-gallery';
+import { sampler } from '../skill/examples/material-gallery';
 import { surfaces, type Example } from '../skill/examples/shared';
 
 const out = new URL('../docs/svg/', import.meta.url).pathname;
@@ -22,7 +22,4 @@ for (const slug of ['battery-charge', 'sync-loop', 'tile-loader', 'inbox-fill', 
   if (!e) throw new Error(`readme-svg: no example ${slug}`);
   await write(`${slug}.svg`, e.art.compact.scene.exportSvg({ title: e.title, ...card(e.surface) }));
 }
-for (const g of galleries) {
-  if (!g.art.wide) throw new Error(`readme-svg: gallery ${g.slug} needs a wide scene`);
-  await write(`finish-${g.slug}.svg`, g.art.wide.scene.exportSvg({ title: `${g.name} finishes`, ...card('dark') }));
-}
+await write('finish-sampler.svg', sampler().exportSvg({ title: 'Side finishes, eight of 49', ...card('dark') }));
