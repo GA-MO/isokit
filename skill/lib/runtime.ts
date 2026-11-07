@@ -27,6 +27,21 @@ function parse(root: HTMLElement): MotionSpec {
 
 const LIFT_MS = 270;
 
+const asleep = new Map<HTMLElement, () => void>();
+const wakeNear = () => {
+  for (const [root, approach] of asleep) {
+    const r = root.getBoundingClientRect();
+    if (r.height && r.right > 0 && r.left < innerWidth && r.bottom > -innerHeight / 2 && r.top < innerHeight * 1.5) approach();
+  }
+};
+const sleep = (root: HTMLElement, approach: () => void) => {
+  if (!asleep.size) addEventListener('scroll', wakeNear, { capture: true, passive: true });
+  asleep.set(root, approach);
+};
+const rouse = (root: HTMLElement) => {
+  if (asleep.delete(root) && !asleep.size) removeEventListener('scroll', wakeNear, { capture: true });
+};
+
 export function mount(root: HTMLElement): IsoHandle {
   const spec = parse(root);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -39,16 +54,22 @@ export function mount(root: HTMLElement): IsoHandle {
     return [a];
   });
   let parked: Array<CSSNumberish | null> | null = null;
-  const park = () => {
-    if (parked) return;
-    parked = animations.map(a => a.currentTime);
-    for (const a of animations) a.cancel();
-  };
+  let near = false;
   const wake = () => {
     const times = parked;
     if (!times) return;
     parked = null;
+    rouse(root);
     animations.forEach((a, i) => (a.currentTime = times[i] ?? null));
+  };
+  const park = () => {
+    if (parked) return;
+    parked = animations.map(a => a.currentTime);
+    for (const a of animations) a.cancel();
+    sleep(root, () => {
+      near = true;
+      wake();
+    });
   };
   const seek = (s: number) => {
     if (parked) {
@@ -64,7 +85,6 @@ export function mount(root: HTMLElement): IsoHandle {
   let started = false;
   let visible = false;
   let held = false;
-  let near = false;
   const settle = () => (near || held ? wake() : park());
   const play = () => {
     if (reduce.matches) return still();
@@ -145,6 +165,7 @@ export function mount(root: HTMLElement): IsoHandle {
   const destroy = () => {
     observer.disconnect();
     parker.disconnect();
+    rouse(root);
     for (const h of hovers) {
       h.removeEventListener('pointerenter', onEnter);
       h.removeEventListener('pointerleave', onLeave);
