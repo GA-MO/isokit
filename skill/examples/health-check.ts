@@ -1,21 +1,20 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, page, paints, ramps, surfaces, type Example, narrowest } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#38bdf8';
-const probe = '#e4e4e7';
-const bad = '#fb7185';
-const good = '#34d399';
-const quiet = ['#18181b', '#1f1f23', '#27272a', '#3f3f46'] as const;
+const ui = surfaces.light;
+const accent = '#0284c7';
+const probe = '#71717a';
+const bad = '#e11d48';
+const good = '#047857';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
 
 const nodes = [
-  { id: 'a', y: -125, seed: 11 },
-  { id: 'b', y: 0, seed: 23 },
-  { id: 'c', y: 125, seed: 37 },
+  { id: 'a', y: -125 },
+  { id: 'b', y: 0 },
+  { id: 'c', y: 125 },
 ] as const;
 const sick = 1;
 const fail = { check: 3.4, retract: 4.35, out: 4.45 } as const;
@@ -50,8 +49,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 
   s.group('lb', () => {
     s.slab({ id: 'lb-slab', at: lb, size: [lbSize, lbSize], height: 28 * k, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.sky), grain: 0.06, edge: ui.edge });
-    s.face({ id: 'lb-glow', at: lb, size: [lbSize, lbSize], radius: 18 * k, fill: 'rgb(56 189 248 / .24)' });
-    s.text({ id: 'lb-name', at: [lb[0] + lbSize / 2 - 15 * k, 0, 0], text: 'balancer', size: 11, color: '#7dd3fc', on: 'top', along: 'y', anchor: 'middle' });
+    s.face({ id: 'lb-glow', at: lb, size: [lbSize, lbSize], radius: 18 * k, fill: 'rgb(14 165 233 / .18)' });
+    s.text({ id: 'lb-name', at: [lb[0] + lbSize / 2 - 15 * k, 0, 0], text: 'balancer', size: 11, color: '#075985', on: 'top', along: 'y', anchor: 'middle' });
   });
 
   nodes.forEach((n, i) => {
@@ -59,13 +58,13 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     const tile = { at, size: [nodeSize, nodeSize] as const, height: nodeH, radius: 15 * k, grain: 0.06 };
     s.group(`node-${n.id}-pos`, () =>
       s.group(`node-${n.id}`, () => {
-        s.slab({ id: `node-${n.id}-slab`, ...tile, top: ui.top, side: paints.random(s, quiet, n.seed), edge: ui.edge });
+        s.slab({ id: `node-${n.id}-slab`, ...tile, top: ui.top, side: paints.brushed(s, ramps.silver), edge: ui.edge });
         if (i === sick) {
-          s.slab({ id: 'sick-bad', ...tile, top: '#2a1a1f', side: paints.gradient(s, ramps.rose), edge: 'rgb(251 113 133 / .5)', shadow: false });
-          s.slab({ id: 'sick-ok', ...tile, top: '#16241f', side: paints.gradient(s, ramps.emerald), edge: 'rgb(52 211 153 / .5)', shadow: false });
+          s.slab({ id: 'sick-bad', ...tile, top: '#fff1f2', side: paints.gradient(s, ramps.rose), edge: ui.edge, shadow: false });
+          s.slab({ id: 'sick-ok', ...tile, top: '#ecfdf5', side: paints.gradient(s, ramps.emerald), edge: ui.edge, shadow: false });
         }
-        s.face({ id: `node-${n.id}-hit`, at, size: [nodeSize, nodeSize], radius: 15 * k, fill: 'rgb(56 189 248 / .22)' });
-        s.text({ id: `node-${n.id}-name`, at: [at[0] + nodeSize / 2 - 13 * k, at[1], 0], text: `node-${n.id}`, size: 10, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
+        s.face({ id: `node-${n.id}-hit`, at, size: [nodeSize, nodeSize], radius: 15 * k, fill: 'rgb(14 165 233 / .16)' });
+        s.text({ id: `node-${n.id}-name`, at: [at[0] + nodeSize / 2 - 13 * k, at[1], 0], text: `node-${n.id}`, size: 10, color: '#52525b', on: 'top', along: 'y', anchor: 'middle' });
       }),
     );
   });
@@ -157,7 +156,7 @@ export const example: Example = {
   intent: 'change',
   layout: 'radial',
   useCase: 'Reliability',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('health-sm', 390, 390, [176, 180], 0.74, false), build('health-lg', 720, 400, [300, 190], 1, true), 520),
 };
