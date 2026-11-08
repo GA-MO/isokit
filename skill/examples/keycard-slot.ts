@@ -1,12 +1,12 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, n, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const violet = ramps.violet;
+const ui = surfaces.light;
+const rose = ramps.rose;
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
-const amber = ramps.amber[2];
-const emerald = ramps.emerald[2];
+const amber = '#f59e0b';
+const emerald = '#10b981';
 
 function build(name: string, width: number, height: number, origin: readonly [number, number]) {
   const s = new Scene({ name, width, height, origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
@@ -22,27 +22,27 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const lip = (x: number) => n(ly + (x - lx) * s.ratio);
   const inside = `polygon(0px 0px, ${width}px 0px, ${width}px ${lip(width)}px, 0px ${lip(0)}px)`;
 
-  const face = s.def('card-face', `<linearGradient id="$ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${violet[3]}"/><stop offset=".08" stop-color="${violet[2]}"/><stop offset=".7" stop-color="${violet[1]}"/><stop offset="1" stop-color="${violet[0]}"/></linearGradient>`);
+  const face = s.def('card-face', `<linearGradient id="$ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${rose[3]}"/><stop offset=".08" stop-color="${rose[2]}"/><stop offset=".7" stop-color="${rose[1]}"/><stop offset="1" stop-color="${rose[0]}"/></linearGradient>`);
   const print =
     `<rect x="${-card.w / 2 + 12}" y="${-card.h / 2 + 11}" width="18" height="14" rx="3" fill="#e4e4e7" opacity=".85"/>` +
-    `<path d="M${-card.w / 2 + 12} ${-card.h / 2 + 18}h18M${-card.w / 2 + 21} ${-card.h / 2 + 11}v14" stroke="${violet[1]}" stroke-width=".8" opacity=".6"/>` +
+    `<path d="M${-card.w / 2 + 12} ${-card.h / 2 + 18}h18M${-card.w / 2 + 21} ${-card.h / 2 + 11}v14" stroke="${rose[1]}" stroke-width=".8" opacity=".6"/>` +
     `<rect x="${card.w / 2 - 40}" y="${-card.h / 2 + 13}" width="28" height="3" rx="1.5" fill="#fff" opacity=".45"/>` +
     `<rect x="${card.w / 2 - 40}" y="${-card.h / 2 + 20}" width="18" height="3" rx="1.5" fill="#fff" opacity=".28"/>`;
 
   s.group('reader', () => {
-    s.slab({ id: 'box', at: [0, 0, 0], size: [w, d], height: h, radius: 20, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-    s.face({ id: 'box-glow', at: [0, 0, 0], size: [w, d], radius: 20, fill: 'rgb(52 211 153 / .16)' });
-    s.face({ id: 'slot', at: [0, slotY, 0], size: [slot.length, slot.width], radius: slot.width / 2, fill: '#060608', stroke: 'rgb(255 255 255 / .14)' });
+    s.slab({ id: 'box', at: [0, 0, 0], size: [w, d], height: h, radius: 20, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.08, edge: ui.edge });
+    s.face({ id: 'box-glow', at: [0, 0, 0], size: [w, d], radius: 20, fill: 'rgb(16 185 129 / .14)' });
+    s.face({ id: 'slot', at: [0, slotY, 0], size: [slot.length, slot.width], radius: slot.width / 2, fill: '#27272a', stroke: 'rgb(22 23 27 / .2)' });
     s.group('card-clip', () => {
       s.svg('card-box', `<rect width="${width}" height="${height}" fill="none"/>`);
       s.group('card', () => {
-        s.panel({ id: 'card-panel', at: cardAt, size: [card.w, card.h], thickness: card.t, facing: 'left', radius: 7, front: face, side: violet[1], edge: 'rgb(237 233 254 / .45)', content: print });
+        s.panel({ id: 'card-panel', at: cardAt, size: [card.w, card.h], thickness: card.t, facing: 'left', radius: 7, front: face, side: rose[1], edge: 'rgb(255 228 230 / .55)', content: print });
       });
     });
-    s.slab({ id: 'lamp', at: light, size: [20, 20], height: 4, radius: 10, top: '#2a2b31', side: paints.flat('#0c0c0f'), edge: 'rgb(255 255 255 / .16)', shadow: false });
+    s.slab({ id: 'lamp', at: light, size: [20, 20], height: 4, radius: 10, top: '#f4f4f5', side: paints.flat('#a1a1aa'), edge: ui.edge, shadow: false });
     const dot = (id: string, color: string, r: number, blur?: string) => s.svg(id, s.plane(light, `<circle r="${r}" fill="${color}"${blur ? ` filter="${blur}"` : ''}/>`));
-    dot('glow-wait', 'rgb(251 191 36 / .55)', 13, s.blur(5));
-    dot('glow-ok', 'rgb(52 211 153 / .7)', 15, s.blur(6));
+    dot('glow-wait', 'rgb(245 158 11 / .45)', 13, s.blur(5));
+    dot('glow-ok', 'rgb(16 185 129 / .5)', 15, s.blur(6));
     dot('lamp-wait', amber, 6.5);
     dot('lamp-ok', emerald, 6.5);
   });
@@ -85,7 +85,7 @@ export const example: Example = {
   level: 'spot',
   layout: 'object',
   useCase: 'Access',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('spot-keycard', 390, 300, [195, 154])),
 };
