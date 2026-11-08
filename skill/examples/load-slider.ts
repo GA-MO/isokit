@@ -1,8 +1,9 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
+import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example, type Ramp } from './shared';
 
-const ui = surfaces.dark;
-const teal = ramps.teal;
+const ui = surfaces.night;
+const sky = ramps.sky;
+const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const names = { compact: 'loadslider-sm', wide: 'loadslider-lg' } as const;
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
@@ -70,21 +71,23 @@ function build({ name, width, height, origin, k, minPx, panel }: Layout) {
 
   s.wire({ id: 'feed', points: lane(1).slice(0, 2), stroke: ui.wire, width: 1.25 });
   [0, 2].forEach(r => s.wire({ id: `lane-${r}-in`, points: lane(r).slice(0, 4), stroke: ui.wire, width: 1.25, corner: 12 * k, hidden: true }));
-  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 18 * k, top: '#16171b', side: paints.brushed(s, ramps.graphite), edge: ui.edge });
+  const halo = s.def('plate-halo-fill', `<radialGradient id="$ID"><stop offset="0" stop-color="#38bdf8" stop-opacity=".5"/><stop offset=".5" stop-color="#0284c7" stop-opacity=".2"/><stop offset="1" stop-color="#0284c7" stop-opacity="0"/></radialGradient>`);
+  s.face({ id: 'plate-halo', at: [plate.at[0], plate.at[1], -plate.height], size: [plate.size[0] * 1.7, plate.size[1] * 1.9], radius: plate.size[1], fill: halo });
+  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 18 * k, top: '#1c2250', side: paints.brushed(s, dusk), edge: ui.edge });
   order.forEach(([c, r], i) => {
-    s.face({ id: `slot-${i}`, at: [cell(c, r)[0], cell(c, r)[1], 0], size: [size, size], radius, stroke: 'rgb(94 234 212 / .28)', dash: '4 4' });
+    s.face({ id: `slot-${i}`, at: [cell(c, r)[0], cell(c, r)[1], 0], size: [size, size], radius, stroke: 'rgb(56 189 248 / .3)', dash: '4 4' });
     s.march(`slot-${i}`, 4, 4, 24);
   });
 
   const lanes = [0, 1, 2].map(r => {
     const id = `lane-${r}`;
-    s.wire({ id, points: lane(r).slice(r === 1 ? 2 : 4), stroke: 'rgb(94 234 212 / .3)', width: 1.25, hidden: true });
+    s.wire({ id, points: lane(r).slice(r === 1 ? 2 : 4), stroke: 'rgb(56 189 248 / .32)', width: 1.25, hidden: true });
     return { r, id, on: riseAt(threshold(rowOn(r))) + drop * 0.6, off: fallAt(threshold(rowOn(r))) };
   });
   lanes.forEach(l => {
     const d = s.wirePath(lane(l.r).slice(l.r === 1 ? 2 : 4), 12 * k);
     tiers.forEach(t => {
-      const markup = `<path d="${d}" fill="none" stroke="${teal[2]}" stroke-width="${t.width * 3}" stroke-linecap="round" pathLength="1" stroke-dasharray="${t.length} 2" opacity=".35" filter="${s.blur(3)}"/><path d="${d}" fill="none" stroke="${teal[3]}" stroke-width="${t.width}" stroke-linecap="round" pathLength="1" stroke-dasharray="${t.length} 2"/>`;
+      const markup = `<path d="${d}" fill="none" stroke="${sky[2]}" stroke-width="${t.width * 3}" stroke-linecap="round" pathLength="1" stroke-dasharray="${t.length} 2" opacity=".35" filter="${s.blur(3)}"/><path d="${d}" fill="none" stroke="${sky[3]}" stroke-width="${t.width}" stroke-linecap="round" pathLength="1" stroke-dasharray="${t.length} 2"/>`;
       s.group(`tier-${l.r}-${t.id}`, () => s.svg(`run-${l.r}-${t.id}`, markup));
       s.ambient(`run-${l.r}-${t.id}`, 'strokeDashoffset', t.period, [t.length, -1]);
     });
@@ -93,15 +96,15 @@ function build({ name, width, height, origin, k, minPx, panel }: Layout) {
   [...order.map(([c, r], i) => ({ c, r, i }))].sort((a, b) => a.c + a.r - (b.c + b.r)).forEach(({ c, r, i }) => {
     const at = cell(c, r);
     s.group(`node-${i}`, () => {
-      s.wire({ id: `node-${i}-tap`, points: [[at[0], busY(r), lz], [at[0], at[1] - size / 2, lz]], stroke: 'rgb(94 234 212 / .3)', width: 1.25 });
-      s.slab({ id: `node-${i}-slab`, at, size: [size, size], height: h, radius, top: ui.top, side: paints.gradient(s, teal), edge: ui.edge, shadow: false });
-      s.face({ id: `node-${i}-hit`, at, size: [size, size], radius, fill: 'rgb(45 212 191 / .3)' });
+      s.wire({ id: `node-${i}-tap`, points: [[at[0], busY(r), lz], [at[0], at[1] - size / 2, lz]], stroke: 'rgb(56 189 248 / .32)', width: 1.25 });
+      s.slab({ id: `node-${i}-slab`, at, size: [size, size], height: h, radius, top: '#1f3563', side: paints.gradient(s, sky), edge: 'rgb(186 230 253 / .4)', shadow: false });
+      s.face({ id: `node-${i}-hit`, at, size: [size, size], radius, fill: 'rgb(56 189 248 / .32)' });
     });
     s.pivot(`node-${i}`, [at[0], at[1], 0]);
   });
 
-  s.slab({ id: 'lb', at: lb.at, size: [lb.size, lb.size], height: lb.height, radius: 13 * k, top: ui.top, side: paints.gradient(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.text({ id: 'lb-name', at: lb.at, text: 'ingress', size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'lb', at: lb.at, size: [lb.size, lb.size], height: lb.height, radius: 13 * k, top: ui.top, side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge });
+  s.text({ id: 'lb-name', at: lb.at, text: 'ingress', size: 11, color: ui.ink, on: 'top', anchor: 'middle' });
 
   const x = panel.anchor === 'left' ? fitX(panel.x, 'load 9,600 req/s · 12 nodes  ', width, minPx, 'left') : panel.x;
   s.label({ id: 'panel', at: { screen: [x, panel.y] }, html: control(), size: 13, anchor: panel.anchor, variant: 'plain' });
@@ -151,20 +154,20 @@ function control(): string {
 }
 
 const scope = '[data-iso^="loadslider-"]';
-const css = `${scope} .ls-panel{display:flex;flex-direction:column;gap:.55em;width:19em;box-sizing:border-box;padding:.75em .9em .8em;background:#1b1c22;border:1px solid rgb(255 255 255 / .1);border-radius:12px;box-shadow:0 14px 32px -18px rgb(0 0 0 / .8)}
+const css = `${scope} .ls-panel{display:flex;flex-direction:column;gap:.55em;width:19em;box-sizing:border-box;padding:.75em .9em .8em;background:${ui.label.bg};border:1px solid ${ui.label.border};border-radius:12px;box-shadow:0 14px 32px -18px rgb(3 5 20 / .9)}
 ${scope} .ls-head{display:flex;align-items:baseline;justify-content:space-between;gap:1em}
-${scope} .ls-name{font-family:${fonts.mono};color:#a1a1aa}
-${scope} .ls-read{font-family:${fonts.mono};font-variant-numeric:tabular-nums;color:#ccfbf1}
+${scope} .ls-name{font-family:${fonts.mono};color:${ui.muted}}
+${scope} .ls-read{font-family:${fonts.mono};font-variant-numeric:tabular-nums;color:#e0f2fe}
 ${scope} .ls-range{-webkit-appearance:none;appearance:none;width:100%;height:1.6em;margin:0;background:transparent;cursor:pointer;touch-action:none;--p:0}
-${scope} .ls-range::-webkit-slider-runnable-track{height:.36em;border-radius:1em;background:linear-gradient(90deg,#2dd4bf calc(var(--p) * 100%),#3f3f46 0)}
-${scope} .ls-range::-moz-range-track{height:.36em;border-radius:1em;background:linear-gradient(90deg,#2dd4bf calc(var(--p) * 100%),#3f3f46 0)}
-${scope} .ls-range::-webkit-slider-thumb{-webkit-appearance:none;width:1.25em;height:1.25em;margin-top:-.445em;border-radius:50%;background:#f4f4f5;border:0;box-shadow:0 0 0 .3em rgb(45 212 191 / .18),0 2px 6px rgb(0 0 0 / .5);transition:box-shadow .2s cubic-bezier(.22,1,.36,1),scale .2s cubic-bezier(.22,1,.36,1)}
-${scope} .ls-range::-moz-range-thumb{width:1.25em;height:1.25em;border-radius:50%;background:#f4f4f5;border:0;box-shadow:0 0 0 .3em rgb(45 212 191 / .18),0 2px 6px rgb(0 0 0 / .5)}
-${scope} .ls-range:hover::-webkit-slider-thumb{box-shadow:0 0 0 .4em rgb(45 212 191 / .26),0 2px 6px rgb(0 0 0 / .5)}
-${scope} .ls-range:active::-webkit-slider-thumb{scale:1.1;box-shadow:0 0 0 .5em rgb(45 212 191 / .3),0 2px 6px rgb(0 0 0 / .5)}
+${scope} .ls-range::-webkit-slider-runnable-track{height:.36em;border-radius:1em;background:linear-gradient(90deg,#38bdf8 calc(var(--p) * 100%),#343c78 0)}
+${scope} .ls-range::-moz-range-track{height:.36em;border-radius:1em;background:linear-gradient(90deg,#38bdf8 calc(var(--p) * 100%),#343c78 0)}
+${scope} .ls-range::-webkit-slider-thumb{-webkit-appearance:none;width:1.25em;height:1.25em;margin-top:-.445em;border-radius:50%;background:#f4f4f5;border:0;box-shadow:0 0 0 .3em rgb(56 189 248 / .18),0 2px 6px rgb(0 0 0 / .5);transition:box-shadow .2s cubic-bezier(.22,1,.36,1),scale .2s cubic-bezier(.22,1,.36,1)}
+${scope} .ls-range::-moz-range-thumb{width:1.25em;height:1.25em;border-radius:50%;background:#f4f4f5;border:0;box-shadow:0 0 0 .3em rgb(56 189 248 / .18),0 2px 6px rgb(0 0 0 / .5)}
+${scope} .ls-range:hover::-webkit-slider-thumb{box-shadow:0 0 0 .4em rgb(56 189 248 / .26),0 2px 6px rgb(0 0 0 / .5)}
+${scope} .ls-range:active::-webkit-slider-thumb{scale:1.1;box-shadow:0 0 0 .5em rgb(56 189 248 / .3),0 2px 6px rgb(0 0 0 / .5)}
 ${scope} .ls-range:focus{outline:none}
-${scope} .ls-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 .2em #141519,0 0 0 .38em #2dd4bf}
-${scope} .ls-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 .2em #141519,0 0 0 .38em #2dd4bf}
+${scope} .ls-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 .2em ${ui.label.bg},0 0 0 .38em #38bdf8}
+${scope} .ls-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 .2em ${ui.label.bg},0 0 0 .38em #38bdf8}
 @media (prefers-reduced-motion:reduce){${scope} .ls-range::-webkit-slider-thumb{transition:none}}`;
 
 function script(): string {
@@ -329,7 +332,7 @@ export const example: Example = {
   intent: 'scale',
   layout: 'field',
   useCase: 'Scaling',
-  surface: 'dark',
+  surface: 'night',
   interaction: 'drag',
   art: art(
     build({ name: names.compact, width: 390, height: 450, origin: [214, 294], k: 0.86, minPx: narrowest, panel: { x: 195, y: 92, anchor: 'center' } }),

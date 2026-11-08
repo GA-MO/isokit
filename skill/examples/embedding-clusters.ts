@@ -1,7 +1,8 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, ramps, rng, surfaces, type Example, type Ramp } from './shared';
+import { art, fitX, fonts, n, narrowest, page, paints, ramps, rng, surfaces, type Example, type Ramp } from './shared';
 
-const ui = surfaces.dark;
+const ui = surfaces.night;
+const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
@@ -15,7 +16,7 @@ interface Cluster {
 
 const probeFrom: Vec2 = [30, 25];
 const clusters: readonly Cluster[] = [
-  { id: 'a', centre: [-110, 25], ramp: ramps.violet, ink: '#c4b5fd' },
+  { id: 'a', centre: [-110, 25], ramp: ramps.emerald, ink: '#6ee7b7' },
   { id: 'c', centre: [30, -115], ramp: ramps.amber, ink: '#fcd34d' },
   { id: 'b', centre: [30, 110], ramp: ramps.sky, ink: '#7dd3fc' },
 ];
@@ -72,22 +73,25 @@ function build(l: Layout) {
   const dot = 16 * k;
   const list = points();
 
-  s.slab({ id: 'plate', at: [0, 0, 0], size: [plateSize, plateSize], height: top, radius: 34 * k, top: '#16171c', side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+  const grid = s.def('plate-grid', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${n(18 * k)}" height="${n(18 * k)}"><circle cx="${n(9 * k)}" cy="${n(9 * k)}" r="1" fill="#c7d2fe" opacity=".16"/></pattern>`);
+  s.slab({ id: 'plate', at: [0, 0, 0], size: [plateSize, plateSize], height: top, radius: 34 * k, top: '#1c2250', side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge, content: `<rect x="${n(-plateSize / 2)}" y="${n(-plateSize / 2)}" width="${n(plateSize)}" height="${n(plateSize)}" fill="${grid}"/>` });
 
   clusters.forEach(c => {
+    const pool = s.def(`pool-${c.id}-fill`, `<radialGradient id="$ID"><stop offset="0" stop-color="${c.ramp[2]}" stop-opacity=".42"/><stop offset=".5" stop-color="${c.ramp[2]}" stop-opacity=".14"/><stop offset="1" stop-color="${c.ramp[2]}" stop-opacity="0"/></radialGradient>`);
+    s.face({ id: `pool-${c.id}`, at: v(c.centre), size: [150 * k, 150 * k], radius: 75 * k, fill: pool });
     s.face({ id: `ring-${c.id}`, at: v(c.centre), size: [86 * k, 86 * k], radius: 43 * k, stroke: c.ink, strokeWidth: 1, dash: '3 3' });
     s.text({ id: `ring-${c.id}-name`, at: v([c.centre[0] + 42, c.centre[1] + 42]), text: c.id, size: 12, color: c.ink, on: 'top', anchor: 'middle' });
     const dx = Math.sign(c.centre[0] - probeFrom[0]);
     const dy = Math.sign(c.centre[1] - probeFrom[1]);
     const end: Vec2 = [c.centre[0] - dx * 30, c.centre[1] - dy * 30];
-    s.wire({ id: `probe-${c.id}`, points: [v([probeFrom[0] + dx * 14, probeFrom[1] + dy * 14]), v(end)], stroke: c === nearest ? c.ink : 'rgb(255 255 255 / .3)', width: 1.25, hidden: true });
+    s.wire({ id: `probe-${c.id}`, points: [v([probeFrom[0] + dx * 14, probeFrom[1] + dy * 14]), v(end)], stroke: c === nearest ? c.ink : 'rgb(199 210 254 / .4)', width: 1.25, hidden: true });
   });
 
   list.forEach((p, i) => {
     const at = v(p.scatter);
     s.group(`pt-${i}`, () => {
-      s.slab({ id: `pt-${i}-n`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: '#2a2b33', side: paints.brushed(s, ramps.graphite), edge: 'rgb(255 255 255 / .18)' });
-      s.slab({ id: `pt-${i}-c`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: p.cluster.ramp[1], side: paints.gradient(s, p.cluster.ramp), edge: 'rgb(255 255 255 / .3)' });
+      s.slab({ id: `pt-${i}-n`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: '#343c78', side: paints.brushed(s, dusk), edge: 'rgb(199 210 254 / .3)' });
+      s.slab({ id: `pt-${i}-c`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: p.cluster.ramp[2], side: paints.gradient(s, p.cluster.ramp), edge: 'rgb(255 255 255 / .45)' });
     });
   });
 
@@ -122,6 +126,7 @@ function build(l: Layout) {
   });
   clusters.forEach((c, j) => {
     s.at(`ring-${c.id}`, 'opacity', 2.2 + j * 0.18, 0.4, 0, 1, ease.linear);
+    s.at(`pool-${c.id}`, 'opacity', 2.2 + j * 0.18, 0.6, 0, 1, ease.linear);
     s.at(`ring-${c.id}-name`, 'opacity', 2.3 + j * 0.18, 0.4, 0, 1, ease.linear);
   });
 
@@ -143,6 +148,7 @@ function build(l: Layout) {
   s.at('verdict', 'opacity', reset, 0.3, 1, 0, ease.linear);
   clusters.forEach(c => {
     s.at(`ring-${c.id}`, 'opacity', reset, 0.3, 1, 0, ease.linear);
+    s.at(`pool-${c.id}`, 'opacity', reset, 0.3, 1, 0, ease.linear);
     s.at(`ring-${c.id}-name`, 'opacity', reset, 0.3, 1, 0, ease.linear);
   });
   s.at('new', 'opacity', reset, 0.3, 1, 0, ease.linear);
@@ -173,7 +179,7 @@ export const example: Example = {
   intent: 'choose',
   layout: 'field',
   useCase: 'Vectors',
-  surface: 'dark',
+  surface: 'night',
   interaction: 'watch',
   art: art(
     build({ name: 'embed-sm', width: 390, height: 400, origin: [195, 192], k: 0.76, minPx: narrowest, label: 'below' }),

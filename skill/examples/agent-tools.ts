@@ -1,10 +1,11 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
+import { art, fonts, page, ramps, surfaces, type Example, type Ramp, fitX, narrowest, paints } from './shared';
 
-const ui = surfaces.dark;
-const call = '#818cf8';
-const reply = '#c7d2fe';
-const glow = 'rgb(129 140 248 / .3)';
+const ui = surfaces.night;
+const call = '#a78bfa';
+const reply = '#ddd6fe';
+const glow = 'rgb(167 139 250 / .32)';
+const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 
@@ -37,6 +38,15 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const plane = ([a, b]: Vec2, z = 0): Vec3 => [a * k, b * side * k, z];
   const list = tools(wide);
   const wz = -12 * k;
+  const ground = -30 * k;
+  const centre = plane([110, 110], ground);
+  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="18" height="18"><circle cx="9" cy="9" r="1.1" fill="#c7d2fe" opacity=".2"/></pattern>`);
+  const fade = s.def('floor-fade', `<radialGradient id="$ID"><stop offset=".25" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`);
+  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
+  const span = 640 * k;
+  s.svg('floor', s.plane(centre, `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  const halo = s.def('core-halo-fill', `<radialGradient id="$ID"><stop offset="0" stop-color="#8b5cf6" stop-opacity=".55"/><stop offset=".45" stop-color="#7c3aed" stop-opacity=".2"/><stop offset="1" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>`);
+  s.face({ id: 'core-halo', at: plane([0, 0], ground), size: [coreSize * 2.6 * k, coreSize * 2.6 * k], radius: coreSize * 1.3 * k, fill: halo });
 
   list.forEach(t => {
     const pts = t.route.map(r => plane(r, wz));
@@ -49,19 +59,19 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const drawTool = (t: Tool) => {
     const at = plane(t.at);
     const size = [toolSize * k, toolSize * k] as const;
-    s.slab({ id: t.id, at, size, height: 22 * k, radius: 16 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+    s.slab({ id: t.id, at, size, height: 22 * k, radius: 16 * k, top: ui.top, side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge });
     s.face({ id: `${t.id}-glow`, at, size, radius: 16 * k, fill: glow });
-    s.text({ id: `${t.id}-name`, at: [at[0] + (toolSize / 2 - 14) * k, at[1], 0], text: t.name, size: wide ? 12 : 10, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
+    s.text({ id: `${t.id}-name`, at: [at[0] + (toolSize / 2 - 14) * k, at[1], 0], text: t.name, size: wide ? 12 : 10, color: '#c7d2fe', on: 'top', along: 'y', anchor: 'middle' });
   };
   const drawCore = () => {
     const at = plane([0, 0], 14 * k);
     const size = [coreSize * k, coreSize * k] as const;
-    s.slab({ id: 'core', at, size, height: 44 * k, radius: 26 * k, top: ui.top, side: paints.gradient(s, ramps.indigo), grain: 0.06, edge: ui.edge });
+    s.slab({ id: 'core', at, size, height: 44 * k, radius: 26 * k, top: '#33276e', side: paints.gradient(s, ramps.violet), grain: 0.06, edge: 'rgb(221 214 254 / .4)' });
     s.face({ id: 'core-glow', at, size, radius: 26 * k, fill: glow });
     s.text({ id: 'core-name', at: [at[0] + (coreSize / 2 - 18) * k, 0, at[2]], text: 'agent', size: wide ? 13 : 11, color: reply, on: 'top', along: 'y', anchor: 'middle' });
     [-34, 0, 34].forEach((dy, i) => {
       const p: Vec3 = [at[0] - 14 * k, dy * k * side, at[2]];
-      s.face({ id: `step-${i}`, at: p, size: [22 * k, 22 * k], radius: 6 * k, stroke: 'rgb(199 210 254 / .45)', dash: '2 2' });
+      s.face({ id: `step-${i}`, at: p, size: [22 * k, 22 * k], radius: 6 * k, stroke: 'rgb(221 214 254 / .5)', dash: '2 2' });
       s.face({ id: `step-${i}-done`, at: p, size: [22 * k, 22 * k], radius: 6 * k, fill: call });
     });
   };
@@ -141,7 +151,7 @@ export const example: Example = {
   intent: 'talk',
   layout: 'radial',
   useCase: 'AI agents',
-  surface: 'dark',
+  surface: 'night',
   interaction: 'watch',
   art: art(
     build('agent-sm', 390, 560, [196, 300], 0.7, false, { question: [195, 24], answer: [195, 110] }),
