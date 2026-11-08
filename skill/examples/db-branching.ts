@@ -1,7 +1,7 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
-const ui = surfaces.dark;
+const ui = surfaces.light;
 const indigo = ramps.indigo;
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const glide = 'cubic-bezier(.45,.05,.05,1)';
@@ -23,18 +23,18 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const onMain: Vec3 = [main[0], main[1], tileH];
 
   const route: Vec3[] = wide ? [[main[0] + size / 2, main[1], wz], [d, d, wz], [d, -d + size / 2, wz]] : [[main[0] + size / 2, 0, wz], [branch[0] - size / 2, 0, wz]];
-  s.wire({ id: 'w-branch', points: route, stroke: 'rgb(165 180 252 / .32)', width: 1.25, corner: 18 * k, hidden: true });
+  s.wire({ id: 'w-branch', points: route, stroke: 'rgb(79 70 229 / .45)', width: 1.25, corner: 18 * k, hidden: true });
 
   s.slab({ id: 'main', at: main, size: [size, size], height: h, radius, top: ui.top, side: paints.gradient(s, indigo), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'main-glow', at: main, size: [size, size], radius, fill: 'rgb(129 140 248 / .3)' });
+  s.face({ id: 'main-glow', at: main, size: [size, size], radius, fill: 'rgb(99 102 241 / .2)' });
   s.text({ id: 'main-name', at: [main[0], main[1] + size / 2, -h * 0.5], text: 'main', size: 12, color: '#e0e7ff', on: 'left', anchor: 'middle' });
 
-  s.frame({ id: 'ghost', at: branch, size: [size, size], height: h, radius, stroke: 'rgb(165 180 252 / .55)', dash: '4 4' });
-  s.slab({ id: 'branch', at: branch, size: [size, size], height: h, radius, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: 'rgb(165 180 252 / .35)' });
-  s.face({ id: 'branch-hit', at: branch, size: [size, size], radius, fill: 'rgb(129 140 248 / .22)' });
-  s.text({ id: 'branch-name', at: [branch[0], branch[1] + size / 2, -h * 0.5], text: 'preview', size: 12, color: '#a5b4fc', on: 'left', anchor: 'middle' });
+  s.frame({ id: 'ghost', at: branch, size: [size, size], height: h, radius, stroke: 'rgb(79 70 229 / .7)', dash: '4 4' });
+  s.slab({ id: 'branch', at: branch, size: [size, size], height: h, radius, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
+  s.face({ id: 'branch-hit', at: branch, size: [size, size], radius, fill: 'rgb(99 102 241 / .16)' });
+  s.text({ id: 'branch-name', at: [branch[0], branch[1] + size / 2, -h * 0.5], text: 'preview', size: 12, color: '#3730a3', on: 'left', anchor: 'middle' });
 
-  s.slab({ id: 'change', at: onBranch, size: [tileSize, tileSize], height: tileH, radius: 8 * k, top: '#a5b4fc', side: { kind: 'flat', color: indigo[1] }, edge: 'rgb(255 255 255 / .45)', shadow: false });
+  s.slab({ id: 'change', at: onBranch, size: [tileSize, tileSize], height: tileH, radius: 8 * k, top: '#818cf8', side: { kind: 'flat', color: indigo[1] }, edge: 'rgb(255 255 255 / .55)', shadow: false });
 
   const below: Vec3 = [branch[0] + size / 2, branch[1] + size / 2, -h - 8 * k];
   const above: Vec3 = [branch[0], branch[1], 64 * k];
@@ -91,7 +91,7 @@ export const example: Example = {
   intent: 'change',
   layout: 'diagonal',
   useCase: 'Databases',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'branch-sm', width: 390, height: 400, origin: [195, 138], k: 0.8, wide: false }),
