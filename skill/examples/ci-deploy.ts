@@ -89,9 +89,9 @@ function build({ name, width, height, origin, k, wide, stops, along, reach, live
   const shipped: Vec2 = [fitX(prodTop[0] + live[0] * k, '✓ live · v2.4.1', width, minPx), prodTop[1] + live[1] * k];
   if (standalone) {
     const pill = { fill: ui.label.bg, stroke: ui.label.border, radius: ui.label.radius };
-    const half = 12.5;
-    s.text({ id: 'sha', at: { screen: [sha[0], sha[1] - half] }, text: 'main · 4f2a9c1', size: 13, color: ui.ink, pill });
-    s.text({ id: 'live', at: { screen: [shipped[0], shipped[1] + (wide ? -half : half)] }, text: '✓ live · v2.4.1', size: 13, color: done, pill });
+    const half = 14.5;
+    s.text({ id: 'sha', at: { screen: [sha[0], sha[1] - half] }, text: 'main · 4f2a9c1', size: 15, color: ui.ink, pill });
+    s.text({ id: 'live', at: { screen: [shipped[0], shipped[1] + (wide ? -half : half)] }, text: '✓ live · v2.4.1', size: 15, color: done, pill });
   } else {
     s.label({ id: 'sha', at: { screen: sha }, text: 'main · 4f2a9c1', size: 13, anchor: 'bottom' });
     s.label({ id: 'live', at: { screen: shipped }, html: `<span style="color:${done}">✓</span> live · v2.4.1`, size: 13, anchor: wide ? 'bottom' : 'top' });

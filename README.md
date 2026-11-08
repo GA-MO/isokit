@@ -208,13 +208,13 @@ All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome. 1 k
 | Showcase CSS | 33.5 kB | 7.1 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.5 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
-| All 113 scene files in `site/dist/scenes/` (compact and wide copies) | 12438.5 kB | 971.1 kB |
+| All 114 scene files in `site/dist/scenes/` (compact and wide copies, plus the README context as one standalone SVG) | 12500.4 kB | 977.5 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
 | `docs/svg/hero.svg` (the image at the top) | 94.4 kB | 10.1 kB |
 
-The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60), not all 113.
+The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60), not all 114.
 
 Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load; the frame rate does not. The hero flashes with `fill` and moves pulses by dash offset, which only repaint, and has no pan or wobble on large groups, because an opacity or transform track on any SVG element re-layerizes the page every frame:
 
@@ -227,7 +227,7 @@ The whole showcase at rest, after scrolling through it once so every scene has m
 
 | Stop | 1280 px, DPR 2: before → now | 393 px, DPR 3: before → now |
 |---|---|---|
-| 0 % (hero) | 16.7 → 9.9 % (8.9 to 10.2) | 9.4 to 13.7 → 1.7 % (the phone hero starts below the fold) |
+| 0 % (hero) | 16.7 → 9.9 % (8.9 to 10.2) | 9.4 to 13.7 → 11.5 % (9.6 to 16.1, three runs) |
 | 20 % | 25.6 → 17.1 % (15.0 to 23.5) | 15.0 to 15.7 → 12.6 to 16.4 % |
 | 35 % | 14.3 → 21.7 % (20.0 to 22.5) | 10.9 to 20.6 → 13.7 to 19.4 % |
 | 50 % | 17.2 → 16.5 % (14.6 to 21.6) | 16.1 to 19.9 → 15.1 to 18.4 % |

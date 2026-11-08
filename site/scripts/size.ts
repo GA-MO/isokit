@@ -21,7 +21,7 @@ for await (const name of new Glob('_astro/*.{js,css}').scan(dist)) {
 const inline = [...html.matchAll(/<script type="module"[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1] ?? '').join('');
 row('inline JS (module scripts in index.html)', Buffer.byteLength(inline), gzipSync(Buffer.from(inline), { level: 9 }).length);
 
-const scenes = await Promise.all([...new Glob('scenes/*.html').scanSync(dist)].map(measure));
+const scenes = await Promise.all([...new Glob('scenes/*.{html,svg}').scanSync(dist)].map(measure));
 if (!scenes.length) throw new Error('size: no scene files in site/dist/scenes; the lazy scenes were not built');
 const total = scenes.reduce((a, f) => ({ raw: a.raw + f.raw, gzip: a.gzip + f.gzip }), { raw: 0, gzip: 0 });
 const largest = scenes.reduce((a, f) => (f.gzip > a.gzip ? f : a));
