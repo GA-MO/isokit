@@ -134,10 +134,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'auth-flow',
   title: 'Sign-in with 2-step',
+  ask: 'Show sign-in with a password and a second factor.',
   story: 'A sign-in passes password and a second factor, and the identity service hands the app a session token.',
   prompt: 'Draw a sign-in flow: a phone sends credentials to an identity service, which checks the password and a push approval, then hands a token tile to the app to open a session.',
   level: 'medium',
-  category: 'security',
+  intent: 'talk',
   layout: 'panels',
   useCase: 'Auth',
   surface: 'dark',

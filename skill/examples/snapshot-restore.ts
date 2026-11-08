@@ -110,10 +110,11 @@ function build({ name, width, height, origin, k, noteBelow }: Layout) {
 export const example: Example = {
   slug: 'snapshot-restore',
   title: 'Snapshot restore',
+  ask: 'Show a database rolled back to a good snapshot.',
   story: 'A bad migration turns the database rose, a cursor slides back along the snapshot timeline to 09:00, and that copy glides into the database to make it healthy again.',
   prompt: 'Draw a database next to a timeline of snapshots; a bad change turns it red, a cursor slides back to the 09:00 snapshot and its copy glides into the database to restore it.',
   level: 'medium',
-  category: 'infra',
+  intent: 'change',
   layout: 'diagonal',
   useCase: 'Backups',
   surface: 'light',

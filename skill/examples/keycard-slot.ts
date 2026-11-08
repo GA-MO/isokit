@@ -79,10 +79,10 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'keycard-slot',
   title: 'Keycard access',
+  ask: 'A keycard opening a reader.',
   story: 'A keycard slides into a reader, its light turns from amber to green, then the card lifts out again.',
   prompt: 'Draw a keycard sliding into the slot of a small reader box, its status light turning from amber to green, then the card lifting out again.',
   level: 'spot',
-  category: 'security',
   layout: 'object',
   useCase: 'Access',
   surface: 'dark',

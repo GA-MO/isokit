@@ -166,10 +166,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'embedding-clusters',
   title: 'Embeddings find clusters',
+  ask: 'Show a new item joining its nearest cluster.',
   story: 'Scattered vectors drift into three coloured clusters, then a new item drops in, measures the distance to each and joins the nearest.',
   prompt: 'Draw embedding vectors as small tiles scattered on a plate that drift into three coloured clusters, then a new item drops in and joins its nearest cluster.',
   level: 'medium',
-  category: 'data',
+  intent: 'choose',
   layout: 'field',
   useCase: 'Vectors',
   surface: 'dark',

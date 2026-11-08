@@ -207,10 +207,11 @@ if (JSON.stringify(compact.steps) !== JSON.stringify(wide.steps)) throw new Erro
 export const example: Example = {
   slug: 'feature-flags',
   title: 'Flag rollout',
+  ask: 'Show a flag rolling a feature out to 10, 50 and 100 %.',
   story: 'Flipping a feature flag rolls the feature out to 10, 50 and then 100 percent of users, each step spreading across the user grid in a wave.',
   prompt: 'Draw a feature flag service rolling a feature out to a grid of users at 10, 50 and 100 percent, with a real switch I can press to step the rollout myself.',
   level: 'medium',
-  category: 'product',
+  intent: 'scale',
   layout: 'field',
   useCase: 'Release',
   surface: 'light',

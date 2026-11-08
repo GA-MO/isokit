@@ -189,10 +189,11 @@ function build({ name, width, height, origin, k, minPx, sku, log }: Layout) {
 export const example: Example = {
   slug: 'stock-sync',
   title: 'Inventory in sync',
+  ask: 'Show stock staying in sync across warehouses.',
   story: 'An order ships from one warehouse and its stock drops, the change syncs house to house until every total agrees, then another warehouse restocks it.',
   prompt: 'Draw four warehouses along a diagonal, each showing its stock and the network total: an order ships from one and its count drops, the change syncs warehouse to warehouse until all totals agree, then a neighbour sends it a crate of stock.',
   level: 'complex',
-  category: 'data',
+  intent: 'flow',
   layout: 'diagonal',
   useCase: 'Inventory',
   surface: 'dark',

@@ -149,10 +149,11 @@ function build({ name, width, height, origin, k, minPx, notes }: Layout) {
 export const example: Example = {
   slug: 'calendar-booking',
   title: 'Find a free slot',
+  ask: 'Show a meeting skipping a busy slot for a free one.',
   story: 'A meeting tile hovers over the week, finds Tuesday at ten already busy, glides on to Wednesday and drops into the free slot.',
   prompt: 'Draw a week calendar laid flat as a grid of slots with some busy blocks, and a meeting tile that skips a busy slot and drops into a free one with its time.',
   level: 'simple',
-  category: 'product',
+  intent: 'choose',
   layout: 'field',
   useCase: 'Scheduling',
   surface: 'light',

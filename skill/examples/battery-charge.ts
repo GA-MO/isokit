@@ -56,10 +56,10 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'battery-charge',
   title: 'Battery charging',
+  ask: 'A battery charging.',
   story: 'Four cells inside a glass battery fill one by one from the bottom, the battery flashes full, then drains back to empty.',
   prompt: 'Draw a battery whose level cells fill one by one with an accent colour, flash when full, then drain back.',
   level: 'spot',
-  category: 'infra',
   layout: 'object',
   useCase: 'Capacity',
   surface: 'dark',

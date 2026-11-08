@@ -138,10 +138,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'ab-test',
   title: 'A/B test result',
+  ask: 'Show an A/B test splitting traffic and picking a winner.',
   story: 'Visitors split evenly between variant A and B, each variant’s result bar grows, and B pulls ahead to win by 4.2 %.',
   prompt: 'Draw an A/B test: traffic splits at a node into variants A and B with alternating pulses, each variant grows a result bar, and B wins in green with a lift label.',
   level: 'medium',
-  category: 'data',
+  intent: 'choose',
   layout: 'radial',
   useCase: 'Experiments',
   surface: 'light',

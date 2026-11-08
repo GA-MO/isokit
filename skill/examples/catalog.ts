@@ -17,17 +17,13 @@ import { example as keycardSlot } from './keycard-slot';
 import { example as syncLoop } from './sync-loop';
 import { example as inboxFill } from './inbox-fill';
 import { example as batteryCharge } from './battery-charge';
-import { example as alertStack } from './alert-stack';
 import { example as tableScan } from './table-scan';
 import { example as tileLoader } from './tile-loader';
 import { example as emptyBox } from './empty-box';
 import { example as vaultRotate } from './vault-rotate';
 import { example as firewallFilter } from './firewall-filter';
-import { example as zeroTrust } from './zero-trust';
 import { example as auditLedger } from './audit-ledger';
-import { example as dataErasure } from './data-erasure';
 import { example as workloadScheduler } from './workload-scheduler';
-import { example as autoscale } from './autoscale';
 import { example as healthCheck } from './health-check';
 import { example as dnsResolve } from './dns-resolve';
 import { example as blueGreen } from './blue-green';
@@ -42,24 +38,15 @@ import { example as funnelLive } from './funnel-live';
 import { example as billingCycle } from './billing-cycle';
 import { example as parcelDelivery } from './parcel-delivery';
 import { example as testShards } from './test-shards';
-import { example as kanbanMove } from './kanban-move';
 import { example as stockSync } from './stock-sync';
-import { example as diffMerge } from './diff-merge';
-import { example as refundFlow } from './refund-flow';
 import { example as liveCursors } from './live-cursors';
 import { example as twoApprovals } from './two-approvals';
-import { example as designComments } from './design-comments';
 import { example as translateSix } from './translate-six';
-import { example as cmsPublish } from './cms-publish';
-import { example as sensorGateway } from './sensor-gateway';
 import { example as smartHome } from './smart-home';
-import { example as currencyConvert } from './currency-convert';
-import { example as otaRollout } from './ota-rollout';
 import { example as buildCache } from './build-cache';
 import { example as calendarBooking } from './calendar-booking';
 import { example as loadSlider } from './load-slider';
 import { example as videoTranscode } from './video-transcode';
-import { example as imageResize } from './image-resize';
 import { example as fraudGauge } from './fraud-gauge';
 import { example as dataLineage } from './data-lineage';
 import { example as drillDown } from './drill-down';
@@ -69,7 +56,6 @@ export const examples: readonly Example[] = [
   syncLoop,
   inboxFill,
   batteryCharge,
-  alertStack,
   tableScan,
   tileLoader,
   emptyBox,
@@ -80,18 +66,12 @@ export const examples: readonly Example[] = [
   serviceMap,
   auditLedger,
   dnsResolve,
-  kanbanMove,
-  diffMerge,
   calendarBooking,
-  designComments,
   cronJobs,
-  currencyConvert,
-  imageResize,
   fraudGauge,
   authFlow,
   featureFlags,
   liveCursors,
-  cmsPublish,
   funnelLive,
   searchIndex,
   embeddingClusters,
@@ -100,21 +80,17 @@ export const examples: readonly Example[] = [
   etlPipeline,
   vaultRotate,
   firewallFilter,
-  zeroTrust,
   twoApprovals,
   billingCycle,
-  refundFlow,
   recsRerank,
   smartHome,
   translateSix,
   queueWorkers,
   workloadScheduler,
-  autoscale,
   healthCheck,
   blueGreen,
   testShards,
   snapshotRestore,
-  sensorGateway,
   buildCache,
   videoTranscode,
   agentTools,
@@ -122,9 +98,7 @@ export const examples: readonly Example[] = [
   parcelDelivery,
   edgeCache,
   observability,
-  dataErasure,
   stockSync,
-  otaRollout,
   loadSlider,
   dataLineage,
   ragAnswer,

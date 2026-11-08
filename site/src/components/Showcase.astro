@@ -1,13 +1,13 @@
 ---
 import { examples } from '../../../skill/examples/catalog';
-import { categories } from '../../../skill/examples/shared';
-import { categoryNames, levelOrder, levels } from '../content';
+import { intents } from '../../../skill/examples/shared';
+import { intentNames, levelOrder, levels } from '../content';
 import ExampleCard from './ExampleCard.astro';
 
 const groups = levelOrder
   .map(level => ({ level, ...levels[level], items: examples.filter(e => e.level === level) }))
   .filter(g => g.items.length > 0);
-const tabs = categories.filter(c => examples.some(e => e.category === c));
+const tabs = intents.filter(c => examples.some(e => e.intent === c));
 const columns = { spot: 'sm:grid-cols-2 lg:grid-cols-3', simple: 'lg:grid-cols-2 lg:grid-flow-dense', medium: 'lg:grid-cols-2 lg:grid-flow-dense', complex: '' } as const;
 const chip =
   'h-8 shrink-0 rounded-full border border-line px-3.5 text-sm text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-page';
@@ -31,7 +31,7 @@ const chip =
             </button>
             {tabs.map(c => (
               <button type="button" data-filter={c} aria-pressed="false" class={chip}>
-                {categoryNames[c]}
+                {intentNames[c]}
               </button>
             ))}
           </div>

@@ -150,10 +150,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'health-check',
   title: 'Health checks',
+  ask: 'Show a failing node leaving the pool and rejoining.',
   story: 'The balancer pings its nodes; one fails, drops out of the pool while traffic flows to the others, then recovers and rejoins.',
   prompt: 'Draw a load balancer health-checking three nodes: one fails and turns rose, its wire retracts and it slides out of the pool while traffic continues to the healthy ones, then it recovers and rejoins.',
   level: 'medium',
-  category: 'infra',
+  intent: 'change',
   layout: 'radial',
   useCase: 'Reliability',
   surface: 'dark',

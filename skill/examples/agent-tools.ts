@@ -134,10 +134,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'agent-tools',
   title: 'Agent calls its tools',
+  ask: 'Show an AI agent calling its tools to answer.',
   story: 'An AI agent plans three steps, calls search, a database and a code runner in turn, and writes the answer from what comes back.',
   prompt: 'Draw an AI agent as a core with three tool satellites: a question arrives, the agent plans, calls search, database and code runner one by one, then types an answer card.',
   level: 'complex',
-  category: 'data',
+  intent: 'talk',
   layout: 'radial',
   useCase: 'AI agents',
   surface: 'dark',

@@ -129,10 +129,11 @@ function build({ name, width, height, origin, k, reach, dirs, note }: Layout) {
 export const example: Example = {
   slug: 'blue-green',
   title: 'Blue-green release',
+  ask: 'Show traffic switching from blue to green.',
   story: 'A new build lands on the idle environment and warms up, then the router re-targets its wire so traffic flows there and the old side goes idle.',
   prompt: 'Draw a blue-green deployment: a router sending traffic to the live blue environment, a new build warming up on green, then the router switching its wire to green while blue goes idle.',
   level: 'medium',
-  category: 'infra',
+  intent: 'change',
   layout: 'diagonal',
   useCase: 'Release',
   surface: 'dark',

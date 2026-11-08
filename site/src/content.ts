@@ -1,4 +1,4 @@
-import { levels as levelOrder, type Category, type Example, type Level } from '../../skill/examples/shared';
+import { levels as levelOrder, type Example, type Intent, type Level } from '../../skill/examples/shared';
 
 export { levelOrder };
 
@@ -9,11 +9,13 @@ export const levels: Record<Level, { name: string; note: string; rank: 1 | 2 | 3
   complex: { name: 'Complex', note: 'A whole system, drawn wide.', rank: 4 },
 };
 
-export const categoryNames: Record<Category, string> = {
-  product: 'Product',
-  security: 'Security',
-  infra: 'Infra',
-  data: 'Data & AI',
+export const intentNames: Record<Intent, string> = {
+  flow: 'How data flows',
+  scale: 'How it scales',
+  inside: "What's inside",
+  change: 'Before and after',
+  choose: 'Pick one',
+  talk: 'Who talks to whom',
 };
 
 export const hints: Record<Example['interaction'], { fine: string; coarse: string } | null> = {

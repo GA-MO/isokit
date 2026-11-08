@@ -184,10 +184,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'edge-cache',
   title: 'Edge cache hit',
+  ask: 'Show a cache miss, then a fast edge hit.',
   story: 'The first request misses the nearest edge and fetches from the origin; the next one is answered by the warmed edge in a fraction of the time.',
   prompt: 'Draw a request hitting the nearest edge region: first a cache miss that goes to the origin and back, then a cache hit answered right at the edge, with both latencies.',
   level: 'complex',
-  category: 'infra',
+  intent: 'change',
   layout: 'diagonal',
   useCase: 'Edge',
   surface: 'dark',

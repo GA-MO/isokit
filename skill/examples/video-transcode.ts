@@ -114,10 +114,11 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 export const example: Example = {
   slug: 'video-transcode',
   title: 'Video transcode',
+  ask: 'Show one video becoming four renditions.',
   story: 'A video file lifts apart into 1080p, 720p, 480p and 240p renditions stacked with air between them, each layer fills its progress bar in turn, and the four settle as ready outputs.',
   prompt: 'Draw a video transcoding job as an exploded stack: the source file lifts apart into 1080p, 720p, 480p and 240p layers, each one encoding in turn with a progress bar.',
   level: 'medium',
-  category: 'infra',
+  intent: 'inside',
   layout: 'exploded',
   useCase: 'Media',
   surface: 'dark',

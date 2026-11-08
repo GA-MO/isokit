@@ -165,10 +165,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'two-approvals',
   title: 'Two-person approval',
+  ask: 'Show a change that needs two approvals to merge.',
   story: 'A change request asks two reviewers; each approves in turn, and only after the second tick does its lock open and the change merge.',
   prompt: 'Draw a change request panel facing two reviewer panels: each reviewer approves in turn with a tick, and only when both have approved does the request unlock and merge into main.',
   level: 'medium',
-  category: 'security',
+  intent: 'talk',
   layout: 'panels',
   useCase: 'Approvals',
   surface: 'dark',

@@ -127,10 +127,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'vault-rotate',
   title: 'Key rotation',
+  ask: 'Show a key rotated without downtime.',
   story: 'A new key lands in the vault beside the old one, every service picks it up, then the old key is revoked and the new one takes its place.',
   prompt: 'Draw a secrets vault rotating its key: a new key slides in beside the old one, pulses carry it to three services, then the old key fades out and the new one moves into its slot.',
   level: 'medium',
-  category: 'security',
+  intent: 'change',
   layout: 'radial',
   useCase: 'Secrets',
   surface: 'dark',

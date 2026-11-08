@@ -57,10 +57,10 @@ function build(name: string) {
 export const example: Example = {
   slug: 'empty-box',
   title: 'Empty box',
+  ask: 'An empty state.',
   story: 'An open box waits under its floating lid beside a dashed slot where the first item will go.',
   prompt: 'Draw an empty state: an open box with its lid floating above it, next to a dashed placeholder with marching dashes.',
   level: 'spot',
-  category: 'product',
   layout: 'object',
   useCase: 'Empty state',
   surface: 'light',

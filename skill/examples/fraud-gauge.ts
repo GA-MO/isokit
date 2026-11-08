@@ -154,10 +154,11 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 export const example: Example = {
   slug: 'fraud-gauge',
   title: 'Fraud risk gauge',
+  ask: 'Show risk signals adding up until a payment is held.',
   story: 'A payment comes in, device, location and velocity signals lift onto a gauge stack one by one, their score adds up past the hold line, and the payment is held for review.',
   prompt: 'Draw a fraud check as a layered gauge: device, location and velocity risk signals lift onto a stack and add up to a score that crosses a threshold, then the payment is held.',
   level: 'simple',
-  category: 'security',
+  intent: 'inside',
   layout: 'exploded',
   useCase: 'Risk',
   surface: 'dark',

@@ -123,10 +123,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'training-loss',
   title: 'Training loss falls',
+  ask: 'Show training loss falling epoch by epoch.',
   story: 'Each epoch the data runs through the model and a new bar lands lower than the last, until the loss settles at 0.21.',
   prompt: 'Draw a model training run: data pulses into a model each epoch and a row of bars, one per epoch, steps down as the loss falls, with an epoch counter and loss label updating.',
   level: 'medium',
-  category: 'data',
+  intent: 'change',
   layout: 'diagonal',
   useCase: 'Training',
   surface: 'light',

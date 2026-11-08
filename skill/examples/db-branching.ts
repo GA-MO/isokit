@@ -84,10 +84,11 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 export const example: Example = {
   slug: 'db-branching',
   title: 'Database branching',
+  ask: 'Show a database branch taking a change and merging back.',
   story: 'A branch appears beside the main database as a copy-on-write outline, turns solid, takes one change and merges it back.',
   prompt: 'Draw a main database spawning an instant copy-on-write branch that starts as an outline and turns solid, gets one schema change, then merges back.',
   level: 'simple',
-  category: 'data',
+  intent: 'change',
   layout: 'diagonal',
   useCase: 'Databases',
   surface: 'dark',

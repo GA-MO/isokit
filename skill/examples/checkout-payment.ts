@@ -132,10 +132,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'checkout-payment',
   title: 'A card payment, round trip',
+  ask: 'Show a card payment from checkout to the bank and back.',
   story: 'A checkout payment runs through the gateway, a fraud check and the card network to the bank, and the approval comes back as a receipt.',
   prompt: 'Draw a card payment as a ring: checkout to gateway, fraud check, card network and bank, the bank approves in green and a receipt travels back to checkout.',
   level: 'complex',
-  category: 'product',
+  intent: 'talk',
   layout: 'radial',
   useCase: 'Payments',
   surface: 'light',

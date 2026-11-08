@@ -98,10 +98,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'audit-ledger',
   title: 'Audit ledger',
+  ask: 'Show every event sealed into an audit log.',
   story: 'Each event lands in the audit log as a new ledger page with its line printed on it, and a lock seals the page before the next one arrives.',
   prompt: 'Draw an audit log as a stack of thin ledger pages: each event drops in as a new page printed with its name, like role.granted, and a small lock seals it.',
   level: 'simple',
-  category: 'security',
+  intent: 'inside',
   layout: 'exploded',
   useCase: 'Compliance',
   surface: 'light',

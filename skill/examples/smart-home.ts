@@ -194,10 +194,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'smart-home',
   title: 'Evening scene at home',
+  ask: 'Show the hub setting the evening scene at home.',
   story: 'The home hub runs the Evening scene, and the lights, blinds, thermostat and speaker around it change state one after another.',
   prompt: 'Draw a smart home hub in the centre with lights, blinds, a thermostat and a speaker around it; an Evening scene runs and each device changes state in turn: lights dim warm, blinds come down, heat drops to 20 °C, music starts.',
   level: 'medium',
-  category: 'product',
+  intent: 'talk',
   layout: 'radial',
   useCase: 'Smart home',
   surface: 'light',

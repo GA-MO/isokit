@@ -109,10 +109,11 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 export const example: Example = {
   slug: 'file-upload',
   title: 'Chunked upload',
+  ask: 'Show a file uploading in chunks and reaching the edge.',
   story: 'A file uploads to storage in four chunks that fill its progress bar, then copies spread to edge points near users.',
   prompt: 'Draw a file uploading to storage in chunks that fill a progress bar, then copies of it spreading out to three edge locations near users.',
   level: 'simple',
-  category: 'product',
+  intent: 'scale',
   layout: 'field',
   useCase: 'Storage',
   surface: 'light',

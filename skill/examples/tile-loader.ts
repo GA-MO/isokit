@@ -47,10 +47,10 @@ function build(name: string) {
 export const example: Example = {
   slug: 'tile-loader',
   title: 'Tile loader',
+  ask: 'A loading state.',
   story: 'Nine tiles drop into a grid in a diagonal wave, hold, then shrink away in the same order and start again.',
   prompt: 'Draw a calm loading state: a 3 by 3 grid of small tiles dropping in one after another, holding, then leaving in order, looping.',
   level: 'spot',
-  category: 'data',
   layout: 'object',
   useCase: 'Loading',
   surface: 'dark',

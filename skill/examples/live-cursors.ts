@@ -135,10 +135,11 @@ function build(sceneName: string, l: Layout) {
 export const example: Example = {
   slug: 'live-cursors',
   title: 'Live cursors',
+  ask: 'Show three people editing one document live.',
   story: 'Three people edit one document at once: two type new lines, one selects a phrase, and the side panel shows who is active.',
   prompt: 'Draw a shared document panel where three coloured cursors with name tags edit at the same time, typing lines and selecting text, with presence dots on a side panel.',
   level: 'medium',
-  category: 'product',
+  intent: 'talk',
   layout: 'panels',
   useCase: 'Collaboration',
   surface: 'light',

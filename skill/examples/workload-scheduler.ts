@@ -153,10 +153,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'workload-scheduler',
   title: 'Workload scheduler',
+  ask: 'Show a scheduler placing work on the emptiest node.',
   story: 'A scheduler places each new workload on the node with the most room, skipping the full one, until the jobs finish.',
   prompt: 'Draw a scheduler placing small workload blocks onto three nodes, each block gliding to the least busy node with room while a capacity label counts up.',
   level: 'medium',
-  category: 'infra',
+  intent: 'choose',
   layout: 'field',
   useCase: 'Orchestration',
   surface: 'dark',

@@ -64,10 +64,10 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'sync-loop',
   title: 'Sync in progress',
+  ask: 'A sync in progress.',
   story: 'Two arrows circle a tile on the plane and the tile brightens each time a lap completes.',
   prompt: 'Draw a tile with two arrows circling it on the ground, the tile lighting up each time a sync lap completes.',
   level: 'spot',
-  category: 'infra',
   layout: 'object',
   useCase: 'Sync',
   surface: 'light',

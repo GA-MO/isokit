@@ -74,10 +74,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'notifications',
   title: 'Fan-out notifications',
+  ask: 'Show one event fanning out to email, push and SMS.',
   story: 'One event leaves the core and lands on email, push and SMS at once.',
   prompt: 'Draw one event fanning out to email, push and SMS, each channel lighting up as it receives it.',
   level: 'simple',
-  category: 'product',
+  intent: 'flow',
   layout: 'radial',
   useCase: 'Messaging',
   surface: 'dark',

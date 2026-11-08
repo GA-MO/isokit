@@ -137,10 +137,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'search-index',
   title: 'Search index ranking',
+  ask: 'Show documents indexed and a query ranked.',
   story: 'Documents are split into terms that fill an index; a query lights the matching terms and three results rise in ranked order.',
   prompt: 'Draw documents being split into term tiles that fill a search index, then a query lighting up the matching tiles and three ranked results rising out of it.',
   level: 'medium',
-  category: 'data',
+  intent: 'inside',
   layout: 'field',
   useCase: 'Search',
   surface: 'light',

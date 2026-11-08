@@ -227,10 +227,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'parcel-delivery',
   title: 'Parcel tracking',
+  ask: 'Show a parcel from packing to the doorstep.',
   story: 'A box is packed, rides a truck to the hub, moves onto a van and lands on the doorstep, with the tracking status updating at every stop.',
   prompt: 'Draw a parcel being delivered: a box is packed and loaded onto a truck, passes through a hub, goes onto a van and arrives at a doorstep, with a tracking status line that updates at each stop.',
   level: 'complex',
-  category: 'product',
+  intent: 'flow',
   layout: 'wide',
   useCase: 'Logistics',
   surface: 'light',

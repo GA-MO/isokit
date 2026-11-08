@@ -102,10 +102,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'dns-resolve',
   title: 'DNS resolution',
+  ask: 'Show how a domain name resolves to an address.',
   story: 'A query for app.example.dev goes to the resolver, which asks the root, the TLD and the authoritative server in turn, and the address comes back to the client.',
   prompt: 'Draw a DNS lookup: a client asks a resolver for app.example.dev, the resolver asks root, TLD and authoritative servers one hop at a time, and the IP address returns to the client.',
   level: 'simple',
-  category: 'infra',
+  intent: 'talk',
   layout: 'radial',
   useCase: 'Networking',
   surface: 'light',

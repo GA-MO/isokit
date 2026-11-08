@@ -187,10 +187,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'rag-answer',
   title: 'Retrieval-backed answer',
+  ask: 'Show how a question becomes a cited answer.',
   story: 'A question reaches the retriever, three matching documents lift out of the store and flow into the model, and the answer types in citing two of them.',
   prompt: 'Draw retrieval-augmented generation: a question goes to a retriever, three matching document cards lift out of a store and travel into a model, and an answer card types in with citations.',
   level: 'complex',
-  category: 'data',
+  intent: 'flow',
   layout: 'diagonal',
   useCase: 'AI search',
   surface: 'light',

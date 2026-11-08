@@ -127,10 +127,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'firewall-filter',
   title: 'Firewall filter',
+  ask: 'Show a firewall passing good packets and bouncing bad ones.',
   story: 'Packets run toward a wall; the allowed ones pass through its gate to the service, a denied one hits the gate and bounces back.',
   prompt: 'Draw packets travelling toward a firewall: allowed packets pass through its gate to an api, one red packet hits the gate and bounces back the way it came.',
   level: 'medium',
-  category: 'security',
+  intent: 'choose',
   layout: 'diagonal',
   useCase: 'Network',
   surface: 'light',

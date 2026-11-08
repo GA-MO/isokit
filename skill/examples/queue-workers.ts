@@ -202,10 +202,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'queue-workers',
   title: 'Queue and workers',
+  ask: 'Show workers draining a queue of jobs.',
   story: 'Jobs pile up in the queue faster than they are taken, then three workers pull them off the front one by one until it is empty again.',
   prompt: 'Draw jobs arriving into a queue faster than they are handled, three workers pulling from the front, each glowing while it works and acking when done.',
   level: 'medium',
-  category: 'infra',
+  intent: 'scale',
   layout: 'wide',
   useCase: 'Queues',
   surface: 'dark',

@@ -155,10 +155,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'funnel-live',
   title: 'Live conversion funnel',
+  ask: 'Show visitors narrowing from visit to paid.',
   story: 'Visitors stream from visit through sign up and trial to paid, fewer at each narrower stage, every count ticking up as they pass, until one pays and the conversion lights.',
   prompt: 'Draw a live analytics funnel left to right: visitors flow as pulses through visit, sign up, trial and paid blocks that narrow at each stage, each count ticking up as a pulse arrives, and the conversion rate lighting green when one pays.',
   level: 'medium',
-  category: 'data',
+  intent: 'flow',
   layout: 'wide',
   useCase: 'Analytics',
   surface: 'light',

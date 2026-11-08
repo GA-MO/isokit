@@ -144,10 +144,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'test-shards',
   title: 'Sharded test run',
+  ask: 'Show a test suite split into four parallel shards.',
   story: 'A test suite splits into four shards that run side by side, finish at different times and merge into one green result as fast as the slowest shard.',
   prompt: 'Draw a test suite splitting into four shards that run in parallel lanes left to right, each filling its lane at its own pace and finishing at a different time, then joining into one green passed result.',
   level: 'medium',
-  category: 'infra',
+  intent: 'scale',
   layout: 'wide',
   useCase: 'Testing',
   surface: 'dark',

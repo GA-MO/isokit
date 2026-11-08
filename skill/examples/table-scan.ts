@@ -92,10 +92,10 @@ function build(name: string) {
 export const example: Example = {
   slug: 'table-scan',
   title: 'Table scan',
+  ask: 'A search finding one row.',
   story: 'A magnifying glass glides down a table, lighting each row it passes, and stops on the one match.',
   prompt: 'Draw a magnifying glass scanning the rows of a table, each row lighting up under it, ending on a single match.',
   level: 'spot',
-  category: 'data',
   layout: 'object',
   useCase: 'Search',
   surface: 'light',

@@ -120,10 +120,11 @@ function build(l: Layout) {
 export const example: Example = {
   slug: 'recs-rerank',
   title: 'Recommendations re-rank',
+  ask: 'Show recommendations re-ranking as a shopper browses.',
   story: 'Each time the shopper views or clicks something, the product that matches it best lifts off the shelf and moves to the front.',
   prompt: 'Draw a shelf of product tiles that re-orders when a view or click signal arrives, the best match lifting out and moving to the front while the rest shift back.',
   level: 'medium',
-  category: 'data',
+  intent: 'choose',
   layout: 'diagonal',
   useCase: 'Recommendations',
   surface: 'dark',

@@ -3,11 +3,11 @@ import type { Page } from '../scripts/render';
 
 export const levels = ['spot', 'simple', 'medium', 'complex'] as const;
 export type Level = (typeof levels)[number];
-export const categories = ['product', 'security', 'infra', 'data'] as const;
-export type Category = (typeof categories)[number];
+export const intents = ['flow', 'scale', 'inside', 'change', 'choose', 'talk'] as const;
+export type Intent = (typeof intents)[number];
 export const layouts = ['wide', 'diagonal', 'panels', 'radial', 'field', 'exploded', 'object'] as const;
 export type Layout = (typeof layouts)[number];
-export type Surface = 'dark' | 'light';
+export type Surface = 'light' | 'night' | 'dark';
 export type Interaction = 'watch' | 'hover' | 'play' | 'drag' | 'explore';
 
 export interface Variant {
@@ -26,19 +26,20 @@ export interface Art {
   html: string;
 }
 
-export interface Example {
+interface Scenario {
   slug: string;
   title: string;
+  ask: string;
   story: string;
   prompt: string;
-  level: Level;
-  category: Category;
   layout: Layout;
   useCase: string;
   surface: Surface;
   interaction: Interaction;
   art: Art;
 }
+
+export type Example = Scenario & ({ level: 'spot'; intent?: never } | { level: Exclude<Level, 'spot'>; intent: Intent });
 
 const variant = (s: Scene): Variant => ({ scene: s, name: s.name, width: s.width, height: s.height, markup: s.render() });
 
@@ -74,6 +75,17 @@ export const surfaces = {
     edge: 'rgb(255 255 255 / .9)',
     wire: 'rgb(22 23 27 / .18)',
     label: { bg: '#ffffff', border: 'rgb(22 23 27 / .12)', ink: '#16171b', radius: 8 },
+  },
+  night: {
+    page: '#0b0d20',
+    card: '#10132e',
+    backdrop: 'radial-gradient(120% 90% at 50% 0%, #252c63 0%, #141838 48%, #0b0d20 100%)',
+    ink: '#eef0ff',
+    muted: '#a9afd6',
+    top: '#272e5c',
+    edge: 'rgb(199 210 254 / .22)',
+    wire: 'rgb(165 180 252 / .3)',
+    label: { bg: '#1b2048', border: 'rgb(199 210 254 / .18)', ink: '#eef0ff', radius: 8 },
   },
 } as const;
 
@@ -255,7 +267,7 @@ export function page(e: { title: string; surface: Surface; art: Art }): Page {
     background: s.card,
     ink: s.ink,
     fonts: ['Inter:wght@400;500;600', 'Fira+Code:wght@400;500'],
-    css: `main{max-width:1180px;margin:0 auto;padding:48px 16px;font-family:${fonts.sans}}`,
+    css: `main{max-width:1180px;margin:0 auto;padding:48px 16px;font-family:${fonts.sans}}${'backdrop' in s ? `body{background-image:${s.backdrop};background-attachment:fixed}` : ''}`,
     body: `<main>${e.art.html}</main>`,
   };
 }

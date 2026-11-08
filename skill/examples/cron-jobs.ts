@@ -107,10 +107,11 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
 export const example: Example = {
   slug: 'cron-jobs',
   title: 'Scheduled jobs',
+  ask: 'Show scheduled jobs firing every twenty minutes.',
   story: 'A dial lights minute by minute, and every twenty minutes a pulse leaves it and a job tile pops in, runs and comes to rest.',
   prompt: 'Draw a cron schedule as a dial whose ticks light up in turn; at each scheduled tick a pulse runs to a new job tile that pops in, runs and rests.',
   level: 'simple',
-  category: 'infra',
+  intent: 'scale',
   layout: 'radial',
   useCase: 'Jobs',
   surface: 'dark',

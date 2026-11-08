@@ -142,10 +142,11 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'etl-pipeline',
   title: 'Rows into the warehouse',
+  ask: 'Show rows from three sources landing in the warehouse.',
   story: 'Rows from three sources flow into a transform step that cleans and joins them, and each batch fills the warehouse.',
   prompt: 'Draw an ETL pipeline: three source tiles send rows along wires into a transform block that dedupes and joins them, then each batch loads into a warehouse grid that fills up and empties.',
   level: 'medium',
-  category: 'data',
+  intent: 'flow',
   layout: 'wide',
   useCase: 'Data',
   surface: 'light',

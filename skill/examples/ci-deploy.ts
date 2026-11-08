@@ -133,10 +133,11 @@ function build({ name, width, height, origin, k, wide, stops, along, reach, live
 export const example: Example = {
   slug: 'ci-deploy',
   title: 'Commit to production',
+  ask: 'Show a commit going from build to production.',
   story: 'A commit is packaged by the build, passes its tests and lands on production.',
   prompt: 'Draw a CI pipeline as a short chain: a commit becomes a package that hops through build and test, each stage lighting up, and lands on production with a green live check.',
   level: 'simple',
-  category: 'infra',
+  intent: 'flow',
   layout: 'wide',
   useCase: 'CI/CD',
   surface: 'light',

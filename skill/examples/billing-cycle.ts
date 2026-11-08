@@ -177,10 +177,11 @@ const compactStrip = (i: number) => [70, -128 + i * 66] as const;
 export const example: Example = {
   slug: 'billing-cycle',
   title: 'Monthly renewal',
+  ask: 'Show a subscription renewing until its invoice is paid.',
   story: 'The subscription reaches its renewal month, billing prints an invoice, sends it to the customer and a paid stamp lands on it as the month is marked paid.',
   prompt: 'Draw a subscription renewing along a timeline of months: at renewal the billing block prints an invoice card, the card is sent to the customer and a green paid stamp lands on it, then the timeline moves on a month.',
   level: 'medium',
-  category: 'product',
+  intent: 'change',
   layout: 'wide',
   useCase: 'Billing',
   surface: 'dark',

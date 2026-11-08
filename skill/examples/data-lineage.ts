@@ -188,10 +188,11 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 export const example: Example = {
   slug: 'data-lineage',
   title: 'Data lineage',
+  ask: 'Trace the MRR metric back to its source tables.',
   story: 'Sources, staging, models and a dashboard float as separate layers; selecting the MRR metric lights its upstream path down through every layer to the two exact source tables while the rest dims.',
   prompt: 'Draw data lineage as an exploded stack of layers, sources at the bottom, then staging, models and a dashboard on top: selecting a metric lights its upstream path down to the exact source tables and dims everything else.',
   level: 'complex',
-  category: 'data',
+  intent: 'flow',
   layout: 'exploded',
   useCase: 'Lineage',
   surface: 'dark',

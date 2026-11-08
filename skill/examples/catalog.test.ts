@@ -2,13 +2,18 @@ import { expect, test } from 'bun:test';
 import { examples } from './catalog';
 import { galleries } from './material-gallery';
 import { hero } from './hero';
-import { categories, layouts, levels } from './shared';
+import { intents, layouts } from './shared';
 
 const arts = [...examples.map(e => e.art), hero, ...galleries.map(g => g.art)];
 
-test('every category tab has a scene at every level', () => {
-  const missing = categories.flatMap(c => levels.filter(l => !examples.some(e => e.category === c && e.level === l)).map(l => `${c}/${l}`));
-  expect(missing).toEqual([]);
+test('every intent group has at least five scenes to compare', () => {
+  const thin = intents.filter(i => examples.filter(e => e.intent === i).length < 5);
+  expect(thin).toEqual([]);
+});
+
+test('at most one scene in five sits on a dark surface, and none on the plain dark one', () => {
+  expect(examples.filter(e => e.surface === 'dark').map(e => e.slug)).toEqual([]);
+  expect(examples.filter(e => e.surface === 'night').length).toBeLessThanOrEqual(Math.floor(examples.length / 5));
 });
 
 test('slugs and scene names are unique, so each scene file and id prefix is its own', () => {

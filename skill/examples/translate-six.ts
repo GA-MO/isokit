@@ -103,10 +103,11 @@ function build(name: string, l: Layout) {
 export const example: Example = {
   slug: 'translate-six',
   title: 'One message, six languages',
+  ask: 'Show one message going out in six languages.',
   story: 'An English message panel sends a copy to six panels, and each one lights up with the message in its own language.',
   prompt: 'Draw one English message panel, "Your order has shipped", fanning out into six panels that show it translated into Thai, Japanese, Spanish, German, French and Portuguese.',
   level: 'medium',
-  category: 'data',
+  intent: 'flow',
   layout: 'panels',
   useCase: 'Localization',
   surface: 'dark',

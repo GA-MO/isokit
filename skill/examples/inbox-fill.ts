@@ -63,10 +63,10 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 export const example: Example = {
   slug: 'inbox-fill',
   title: 'Inbox filling up',
+  ask: 'An inbox filling up.',
   story: 'Letters drop one by one into a glass-fronted tray and stack up, hold full, then the tray empties.',
   prompt: 'Draw a mail tray that slowly fills as letters drop in and stack, holds full, then empties back to the start.',
   level: 'spot',
-  category: 'product',
   layout: 'object',
   useCase: 'Messaging',
   surface: 'light',

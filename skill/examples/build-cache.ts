@@ -175,10 +175,11 @@ function build({ name, width, height, origin, k, minPx, side }: Layout) {
 export const example: Example = {
   slug: 'build-cache',
   title: 'Monorepo build cache',
+  ask: 'Show a monorepo rebuilding only what changed.',
   story: 'One package changes, eleven packages come straight back from the cache, and only the changed package and the two that depend on it build again.',
   prompt: 'Draw a monorepo as a grid of packages with dependency lines; one package changes, it and its dependents rebuild while the rest light up as cache hits, with an "11 of 14 cached" label.',
   level: 'medium',
-  category: 'infra',
+  intent: 'scale',
   layout: 'field',
   useCase: 'Monorepo',
   surface: 'light',

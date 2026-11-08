@@ -113,10 +113,11 @@ function build({ name, width, height, origin, k }: Layout) {
 export const example: Example = {
   slug: 'service-map',
   title: 'Live service map',
+  ask: "Show a request's path through our services.",
   story: 'A request lights its path through api, auth, billing and jobs, and any service lifts to show its p95 latency when you point at it.',
   prompt: 'Draw two rows of service tiles where a request lights a path through four of them, and hovering a tile lifts it and shows its p95 latency.',
   level: 'simple',
-  category: 'infra',
+  intent: 'talk',
   layout: 'field',
   useCase: 'Platform',
   surface: 'dark',
