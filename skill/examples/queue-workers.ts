@@ -1,8 +1,11 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, n, page, ramps, surfaces, type Example, paints } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#34d399';
+const ui = surfaces.light;
+const accent = '#059669';
+const idle = '#71717a';
+const line = 'rgb(22 23 27 / .14)';
+const green = 'rgb(4 120 87 / .35)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
@@ -61,7 +64,7 @@ function chain(s: Scene, k: number): Geometry {
     workers: workerYs.map((y): Vec3 => [wx, y * k, 0]),
     routes: workerYs.map((y): Vec3[] => (y === 0 ? [[trayLen / 2, 0, busZ], [wx - ws / 2, 0, busZ]] : [[trayLen / 2, 0, busZ], [busX, 0, busZ], [busX, y * k, busZ], [wx - ws / 2, y * k, busZ]])),
     depth: [40 * k, 135 * k, 0],
-    tray: () => s.slab({ id: 'tray', at: [0, 0, 0], size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: '#18191e', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge }),
+    tray: () => s.slab({ id: 'tray', at: [0, 0, 0], size: [trayLen, 70 * k], height: 14 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line }),
   };
 }
 
@@ -90,8 +93,8 @@ function strip(s: Scene, k: number): Geometry {
       const [ww, hh, r, ry, t] = [n(2 * half * k), n(40 * k), n(14 * k), n(14 * k * 0.58), n(14 * k)];
       const x = n(ox - ww / 2);
       const y = n(oy - hh / 2);
-      const side = s.def('tray-side', `<linearGradient id="$ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ramps.graphite[3]}"/><stop offset=".12" stop-color="${ramps.graphite[2]}"/><stop offset="1" stop-color="${ramps.graphite[0]}"/></linearGradient>`);
-      return s.svg('tray', `<rect x="${x}" y="${n(y + t + 6 * k)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="#000" opacity=".35" filter="${s.blur(8)}"/><rect x="${x}" y="${n(y + t)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="${side}"/><rect x="${x}" y="${n(oy)}" width="${ww}" height="${t}" fill="${side}"/><rect x="${x}" y="${y}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="#18191e" stroke="${ui.edge}" stroke-width="1"/>`);
+      const side = s.def('tray-side', `<linearGradient id="$ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ramps.silver[3]}"/><stop offset=".12" stop-color="${ramps.silver[2]}"/><stop offset="1" stop-color="${ramps.silver[0]}"/></linearGradient>`);
+      return s.svg('tray', `<rect x="${x}" y="${n(y + t + 6 * k)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="#16171b" opacity=".12" filter="${s.blur(8)}"/><rect x="${x}" y="${n(y + t)}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="${side}"/><rect x="${x}" y="${n(oy)}" width="${ww}" height="${t}" fill="${side}"/><rect x="${x}" y="${y}" width="${ww}" height="${hh}" rx="${r}" ry="${ry}" fill="${ui.top}" stroke="${line}" stroke-width="1"/>`);
     },
   };
 }
@@ -104,34 +107,34 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const jobZ = 10 * k;
 
   s.wire({ id: 'feed', points: g.feed, stroke: ui.wire, width: 1.25 });
-  s.pulse({ id: 'p-feed', wire: 'feed', color: '#d4d4d8', length: 0.3 });
+  s.pulse({ id: 'p-feed', wire: 'feed', color: idle, length: 0.3 });
   g.routes.forEach((points, i) => {
     s.wire({ id: `w${i}`, points, stroke: ui.wire, width: 1.25 });
     s.pulse({ id: `p${i}`, wire: `w${i}`, color: accent, length: 0.2 });
     s.wire({ id: `back${i}`, points: [...points].reverse(), stroke: 'transparent' });
-    s.pulse({ id: `ack${i}`, wire: `back${i}`, color: '#d4d4d8', length: 0.12, width: 1.5 });
+    s.pulse({ id: `ack${i}`, wire: `back${i}`, color: idle, length: 0.12, width: 1.5 });
   });
 
-  s.slab({ id: 'producer', at: g.producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.text({ id: 'producer-name', at: g.producer, text: 'api', size: k > 1 ? 13 : 11, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'producer', at: g.producer, size: [64 * k, 64 * k], height: 22 * k, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+  s.text({ id: 'producer-name', at: g.producer, text: 'api', size: k > 1 ? 13 : 11, color: '#4b4e57', on: 'top', anchor: 'middle' });
 
   g.tray();
-  for (let i = 0; i < slots; i++) s.face({ id: `slot-${i}`, at: g.slotAt(i), size: [jobSize + 6 * k, jobSize + 6 * k], radius: 8 * k, stroke: 'rgb(255 255 255 / .14)', dash: '3 3' });
+  for (let i = 0; i < slots; i++) s.face({ id: `slot-${i}`, at: g.slotAt(i), size: [jobSize + 6 * k, jobSize + 6 * k], radius: 8 * k, stroke: 'rgb(22 23 27 / .18)', dash: '3 3' });
 
   s.group('jobs', () => {
     for (let i = peak - 1; i >= 0; i--) {
       const at = g.slotAt(i);
-      s.slab({ id: `job-${i}`, at: [at[0], at[1], jobZ], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: '#2a2b32', side: { kind: 'flat', color: '#52525b' }, grain: 0.05, edge: 'rgb(255 255 255 / .2)' });
+      s.slab({ id: `job-${i}`, at: [at[0], at[1], jobZ], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: ramps.emerald[3], side: paints.gradient(s, ramps.emerald), grain: 0.05, edge: ui.edge, outline: green });
     }
   });
 
   g.workers.forEach((at, i) => {
     s.group(`worker-${i}`, () => {
-      s.slab({ id: `wk-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-      s.slab({ id: `wk-hot-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: '#17231f', side: paints.gradient(s, ramps.emerald), grain: 0.06, edge: 'rgb(52 211 153 / .45)' });
-      s.text({ id: `wk-name-${i}`, at: [at[0] + 20 * k, at[1] + 20 * k, 0], text: `w${i + 1}`, size: k > 1 ? 12 : 10, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+      s.slab({ id: `wk-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+      s.slab({ id: `wk-hot-${i}`, at, size: [ws, ws], height: 26 * k, radius: 13 * k, top: '#ecfdf5', side: paints.gradient(s, ramps.emerald), grain: 0.06, edge: ui.edge, outline: green });
+      s.text({ id: `wk-name-${i}`, at: [at[0] + 20 * k, at[1] + 20 * k, 0], text: `w${i + 1}`, size: k > 1 ? 12 : 10, color: '#4b4e57', on: 'top', anchor: 'middle' });
     });
-    s.slab({ id: `held-${i}`, at: [at[0], at[1], jobZ + 2 * k], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: '#1d3a30', side: { kind: 'flat', color: '#047857' }, grain: 0.05, edge: 'rgb(52 211 153 / .6)' });
+    s.slab({ id: `held-${i}`, at: [at[0], at[1], jobZ + 2 * k], size: [jobSize, jobSize], height: 10 * k, radius: 8 * k, top: ramps.emerald[3], side: { kind: 'flat', color: '#059669' }, grain: 0.05, edge: ui.edge, outline: green });
   });
 
   for (let d = 0; d <= peak; d++) {
@@ -209,7 +212,7 @@ export const example: Example = {
   intent: 'scale',
   layout: 'wide',
   useCase: 'Queues',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('qworkers-sm', 390, 440, [146, 226], 0.7, chain), build('qworkers-lg', 1200, 400, [560, 190], 1.3, strip), 720),
 };

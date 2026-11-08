@@ -1,8 +1,12 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#a78bfa';
+const ui = surfaces.light;
+const accent = '#d97706';
+const accentInk = '#b45309';
+const gold = ['#92400e', '#d97706', '#fbbf24', '#fef3c7'] as const;
+const okInk = '#047857';
+const line = 'rgb(22 23 27 / .14)';
 const paidInk = '#065f46';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
@@ -14,10 +18,10 @@ const months = 6;
 const now = 3;
 
 const statuses = [
-  { id: 'st-renew', html: `<span style="color:${accent}">●</span> Pro plan renews · $49/mo` },
-  { id: 'st-print', html: '<span style="color:#a1a1aa">invoice</span> INV-1042 printed' },
-  { id: 'st-sent', html: '<span style="color:#a1a1aa">invoice</span> sent to customer' },
-  { id: 'st-paid', html: '<span style="color:#34d399">✓</span> paid · $49.00' },
+  { id: 'st-renew', html: `<span style="color:${accentInk}">●</span> Pro plan renews · $49/mo` },
+  { id: 'st-print', html: `<span style="color:${ui.muted}">invoice</span> INV-1042 printed` },
+  { id: 'st-sent', html: `<span style="color:${ui.muted}">invoice</span> sent to customer` },
+  { id: 'st-paid', html: `<span style="color:${okInk}">✓</span> paid · $49.00` },
 ] as const;
 
 interface Layout {
@@ -66,10 +70,10 @@ function build(l: Layout) {
     for (let i = 0; i < months; i++) {
       const top = month(i, tileH);
       s.group(`m${i}`, () => {
-        if (i <= now + 1) s.slab({ id: `m${i}-s`, at: top, size: [tile, tile], height: tileH, radius: 10 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge, shadow: false });
-        if (i === now) s.face({ id: 'm-lit', at: top, size: [tile, tile], radius: 10 * k, fill: 'rgb(167 139 250 / .4)', stroke: 'rgb(196 181 253 / .7)' });
-        if (i <= now) s.face({ id: `m${i}-dot`, at: top, size: [12 * k, 12 * k], radius: 6 * k, fill: '#34d399' });
-        if (i >= now + 1) s.face({ id: `m${i}-dash`, at: month(i, 0), size: [tile, tile], radius: 10 * k, stroke: 'rgb(255 255 255 / .22)', dash: '3 3' });
+        if (i <= now + 1) s.slab({ id: `m${i}-s`, at: top, size: [tile, tile], height: tileH, radius: 10 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line, shadow: false });
+        if (i === now) s.face({ id: 'm-lit', at: top, size: [tile, tile], radius: 10 * k, fill: 'rgb(245 158 11 / .2)', stroke: 'rgb(217 119 6 / .6)' });
+        if (i <= now) s.face({ id: `m${i}-dot`, at: top, size: [12 * k, 12 * k], radius: 6 * k, fill: '#10b981' });
+        if (i >= now + 1) s.face({ id: `m${i}-dash`, at: month(i, 0), size: [tile, tile], radius: 10 * k, stroke: 'rgb(22 23 27 / .2)', dash: '3 3' });
       });
       if (i <= now) s.pivot(`m${i}-dot`, top);
     }
@@ -77,16 +81,16 @@ function build(l: Layout) {
 
   s.group('customer-g', () => {
     const top: Vec3 = [customer[0], customer[1], custH];
-    s.slab({ id: 'customer', at: top, size: [custSize, custSize], height: custH, radius: 16 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-    s.face({ id: 'customer-glow', at: top, size: [custSize, custSize], radius: 16 * k, fill: 'rgb(52 211 153 / .22)' });
-    s.text({ id: 'customer-name', at: [top[0] + custSize / 2 - 12 * k, top[1], top[2]], text: 'customer', size: 11, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
+    s.slab({ id: 'customer', at: top, size: [custSize, custSize], height: custH, radius: 16 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+    s.face({ id: 'customer-glow', at: top, size: [custSize, custSize], radius: 16 * k, fill: 'rgb(16 185 129 / .18)' });
+    s.text({ id: 'customer-name', at: [top[0] + custSize / 2 - 12 * k, top[1], top[2]], text: 'customer', size: 11, color: '#4b4e57', on: 'top', along: 'y', anchor: 'middle' });
   });
 
   const cardRest: Vec3 = [engine[0], engine[1], cardH];
   const cardOut: Vec3 = at(l.out, 0, cardH);
   const cardHome: Vec3 = [customer[0], customer[1], custH + cardH];
   s.group('card', () => {
-    s.slab({ id: 'card-s', at: cardRest, size: card, height: cardH, radius: 6 * k, top: '#f4f4f5', side: paints.flat('#a1a1aa'), edge: 'rgb(255 255 255 / .9)', shadow: false });
+    s.slab({ id: 'card-s', at: cardRest, size: card, height: cardH, radius: 6 * k, top: ui.top, side: paints.flat('#d4d4d8'), edge: ui.edge, outline: line, shadow: false });
     s.text({ id: 'card-no', at: [cardRest[0], cardRest[1] - 24 * k, cardH], text: 'INV-1042', size: ts(10), color: '#3f3f46', on: 'top', anchor: 'middle' });
     s.text({ id: 'card-sum', at: [cardRest[0], cardRest[1] - 3 * k, cardH], text: '$49.00', size: ts(13), weight: 600, color: '#18181b', on: 'top', anchor: 'middle' });
     s.text({ id: 'stamp', at: [cardRest[0], cardRest[1] + 23 * k, cardH], text: 'PAID', size: ts(11), weight: 600, color: paidInk, on: 'top', anchor: 'middle', pill: { fill: 'rgb(16 185 129 / .14)', stroke: paidInk, radius: 3 } });
@@ -95,9 +99,9 @@ function build(l: Layout) {
 
   s.group('engine-g', () => {
     const top: Vec3 = [engine[0], engine[1], engineH];
-    s.slab({ id: 'engine', at: top, size: [engineSize, engineSize], height: engineH, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.violet), grain: 0.06, edge: ui.edge });
-    s.face({ id: 'engine-glow', at: top, size: [engineSize, engineSize], radius: 18 * k, fill: 'rgb(167 139 250 / .28)' });
-    s.text({ id: 'engine-name', at: top, text: 'billing', size: 12, color: '#c4b5fd', on: 'top', anchor: 'middle' });
+    s.slab({ id: 'engine', at: top, size: [engineSize, engineSize], height: engineH, radius: 18 * k, top: ui.top, side: paints.gradient(s, gold), grain: 0.08, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' });
+    s.face({ id: 'engine-glow', at: top, size: [engineSize, engineSize], radius: 18 * k, fill: 'rgb(245 158 11 / .22)' });
+    s.text({ id: 'engine-name', at: top, text: 'billing', size: 12, color: '#92400e', on: 'top', anchor: 'middle' });
   });
 
   const outAt = s.project(at(l.out, 0));
@@ -184,7 +188,7 @@ export const example: Example = {
   intent: 'change',
   layout: 'wide',
   useCase: 'Billing',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'billing-sm', width: 390, height: 560, origin: [195, 40], k: 0.75, flow: [Math.SQRT1_2, Math.SQRT1_2], cross: [Math.SQRT1_2, -Math.SQRT1_2], strip: compactStrip, engine: 330, out: 480, customer: 640, narrow: narrowest, status: 'bottom' }),

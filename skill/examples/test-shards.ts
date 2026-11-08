@@ -1,8 +1,9 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const lit = 'rgb(56 189 248 / .5)';
+const ui = surfaces.light;
+const lit = 'rgb(139 92 246 / .26)';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const slideOut = 'cubic-bezier(.15,.6,.6,1)';
 const merge = 'cubic-bezier(.52,.18,.25,1)';
@@ -51,10 +52,10 @@ function build(l: Layout) {
   lanes.forEach((c, j) => {
     for (let i = 0; i < cells; i++) {
       const p = at(cellF(i), c);
-      s.face({ id: `c${j}-${i}`, at: p, size: [cell, cell], radius: 6 * k, fill: 'rgb(255 255 255 / .04)', stroke: 'rgb(255 255 255 / .12)' });
-      s.face({ id: `c${j}-${i}-on`, at: p, size: [cell, cell], radius: 6 * k, fill: lit, stroke: 'rgb(125 211 252 / .7)' });
+      s.face({ id: `c${j}-${i}`, at: p, size: [cell, cell], radius: 6 * k, fill: 'rgb(22 23 27 / .03)', stroke: 'rgb(22 23 27 / .1)' });
+      s.face({ id: `c${j}-${i}-on`, at: p, size: [cell, cell], radius: 6 * k, fill: lit, stroke: 'rgb(124 58 237 / .55)' });
     }
-    s.face({ id: `end-${j}`, at: at(f1, c), size: [shardSize + 8 * k, shardSize + 8 * k], radius: 11 * k, stroke: 'rgb(255 255 255 / .16)', dash: '3 3' });
+    s.face({ id: `end-${j}`, at: at(f1, c), size: [shardSize + 8 * k, shardSize + 8 * k], radius: 11 * k, stroke: 'rgb(22 23 27 / .18)', dash: '3 3' });
     s.march(`end-${j}`, 3, 3, 12);
   });
 
@@ -62,28 +63,28 @@ function build(l: Layout) {
     const top: Vec3 = [suite[0], suite[1], shardH];
     s.group(`shard-${j}`, () => {
       s.group(`shard-${j}-body`, () => {
-        s.slab({ id: `sh-${j}`, at: top, size: [shardSize, shardSize], height: shardH, radius: 10 * k, top: '#17222b', side: paints.gradient(s, ramps.sky), grain: 0.05, edge: 'rgb(56 189 248 / .45)', shadow: false });
-        s.slab({ id: `sh-${j}-ok`, at: top, size: [shardSize, shardSize], height: shardH, radius: 10 * k, top: '#16231e', side: paints.gradient(s, ramps.emerald), grain: 0.05, edge: 'rgb(52 211 153 / .5)', shadow: false });
-        s.text({ id: `sh-${j}-name`, at: top, text: `${j + 1}/4`, size: 10, color: '#e4e4e7', on: 'top', anchor: 'middle' });
+        s.slab({ id: `sh-${j}`, at: top, size: [shardSize, shardSize], height: shardH, radius: 10 * k, top: '#f5f3ff', side: paints.gradient(s, ramps.violet), grain: 0.05, edge: ui.edge, outline: 'rgb(91 33 182 / .35)', shadow: false });
+        s.slab({ id: `sh-${j}-ok`, at: top, size: [shardSize, shardSize], height: shardH, radius: 10 * k, top: '#ecfdf5', side: paints.gradient(s, ramps.emerald), grain: 0.05, edge: ui.edge, outline: 'rgb(4 120 87 / .35)', shadow: false });
+        s.text({ id: `sh-${j}-name`, at: top, text: `${j + 1}/4`, size: 10, color: '#27272a', on: 'top', anchor: 'middle' });
       });
     });
     s.pivot(`shard-${j}-body`, [suite[0], suite[1], 0]);
   });
 
-  const slab = (id: string, p: Vec3, side: 'graphite' | 'emerald') => {
+  const slab = (id: string, p: Vec3, side: 'silver' | 'emerald') => {
     const top: Vec3 = [p[0], p[1], bigH];
-    if (side === 'graphite') s.slab({ id, at: top, size: [bigSize, bigSize], height: bigH, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-    else s.slab({ id, at: top, size: [bigSize, bigSize], height: bigH, radius: 18 * k, top: '#15231d', side: paints.gradient(s, ramps.emerald), grain: 0.06, edge: 'rgb(52 211 153 / .5)' });
+    if (side === 'silver') s.slab({ id, at: top, size: [bigSize, bigSize], height: bigH, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+    else s.slab({ id, at: top, size: [bigSize, bigSize], height: bigH, radius: 18 * k, top: '#ecfdf5', side: paints.gradient(s, ramps.emerald), grain: 0.08, edge: ui.edge, outline: 'rgb(4 120 87 / .35)' });
   };
   s.group('suite-g', () => {
-    slab('suite', suite, 'graphite');
-    s.face({ id: 'suite-glow', at: [suite[0], suite[1], bigH], size: [bigSize, bigSize], radius: 18 * k, fill: 'rgb(56 189 248 / .22)' });
-    s.text({ id: 'suite-name', at: [suite[0], suite[1], bigH], text: 'suite', size: 12, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+    slab('suite', suite, 'silver');
+    s.face({ id: 'suite-glow', at: [suite[0], suite[1], bigH], size: [bigSize, bigSize], radius: 18 * k, fill: 'rgb(139 92 246 / .2)' });
+    s.text({ id: 'suite-name', at: [suite[0], suite[1], bigH], text: 'suite', size: 12, color: '#4b4e57', on: 'top', anchor: 'middle' });
   });
   s.group('result-g', () => {
-    slab('result', result, 'graphite');
+    slab('result', result, 'silver');
     slab('result-ok', result, 'emerald');
-    s.text({ id: 'result-name', at: [result[0], result[1], bigH], text: 'merge', size: 12, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+    s.text({ id: 'result-name', at: [result[0], result[1], bigH], text: 'merge', size: 12, color: '#4b4e57', on: 'top', anchor: 'middle' });
   });
 
   const fit = (x: number, text: string, anchor: 'center' | 'left' = 'center') => fitX(x, text, l.width, l.narrow, anchor);
@@ -92,7 +93,7 @@ function build(l: Layout) {
   const [rx, ry] = l.tookSide === 'right' ? s.project([result[0] - bigSize / 2, result[1] - bigSize / 2, bigH]) : s.project([result[0] + bigSize / 2, result[1] + bigSize / 2, 0]);
   const passed = `✓ 1,240 passed · ${shards[1].took}`;
   const passAt: Vec2 = l.tookSide === 'right' ? [fit(rx, passed), ry - 18 * k] : [fit(rx, passed), ry + 16];
-  s.label({ id: 'passed', at: { screen: passAt }, html: `<span style="color:#34d399">✓</span> 1,240 passed · ${shards[1].took}`, size: 13, anchor: l.tookSide === 'right' ? 'bottom' : 'top' });
+  s.label({ id: 'passed', at: { screen: passAt }, html: `<span style="color:#047857">✓</span> 1,240 passed · ${shards[1].took}`, size: 13, anchor: l.tookSide === 'right' ? 'bottom' : 'top' });
 
   s.dropIn('suite-g', 0.1);
   s.dropIn('result-g', 0.25);
@@ -151,7 +152,7 @@ export const example: Example = {
   intent: 'scale',
   layout: 'wide',
   useCase: 'Testing',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'shards-sm', width: 390, height: 590, origin: [195, 40], k: 0.7, flow: [Math.SQRT1_2, Math.SQRT1_2], cross: [Math.SQRT1_2, -Math.SQRT1_2], suite: 110, lane: [215, 560], result: 790, pitch: 78, narrow: narrowest, tookSide: 'below' }),

@@ -1,11 +1,12 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#818cf8';
-const ok = '#34d399';
-const okInk = '#6ee7b7';
-const dim = 'rgb(255 255 255 / .14)';
+const ui = surfaces.light;
+const accent = '#4f46e5';
+const ok = '#10b981';
+const okInk = '#047857';
+const dim = 'rgb(22 23 27 / .1)';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pop = 'cubic-bezier(.3,1.4,.5,1)';
 
@@ -43,34 +44,34 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   reviewers.forEach(r => {
     const [W, H] = [rev.w, rev.h];
     const content =
-      `<circle cx="${-W / 2 + 18 * k}" cy="${-H / 2 + 20 * k}" r="${8 * k}" fill="rgb(255 255 255 / .16)"/>` +
-      `<text x="${-W / 2 + 32 * k}" y="${-H / 2 + 20 * k}" font-size="${12 * k}" fill="#d4d4d8" dominant-baseline="central" style="font-family:var(--iso-mono)">${r.name}</text>` +
+      `<circle cx="${-W / 2 + 18 * k}" cy="${-H / 2 + 20 * k}" r="${8 * k}" fill="rgb(22 23 27 / .08)"/>` +
+      `<text x="${-W / 2 + 32 * k}" y="${-H / 2 + 20 * k}" font-size="${12 * k}" fill="#3f3f46" dominant-baseline="central" style="font-family:var(--iso-mono)">${r.name}</text>` +
       [0, 1].map(i => `<rect x="${-W / 2 + 12 * k}" y="${-H / 2 + (42 + i * 12) * k}" width="${(i ? 56 : 80) * k}" height="${4 * k}" rx="${2 * k}" fill="${dim}"/>`).join('') +
-      `<circle cx="0" cy="${H / 2 - 30 * k}" r="${14 * k}" fill="none" stroke="rgb(255 255 255 / .22)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
-    s.panel({ id: `rev-${r.id}`, at: revAt(r.x), size: [W, H], thickness: rev.t, facing: 'left', radius: 14 * k, front: ui.top, side: '#2a2b33', edge: ui.edge, content });
-    s.svg(`rev-${r.id}-glow`, `<g transform="${revPlane(r.x, 0, 0)}"><rect x="${-W / 2}" y="${-H / 2}" width="${W}" height="${H}" rx="${14 * k}" fill="rgb(129 140 248 / .12)" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"/></g>`);
-    s.svg(`tick-${r.id}`, `<g transform="${revPlane(r.x, 0, H / 2 - 30 * k)}"><circle r="${14 * k}" fill="${ok}"/><path d="M${-6 * k} ${0.5 * k}l${4 * k} ${4 * k}l${8 * k} ${-9 * k}" fill="none" stroke="#052e1f" stroke-width="${2.4 * k}" stroke-linecap="round" stroke-linejoin="round"/></g>`);
+      `<circle cx="0" cy="${H / 2 - 30 * k}" r="${14 * k}" fill="none" stroke="rgb(22 23 27 / .2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+    s.panel({ id: `rev-${r.id}`, at: revAt(r.x), size: [W, H], thickness: rev.t, facing: 'left', radius: 14 * k, front: ui.top, side: '#d4d4d8', edge: line, content });
+    s.svg(`rev-${r.id}-glow`, `<g transform="${revPlane(r.x, 0, 0)}"><rect x="${-W / 2}" y="${-H / 2}" width="${W}" height="${H}" rx="${14 * k}" fill="rgb(99 102 241 / .1)" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"/></g>`);
+    s.svg(`tick-${r.id}`, `<g transform="${revPlane(r.x, 0, H / 2 - 30 * k)}"><circle r="${14 * k}" fill="${ok}"/><path d="M${-6 * k} ${0.5 * k}l${4 * k} ${4 * k}l${8 * k} ${-9 * k}" fill="none" stroke="#ffffff" stroke-width="${2.4 * k}" stroke-linecap="round" stroke-linejoin="round"/></g>`);
   });
 
-  s.slab({ id: 'main', at: mainAt, size: [mainSize, mainSize], height: 26 * k, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'main-glow', at: mainAt, size: [mainSize, mainSize], radius: 18 * k, fill: 'rgb(52 211 153 / .22)', stroke: ok });
-  s.text({ id: 'main-name', at: [mainAt[0] + mainSize / 2 - 16 * k, mainAt[1], mainAt[2]], text: 'main', size: 12, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
+  s.slab({ id: 'main', at: mainAt, size: [mainSize, mainSize], height: 26 * k, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+  s.face({ id: 'main-glow', at: mainAt, size: [mainSize, mainSize], radius: 18 * k, fill: 'rgb(16 185 129 / .16)', stroke: ok });
+  s.text({ id: 'main-name', at: [mainAt[0] + mainSize / 2 - 16 * k, mainAt[1], mainAt[2]], text: 'main', size: 12, color: '#4b4e57', on: 'top', along: 'y', anchor: 'middle' });
 
   const [W, H] = [req.w, req.h];
   const lockV = H / 2 - 30 * k;
   const lockU = -W / 2 + 34 * k;
   const pips = [W / 2 - 44 * k, W / 2 - 28 * k];
   const reqContent =
-    `<text x="${-W / 2 + 14 * k}" y="${-H / 2 + 20 * k}" font-size="${12 * k}" fill="#e4e4e7" dominant-baseline="central" style="font-family:var(--iso-mono)">#482</text>` +
+    `<text x="${-W / 2 + 14 * k}" y="${-H / 2 + 20 * k}" font-size="${12 * k}" fill="#312e81" dominant-baseline="central" style="font-family:var(--iso-mono)">#482</text>` +
     [0, 1, 2].map(i => `<rect x="${-W / 2 + 14 * k}" y="${-H / 2 + (40 + i * 12) * k}" width="${[110, 84, 96][i]! * k}" height="${4 * k}" rx="${2 * k}" fill="${dim}"/>`).join('') +
-    pips.map(u => `<circle cx="${u}" cy="${lockV}" r="${4.5 * k}" fill="none" stroke="rgb(255 255 255 / .3)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('') +
-    `<rect x="${-W / 2 + 14 * k}" y="${lockV - 14 * k}" width="${W - 28 * k}" height="${28 * k}" rx="${8 * k}" fill="rgb(255 255 255 / .06)" stroke="rgb(255 255 255 / .14)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
-  s.panel({ id: 'req', at: reqAt, size: [W, H], thickness: req.t, facing: 'right', radius: 16 * k, front: ui.top, side: '#3730a3', edge: 'rgb(165 180 252 / .35)', content: reqContent });
+    pips.map(u => `<circle cx="${u}" cy="${lockV}" r="${4.5 * k}" fill="none" stroke="rgb(22 23 27 / .25)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('') +
+    `<rect x="${-W / 2 + 14 * k}" y="${lockV - 14 * k}" width="${W - 28 * k}" height="${28 * k}" rx="${8 * k}" fill="rgb(22 23 27 / .03)" stroke="rgb(22 23 27 / .12)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  s.panel({ id: 'req', at: reqAt, size: [W, H], thickness: req.t, facing: 'right', radius: 16 * k, front: ui.top, side: '#4338ca', edge: 'rgb(67 56 202 / .4)', content: reqContent });
   pips.forEach((u, i) => s.svg(`pip-${i}`, `<g transform="${reqPlane(u, lockV)}"><circle r="${4.5 * k}" fill="${ok}"/></g>`));
-  s.svg('merge-on', `<g transform="${reqPlane(0, lockV)}"><rect x="${-W / 2 + 14 * k}" y="${-14 * k}" width="${W - 28 * k}" height="${28 * k}" rx="${8 * k}" fill="rgb(52 211 153 / .22)" stroke="${ok}" stroke-width="1" vector-effect="non-scaling-stroke"/></g>`);
+  s.svg('merge-on', `<g transform="${reqPlane(0, lockV)}"><rect x="${-W / 2 + 14 * k}" y="${-14 * k}" width="${W - 28 * k}" height="${28 * k}" rx="${8 * k}" fill="rgb(16 185 129 / .16)" stroke="${ok}" stroke-width="1" vector-effect="non-scaling-stroke"/></g>`);
   const body = `<rect x="${-7 * k}" y="${-2 * k}" width="${14 * k}" height="${11 * k}" rx="${2.5 * k}"/>`;
   const shackle = `<path d="M${-4.5 * k} ${-2 * k}v${-3 * k}a${4.5 * k} ${4.5 * k} 0 0 1 ${9 * k} 0v${3 * k}" fill="none" stroke-width="${2 * k}" stroke-linecap="round"/>`;
-  s.svg('lock-shut', `<g transform="${reqPlane(lockU, lockV - 2 * k)}"><g fill="#a1a1aa" stroke="#a1a1aa">${body}${shackle}</g></g>`);
+  s.svg('lock-shut', `<g transform="${reqPlane(lockU, lockV - 2 * k)}"><g fill="#71717a" stroke="#71717a">${body}${shackle}</g></g>`);
   s.svg('lock-open', `<g transform="${reqPlane(lockU, lockV - 2 * k)}"><g fill="${ok}" stroke="${ok}">${body}<path d="M${-4.5 * k} ${-7 * k}v${-3 * k}a${4.5 * k} ${4.5 * k} 0 0 1 ${9 * k} 0" fill="none" stroke-width="${2 * k}" stroke-linecap="round"/></g></g>`);
 
   const reqTop = s.project(onReq(0, -H / 2));
@@ -78,7 +79,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const counts = ['0/2', '1/2', '2/2'] as const;
   counts.forEach((c, i) => {
     const text = `approvals ${c}`;
-    s.label({ id: `count-${i}`, at: { screen: [fitX(reqTop[0], text, width, minPx, 'center'), reqHigh - 12 * k] }, html: `approvals <span style="color:${i === 2 ? okInk : '#a1a1aa'}">${c}</span>`, size: 13, anchor: 'bottom' });
+    s.label({ id: `count-${i}`, at: { screen: [fitX(reqTop[0], text, width, minPx, 'center'), reqHigh - 12 * k] }, html: `approvals <span style="color:${i === 2 ? okInk : ui.muted}">${c}</span>`, size: 13, anchor: 'bottom' });
   });
   reviewers.forEach(r => {
     const top = s.project(onRev(r.x, 0, -rev.h / 2));
@@ -172,7 +173,7 @@ export const example: Example = {
   intent: 'talk',
   layout: 'panels',
   useCase: 'Approvals',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('approve-sm', 390, 430, [170, 196], 0.82), build('approve-lg', 720, 420, [328, 176], 0.92), 520),
 };
