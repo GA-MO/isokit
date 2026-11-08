@@ -129,6 +129,9 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   return s;
 }
 
+const arts = (tag = '') =>
+  art(build(`pay-sm${tag}`, 390, 460, [195, 176], 98, 0.56, 9, [195, 360]), build(`pay-lg${tag}`, 1120, 520, [560, 236], 230, 1, 12, [560, 312]), 760);
+
 export const example: Example = {
   slug: 'checkout-payment',
   title: 'A card payment, round trip',
@@ -141,7 +144,9 @@ export const example: Example = {
   useCase: 'Payments',
   surface: 'light',
   interaction: 'watch',
-  art: art(build('pay-sm', 390, 460, [195, 176], 98, 0.56, 9, [195, 360]), build('pay-lg', 1120, 520, [560, 236], 230, 1, 12, [560, 312]), 760),
+  art: arts(),
 };
+
+export const inContext = arts('-ctx');
 
 export default page(example);

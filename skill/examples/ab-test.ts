@@ -135,6 +135,13 @@ function build(l: Layout) {
   return s;
 }
 
+const arts = (tag = '') =>
+  art(
+    build({ name: `abtest-sm${tag}`, width: 390, height: 400, origin: [195, 262], k: 0.86, minPx: narrowest, label: { dx: 0, dy: -22, anchor: 'bottom' }, textSize: 10 }),
+    build({ name: `abtest-lg${tag}`, width: 720, height: 400, origin: [360, 288], k: 1.32, minPx: 521, label: { dx: 0, dy: -22, anchor: 'bottom' }, textSize: 12 }),
+    520,
+  );
+
 export const example: Example = {
   slug: 'ab-test',
   title: 'A/B test result',
@@ -147,11 +154,9 @@ export const example: Example = {
   useCase: 'Experiments',
   surface: 'light',
   interaction: 'watch',
-  art: art(
-    build({ name: 'abtest-sm', width: 390, height: 400, origin: [195, 262], k: 0.86, minPx: narrowest, label: { dx: 0, dy: -22, anchor: 'bottom' }, textSize: 10 }),
-    build({ name: 'abtest-lg', width: 720, height: 400, origin: [360, 288], k: 1.32, minPx: 521, label: { dx: 0, dy: -22, anchor: 'bottom' }, textSize: 12 }),
-    520,
-  ),
+  art: arts(),
 };
+
+export const inContext = arts('-ctx');
 
 export default page(example);
