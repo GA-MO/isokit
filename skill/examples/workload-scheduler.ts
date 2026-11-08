@@ -1,8 +1,9 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#818cf8';
+const ui = surfaces.light;
+const accent = '#4f46e5';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const popIn = 'linear(0, 0.007 1.5%, 0.033 3.3%, 0.078 5%, 0.14 6.8%, 0.216 8.5%, 0.305 10.3%, 0.709 17.3%, 0.863 20.3%, 0.936 22%, 0.987 23.5%, 1.03 25.3%, 1.052 26.8%, 1.06 28.2%, 1.06 38.3%, 1.015 67.5%, 1)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';
@@ -56,7 +57,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   };
   const pending: Vec3 = [sched[0], sched[1], blockH];
   const blockSlab = (id: string, at: Vec3, fresh: boolean) =>
-    s.slab({ id, at, size: [block, block], height: blockH, radius: 7 * k, top: fresh ? '#20223a' : '#24252c', side: paints.gradient(s, fresh ? ramps.indigo : ramps.graphite), grain: 0.05, edge: fresh ? 'rgb(165 180 252 / .45)' : 'rgb(255 255 255 / .14)' });
+    s.slab({ id, at, size: [block, block], height: blockH, radius: 7 * k, top: fresh ? '#eef2ff' : '#f4f4f5', side: paints.gradient(s, fresh ? ramps.indigo : ramps.silver), grain: 0.06, edge: ui.edge, outline: fresh ? 'rgb(55 48 163 / .35)' : line });
 
   nodes.forEach((n, i) => {
     const y = n.y * k;
@@ -68,16 +69,16 @@ function build(name: string, width: number, height: number, origin: readonly [nu
     s.pulse({ id: `p-${n.id}`, wire: `w-${n.id}`, color: accent, length: 0.16 });
   });
 
-  s.slab({ id: 'sched', at: sched, size: [schedSize, schedSize], height: 28 * k, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.indigo), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'sched-glow', at: sched, size: [schedSize, schedSize], radius: 18 * k, fill: 'rgb(129 140 248 / .26)' });
-  s.text({ id: 'sched-name', at: [sched[0] + schedSize / 2 - 15 * k, sched[1], 0], text: 'scheduler', size: 11, color: '#a5b4fc', on: 'top', along: 'y', anchor: 'middle' });
+  s.slab({ id: 'sched', at: sched, size: [schedSize, schedSize], height: 28 * k, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.indigo), grain: 0.08, edge: ui.edge, outline: 'rgb(55 48 163 / .35)' });
+  s.face({ id: 'sched-glow', at: sched, size: [schedSize, schedSize], radius: 18 * k, fill: 'rgb(99 102 241 / .16)' });
+  s.text({ id: 'sched-name', at: [sched[0] + schedSize / 2 - 15 * k, sched[1], 0], text: 'scheduler', size: 11, color: '#3730a3', on: 'top', along: 'y', anchor: 'middle' });
 
   nodes.forEach((n, i) => {
     const at = nodeAt(i);
     s.group(`node-${n.id}`, () => {
-      s.slab({ id: `node-${n.id}-slab`, at, size: [nodeSize, nodeSize], height: 18 * k, radius: 15 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-      if (placements.some(p => p.node === i)) s.face({ id: `node-${n.id}-hit`, at, size: [nodeSize, nodeSize], radius: 15 * k, fill: 'rgb(129 140 248 / .22)' });
-      for (let slot = 0; slot < capacity; slot++) s.face({ id: `node-${n.id}-slot-${slot}`, at: slotAt(i, slot, -blockH), size: [block + 4 * k, block + 4 * k], radius: 8 * k, stroke: 'rgb(255 255 255 / .13)', dash: '6 4' });
+      s.slab({ id: `node-${n.id}-slab`, at, size: [nodeSize, nodeSize], height: 18 * k, radius: 15 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line });
+      if (placements.some(p => p.node === i)) s.face({ id: `node-${n.id}-hit`, at, size: [nodeSize, nodeSize], radius: 15 * k, fill: 'rgb(99 102 241 / .12)', stroke: 'rgb(79 70 229 / .45)' });
+      for (let slot = 0; slot < capacity; slot++) s.face({ id: `node-${n.id}-slot-${slot}`, at: slotAt(i, slot, -blockH), size: [block + 4 * k, block + 4 * k], radius: 8 * k, stroke: 'rgb(22 23 27 / .16)', dash: '6 4' });
       for (let slot = 0; slot < n.used; slot++) blockSlab(`node-${n.id}-job-${slot}`, slotAt(i, slot), false);
     });
   });
@@ -160,7 +161,7 @@ export const example: Example = {
   intent: 'choose',
   layout: 'field',
   useCase: 'Orchestration',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('sched-sm', 390, 400, [176, 200], 0.74, false), build('sched-lg', 720, 400, [300, 186], 1, true), 520),
 };
