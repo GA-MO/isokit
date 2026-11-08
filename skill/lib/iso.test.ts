@@ -375,8 +375,8 @@ test('content drawn on a panel is clipped to its rounded face, so nothing pokes 
   for (const facing of ['left', 'right'] as const)
     for (const c of cases) {
       const svg = scene()
-        .panel({ id: 'p', at: [10, -20, 30], size: c.size, radius: c.radius, thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
-        .panel({ id: 'q', at: [90, -20, 30], size: c.size, radius: c.radius, thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
+        .panel({ id: 'p', at: [10, -20, 30], size: c.size, ...(c.radius === undefined ? {} : { radius: c.radius }), thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
+        .panel({ id: 'q', at: [90, -20, 30], size: c.size, ...(c.radius === undefined ? {} : { radius: c.radius }), thickness: 7, facing, front: '#ffffff', side: '#e7e7ea', content })
         .render();
       const refs = ['p', 'q'].map(id => {
         const face = new RegExp(`<g id="demo_${id}"><g transform="[^"]+">.*?<g clip-path="url\\(#([^)]+)\\)">${content}</g></g></g>`).exec(svg);
@@ -389,7 +389,7 @@ test('content drawn on a panel is clipped to its rounded face, so nothing pokes 
       expect(refs[0]).not.toBe(refs[1]);
     }
   for (const content of [undefined, ''])
-    expect(scene().panel({ id: 'p', at: [0, 0, 0], size: [120, 80], thickness: 7, facing: 'left', front: '#ffffff', side: '#e7e7ea', content }).render()).not.toContain('clip');
+    expect(scene().panel({ id: 'p', at: [0, 0, 0], size: [120, 80], thickness: 7, facing: 'left', front: '#ffffff', side: '#e7e7ea', ...(content === undefined ? {} : { content }) }).render()).not.toContain('clip');
 });
 
 test('content drawn on a slab top is clipped to its rounded top, hover copy included', () => {
@@ -402,7 +402,7 @@ test('content drawn on a slab top is clipped to its rounded top, hover copy incl
   ] as const;
   for (const hover of [undefined, { top: '#eeeeee' }])
     for (const c of cases) {
-      const slab = (id: string, x: number) => ({ id, at: [x, 0, 0] as const, size: c.size, radius: c.radius, height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } as const, content, hover });
+      const slab = (id: string, x: number) => ({ id, at: [x, 0, 0] as const, size: c.size, ...(c.radius === undefined ? {} : { radius: c.radius }), height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' } as const, content, ...(hover ? { hover } : {}) });
       const svg = scene().slab(slab('p', 0)).slab(slab('q', 200)).render();
       const groups = { p: svg.slice(svg.indexOf('<g id="demo_p"'), svg.indexOf('<g id="demo_q"')), q: svg.slice(svg.indexOf('<g id="demo_q"')) };
       const refs = Object.values(groups).map(group => {
@@ -419,15 +419,15 @@ test('content drawn on a slab top is clipped to its rounded top, hover copy incl
       expect(refs[0]).not.toBe(refs[1]);
     }
   for (const content of [undefined, ''])
-    expect(scene().slab({ id: 'p', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, content }).render()).not.toContain('_face');
+    expect(scene().slab({ id: 'p', at: [0, 0, 0], size: [80, 80], height: 20, top: '#ffffff', side: { kind: 'flat', color: '#cccccc' }, ...(content === undefined ? {} : { content }) }).render()).not.toContain('_face');
 });
 
 test('content on a face, a prism cap or a turntable top is clipped to that rounded face', () => {
   const content = '<rect x="-60" y="-40" width="120" height="22" fill="#f4f4f5"/>';
   const draw = {
-    face: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.face({ id, at: [x, 0, 0], size, radius, fill: '#ffffff', content: c }),
-    prism: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.prism({ id, at: [x, 0, 0], size, radius, height: 20, top: '#ffffff', side: '#cccccc', content: c }),
-    turntable: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.turntable({ id, at: [x, 0, 0], size, radius, height: 20, top: '#ffffff', side: '#cccccc', content: c }),
+    face: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.face({ id, at: [x, 0, 0], size, ...(radius === undefined ? {} : { radius }), ...(c === undefined ? {} : { content: c }), fill: '#ffffff' }),
+    prism: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.prism({ id, at: [x, 0, 0], size, ...(radius === undefined ? {} : { radius }), ...(c === undefined ? {} : { content: c }), height: 20, top: '#ffffff', side: '#cccccc' }),
+    turntable: (s: Scene, id: string, x: number, size: readonly [number, number], radius: number | undefined, c?: string) => s.turntable({ id, at: [x, 0, 0], size, ...(radius === undefined ? {} : { radius }), ...(c === undefined ? {} : { content: c }), height: 20, top: '#ffffff', side: '#cccccc' }),
   };
   const cases = [
     { size: [120, 80], radius: 14, rx: 14 },
