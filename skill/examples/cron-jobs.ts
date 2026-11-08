@@ -50,7 +50,7 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   });
 
   s.group('clock', () => {
-    s.slab({ id: 'plate', at: clock, size: [plate, plate], height: 16 * k, radius: plate / 2, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
+    s.slab({ id: 'plate', at: clock, size: [plate, plate], height: 16 * k, radius: plate / 2, top: ui.top, side: paints.brushed(s, cyan), grain: 0.06, edge: 'rgb(103 232 249 / .45)' });
     Array.from({ length: ticks }, (_, j) => {
       const d = (major(j) ? 16 : 9) * k;
       s.face({ id: `tick-${j}`, at: dial(j), size: [d, d], radius: d / 2, ...(major(j) ? { fill: 'rgb(34 211 238 / .16)', stroke: 'rgb(34 211 238 / .5)' } : { fill: 'rgb(199 210 254 / .16)' }) });
