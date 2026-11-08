@@ -1,8 +1,9 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#fbbf24';
+const ui = surfaces.light;
+const accent = '#d97706';
+const line = 'rgb(22 23 27 / .14)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
@@ -41,19 +42,19 @@ function build(l: Layout) {
   s.wire({ id: 'w-signal', points: [[userAt[0], userAt[1] - userSize / 2, -8 * k], [userAt[0], 45 * k, -8 * k]], stroke: ui.wire, width: 1.25 });
   s.pulse({ id: 'p-signal', wire: 'w-signal', color: accent, length: 0.3 });
 
-  s.slab({ id: 'shelf', at: [0, 0, 0], size: [shelfLen, 90 * k], height: shelfTop, radius: 18 * k, top: '#16171c', side: paints.brushed(s, ramps.graphite), grain: 0.05, edge: ui.edge });
+  s.slab({ id: 'shelf', at: [0, 0, 0], size: [shelfLen, 90 * k], height: shelfTop, radius: 18 * k, top: '#fbfbfa', side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
 
   const card = (id: string, at: Vec3, hot: boolean, glow: boolean) => {
-    s.slab({ id: `${id}-n`, at, size: [tile, tile], height: 20 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-    if (hot) s.slab({ id: `${id}-hot`, at, size: [tile, tile], height: 20 * k, radius: 13 * k, top: '#221c12', side: paints.gradient(s, ramps.amber), grain: 0.06, edge: 'rgb(251 191 36 / .45)' });
-    if (glow) s.face({ id: `${id}-glow`, at, size: [tile, tile], radius: 13 * k, fill: 'rgb(251 191 36 / .14)', stroke: 'rgb(251 191 36 / .75)' });
-    products.forEach(p => s.text({ id: `${id}-${p}`, at, text: p, size: l.textSize, color: '#d4d4d8', on: 'top', anchor: 'middle' }));
+    s.slab({ id: `${id}-n`, at, size: [tile, tile], height: 20 * k, radius: 13 * k, top: ui.top, side: paints.gradient(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line });
+    if (hot) s.slab({ id: `${id}-hot`, at, size: [tile, tile], height: 20 * k, radius: 13 * k, top: '#fffbeb', side: paints.gradient(s, ramps.amber), grain: 0.08, edge: ui.edge, outline: 'rgb(180 83 9 / .35)' });
+    if (glow) s.face({ id: `${id}-glow`, at, size: [tile, tile], radius: 13 * k, fill: 'rgb(245 158 11 / .16)', stroke: 'rgb(217 119 6 / .7)' });
+    products.forEach(p => s.text({ id: `${id}-${p}`, at, text: p, size: l.textSize, color: '#4b4e57', on: 'top', anchor: 'middle' }));
   };
   for (let i = 0; i < slots; i++) s.group(`slot-${i}`, () => card(`slot-${i}`, slotAt(i), i === 0, i === slots - 1));
   s.group('mover', () => card('mover', slotAt(0), true, true));
 
-  s.slab({ id: 'user', at: userAt, size: [userSize, userSize], height: 18 * k, radius: 27 * k, top: ui.top, side: paints.dots(s, ramps.amber, 3), grain: 0.06, edge: ui.edge });
-  s.text({ id: 'user-name', at: userAt, text: 'you', size: l.textSize, color: '#fcd34d', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'user', at: userAt, size: [userSize, userSize], height: 18 * k, radius: 27 * k, top: ui.top, side: paints.dots(s, ramps.amber, 3), grain: 0.08, edge: ui.edge, outline: 'rgb(180 83 9 / .35)' });
+  s.text({ id: 'user-name', at: userAt, text: 'you', size: l.textSize, color: '#92400e', on: 'top', anchor: 'middle' });
 
   const [ux, uy] = s.project(userAt);
   const longest = Object.values(signals).reduce((a, b) => (b.length > a.length ? b : a));
@@ -127,7 +128,7 @@ export const example: Example = {
   intent: 'choose',
   layout: 'diagonal',
   useCase: 'Recommendations',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'recs-sm', width: 390, height: 400, origin: [195, 178], k: 0.8, minPx: narrowest, signal: { dx: 0, dy: 44, anchor: 'top' }, textSize: 10 }),

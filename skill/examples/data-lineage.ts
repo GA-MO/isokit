@@ -1,8 +1,12 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const teal = ramps.teal;
+const ui = surfaces.light;
+const violet = ramps.violet;
+const accent = '#7c3aed';
+const deep = '#5b21b6';
+const ink = '#4b4e57';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 
@@ -81,17 +85,17 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 
   tiers.forEach((tier, i) => {
     const z = plateZ(i);
-    s.slab({ id: `plate-${tier.id}`, at: [0, 0, z], size: plate.size, height: plate.height, radius: 20 * k, top: ui.top, side: paints.flat('#24252b'), grain: 0.06, edge: ui.edge, shadow: i === 0 });
-    s.text({ id: `plate-${tier.id}-name`, at: [-plate.size[0] / 2 + 16 * k, plate.size[1] / 2 - 12 * k, z], text: tier.name, size: 11, color: '#a1a1aa', on: 'top' });
+    s.slab({ id: `plate-${tier.id}`, at: [0, 0, z], size: plate.size, height: plate.height, radius: 20 * k, top: ui.top, side: paints.gradient(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line, shadow: i === 0 });
+    s.text({ id: `plate-${tier.id}-name`, at: [-plate.size[0] / 2 + 16 * k, plate.size[1] / 2 - 12 * k, z], text: tier.name, size: 11, color: ui.muted, on: 'top' });
 
     edges.filter(e => tierOf.get(e.down.id) === i).forEach(e => {
       const upTier = tierOf.get(e.up.id)!;
       const from: Vec3 = [e.up.x * k, rowY, plateZ(upTier) - plate.height];
       const to: Vec3 = [e.down.x * k, rowY, plateZ(i) + tile.height];
-      s.wire({ id: e.id, points: [from, to], stroke: 'rgb(255 255 255 / .2)', width: 1 });
+      s.wire({ id: e.id, points: [from, to], stroke: 'rgb(22 23 27 / .22)', width: 1 });
       if (e.lit) {
-        s.wire({ id: `${e.id}-on`, points: [from, to], stroke: teal[2], width: 1.5, hidden: true });
-        s.pulse({ id: `${e.id}-p`, wire: `${e.id}-on`, color: teal[3], length: 0.3 });
+        s.wire({ id: `${e.id}-on`, points: [from, to], stroke: 'rgb(124 58 237 / .5)', width: 1.5, hidden: true });
+        s.pulse({ id: `${e.id}-p`, wire: `${e.id}-on`, color: accent, length: 0.3 });
       }
     });
 
@@ -100,13 +104,13 @@ function build({ name, width, height, origin, k, wide }: Layout) {
       const size = t.id.startsWith('dash') ? tile.size * 1.18 : tile.size;
       const lit = path.has(t.id);
       s.group(`t-${t.id}`, () => {
-        s.slab({ id: t.id, at, size: [size, size], height: tile.height, radius: 10 * k, top: '#202127', side: paints.flat('#3a3b43'), grain: 0.06, edge: 'rgb(255 255 255 / .14)', shadow: false });
-        if (lit) s.slab({ id: `${t.id}-on`, at, size: [size, size], height: tile.height, radius: 10 * k, top: '#202127', side: paints.gradient(s, teal), grain: 0.06, edge: 'rgb(153 246 228 / .45)', shadow: false });
-        if (lit) s.face({ id: `${t.id}-glow`, at, size: [size, size], radius: 10 * k, fill: 'rgb(45 212 191 / .2)' });
-        s.text({ id: `${t.id}-name`, at: [at[0], at[1], at[2]], text: t.name, size: t.id.startsWith('dash') ? 12 : 10, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+        s.slab({ id: t.id, at, size: [size, size], height: tile.height, radius: 10 * k, top: ui.top, side: paints.gradient(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line, shadow: false });
+        if (lit) s.slab({ id: `${t.id}-on`, at, size: [size, size], height: tile.height, radius: 10 * k, top: '#f5f3ff', side: paints.gradient(s, violet), grain: 0.08, edge: ui.edge, outline: 'rgb(91 33 182 / .35)', shadow: false });
+        if (lit) s.face({ id: `${t.id}-glow`, at, size: [size, size], radius: 10 * k, fill: 'rgb(139 92 246 / .16)' });
+        s.text({ id: `${t.id}-name`, at: [at[0], at[1], at[2]], text: t.name, size: t.id.startsWith('dash') ? 12 : 10, color: ink, on: 'top', anchor: 'middle' });
       });
       if (t.id === selected) {
-        s.face({ id: 'pick', at, size: [size + 14 * k, size + 14 * k], radius: 14 * k, stroke: teal[2], strokeWidth: 1.5 });
+        s.face({ id: 'pick', at, size: [size + 14 * k, size + 14 * k], radius: 14 * k, stroke: accent, strokeWidth: 1.5 });
         s.pivot('pick', at);
       }
     });
@@ -116,17 +120,17 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const top = tiers.length - 1;
   const [mx, my] = s.project(tileAt(byId.get(selected)!, top));
   const metric = 'MRR · $48.2k';
-  s.label({ id: 'metric', at: { screen: [fitX(mx, metric, width, minPx), my - tile.size * 0.6 - 18 * k] }, html: `MRR <span style="color:${teal[2]}">$48.2k</span>`, size: 13, anchor: 'bottom' });
+  s.label({ id: 'metric', at: { screen: [fitX(mx, metric, width, minPx), my - tile.size * 0.6 - 18 * k] }, html: `MRR <span style="color:${deep}">$48.2k</span>`, size: 13, anchor: 'bottom' });
 
   if (wide) {
     tiers.slice(0, top).forEach((tier, i) => {
       const [x, y] = s.project([plate.size[0] / 2, -plate.size[1] / 2, plateZ(i) - plate.height / 2]);
-      s.label({ id: `pick-${tier.id}`, at: { screen: [fitX(x + 22, tier.picked, width, minPx, 'left'), y] }, html: `<span style="color:#a1a1aa">${tier.name}</span> <span style="color:${teal[3]}">${tier.picked}</span>`, size: 13, anchor: 'left' });
+      s.label({ id: `pick-${tier.id}`, at: { screen: [fitX(x + 22, tier.picked, width, minPx, 'left'), y] }, html: `<span style="color:${ui.muted}">${tier.name}</span> <span style="color:${deep}">${tier.picked}</span>`, size: 13, anchor: 'left' });
     });
   } else {
     const y = s.project([plate.size[0] / 2, plate.size[1] / 2, -plate.height])[1];
     const text = tiers[0]!.picked;
-    s.label({ id: 'pick-src', at: { screen: [fitX(s.project([0, 0, 0])[0], text, width, minPx), y + 24 * k] }, html: `<span style="color:${teal[3]}">${text}</span>`, size: 13, anchor: 'top' });
+    s.label({ id: 'pick-src', at: { screen: [fitX(s.project([0, 0, 0])[0], text, width, minPx), y + 24 * k] }, html: `<span style="color:${deep}">${text}</span>`, size: 13, anchor: 'top' });
   }
 
   tiers.forEach((tier, i) => s.dropIn(`plate-${tier.id}`, 0.1 + i * 0.083));
@@ -195,7 +199,7 @@ export const example: Example = {
   intent: 'flow',
   layout: 'exploded',
   useCase: 'Lineage',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'lineage-sm', width: 390, height: 580, origin: [195, 420], k: 0.95, wide: false }),

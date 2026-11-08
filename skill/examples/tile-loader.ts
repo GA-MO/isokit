@@ -1,7 +1,8 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
+const ui = surfaces.light;
+const line = 'rgb(22 23 27 / .14)';
 const shrink = 'cubic-bezier(.33,0,.91,.03)';
 
 const grid = [0, 1, 2].flatMap(i => [0, 1, 2].map(j => ({ i, j, wave: i + j })));
@@ -16,12 +17,12 @@ function build(name: string) {
   const h = 16;
   const at = (i: number, j: number): Vec3 => [(i - 1) * pitch, (j - 1) * pitch, h];
 
-  s.slab({ id: 'plate', at: [0, 0, 0], size: [3 * pitch + 20, 3 * pitch + 20], height: 10, radius: 26, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  grid.forEach(({ i, j }) => s.face({ id: `slot-${i}-${j}`, at: [(i - 1) * pitch, (j - 1) * pitch, 0], size: [size, size], radius: 11, stroke: 'rgb(255 255 255 / .1)' }));
+  s.slab({ id: 'plate', at: [0, 0, 0], size: [3 * pitch + 20, 3 * pitch + 20], height: 10, radius: 26, top: '#fbfbfa', side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
+  grid.forEach(({ i, j }) => s.face({ id: `slot-${i}-${j}`, at: [(i - 1) * pitch, (j - 1) * pitch, 0], size: [size, size], radius: 11, stroke: 'rgb(22 23 27 / .16)', dash: '4 4' }));
   grid.forEach(({ i, j }) => {
     s.group(`t-${i}-${j}`, () => {
-      s.slab({ id: `t-${i}-${j}-slab`, at: at(i, j), size: [size, size], height: h, radius: 11, top: ui.top, side: paints.gradient(s, ramps.indigo), grain: 0.06, edge: ui.edge });
-      s.face({ id: `t-${i}-${j}-glow`, at: at(i, j), size: [size, size], radius: 11, fill: 'rgb(129 140 248 / .32)' });
+      s.slab({ id: `t-${i}-${j}-slab`, at: at(i, j), size: [size, size], height: h, radius: 11, top: ui.top, side: paints.gradient(s, ramps.sky), grain: 0.08, edge: ui.edge, outline: 'rgb(3 105 161 / .3)' });
+      s.face({ id: `t-${i}-${j}-glow`, at: at(i, j), size: [size, size], radius: 11, fill: 'rgb(14 165 233 / .2)', stroke: 'rgb(2 132 199 / .45)' });
     });
     s.pivot(`t-${i}-${j}`, [(i - 1) * pitch, (j - 1) * pitch, 0]);
   });
@@ -53,7 +54,7 @@ export const example: Example = {
   level: 'spot',
   layout: 'object',
   useCase: 'Loading',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('spot-loader')),
 };

@@ -1,8 +1,11 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const violet = ramps.violet;
+const ui = surfaces.light;
+const rose = ramps.rose;
+const accent = '#e11d48';
+const line = 'rgb(22 23 27 / .14)';
+const ink = '#4b4e57';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const fillEase = 'cubic-bezier(.32,.5,.06,1)';
 
@@ -29,9 +32,9 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const thick = 10 * k;
   const minWide = 521;
 
-  s.slab({ id: 'source', at: source.at, size: [source.size, source.size], height: source.height, radius: 24 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'source-glow', at: source.at, size: [source.size, source.size], radius: 24 * k, fill: 'rgb(139 92 246 / .22)' });
-  s.text({ id: 'source-name', at: [-source.size / 2 + 22 * k, source.size / 2 - 22 * k, 0], text: 'source.mov', size: wide ? 12 : 11, color: '#a1a1aa', on: 'top' });
+  s.slab({ id: 'source', at: source.at, size: [source.size, source.size], height: source.height, radius: 24 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line });
+  s.face({ id: 'source-glow', at: source.at, size: [source.size, source.size], radius: 24 * k, fill: 'rgb(244 63 94 / .14)' });
+  s.text({ id: 'source-name', at: [-source.size / 2 + 22 * k, source.size / 2 - 22 * k, 0], text: 'source.mov', size: wide ? 12 : 11, color: ink, on: 'top' });
 
   let encodeAt = firstEncode;
   const timeline = renditions.map((r, i) => {
@@ -42,12 +45,12 @@ function build({ name, width, height, origin, k, wide }: Layout) {
     const edgeY = size / 2 - 13 * k;
     const bar: Vec3[] = [[-size / 2 + 18 * k, edgeY, z], [size / 2 - 18 * k, edgeY, z]];
     s.group(`layer-${i}`, () => {
-      s.slab({ id: r.id, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.flat('#2a2a31'), grain: 0.06, edge: ui.edge, shadow: false });
-      s.slab({ id: `${r.id}-on`, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.gradient(s, violet), grain: 0.06, edge: 'rgb(196 181 253 / .35)', shadow: false });
-      s.face({ id: `${r.id}-glow`, at, size: [size, size], radius, fill: 'rgb(139 92 246 / .28)' });
-      s.wire({ id: `${r.id}-track`, points: bar, stroke: 'rgb(255 255 255 / .1)', width: 3 });
-      s.wire({ id: `${r.id}-bar`, points: bar, stroke: violet[2], width: 3, hidden: true });
-      s.text({ id: `${r.id}-name`, at: [-size / 2 + 18 * k, edgeY - 13 * k, z], text: r.name, size: wide ? 12 : 11, color: '#d4d4d8', on: 'top' });
+      s.slab({ id: r.id, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.gradient(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line, shadow: false });
+      s.slab({ id: `${r.id}-on`, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.gradient(s, rose), grain: 0.08, edge: ui.edge, outline: 'rgb(190 18 60 / .35)', shadow: false });
+      s.face({ id: `${r.id}-glow`, at, size: [size, size], radius, fill: 'rgb(244 63 94 / .16)', stroke: 'rgb(225 29 72 / .5)' });
+      s.wire({ id: `${r.id}-track`, points: bar, stroke: 'rgb(22 23 27 / .1)', width: 3 });
+      s.wire({ id: `${r.id}-bar`, points: bar, stroke: accent, width: 3, hidden: true });
+      s.text({ id: `${r.id}-name`, at: [-size / 2 + 18 * k, edgeY - 13 * k, z], text: r.name, size: wide ? 12 : 11, color: ink, on: 'top' });
     });
     const start = encodeAt;
     encodeAt += r.encode + encodeGap;
@@ -58,16 +61,16 @@ function build({ name, width, height, origin, k, wide }: Layout) {
     timeline.forEach(r => {
       const [x, y] = s.project([r.size / 2, -r.size / 2, r.z - thick / 2]);
       const text = `${r.name} · ${r.rate}`;
-      s.label({ id: `${r.id}-tag`, at: { screen: [fitX(x + 18, text, width, minWide, 'left'), y] }, html: `${r.name} <span style="color:#a1a1aa">· ${r.rate}</span>`, size: 13, anchor: 'left' });
+      s.label({ id: `${r.id}-tag`, at: { screen: [fitX(x + 18, text, width, minWide, 'left'), y] }, html: `${r.name} <span style="color:${ui.muted}">· ${r.rate}</span>`, size: 13, anchor: 'left' });
     });
     const [lx, ly] = s.project([-source.size / 2, source.size / 2, -source.height / 2]);
     const tag = 'source.mov · 4K';
-    s.label({ id: 'source-tag', at: { screen: [fitX(lx - 18, tag, width, minWide, 'right'), ly] }, html: `source.mov <span style="color:#a1a1aa">· 4K</span>`, size: 13, anchor: 'right' });
+    s.label({ id: 'source-tag', at: { screen: [fitX(lx - 18, tag, width, minWide, 'right'), ly] }, html: `source.mov <span style="color:${ui.muted}">· 4K</span>`, size: 13, anchor: 'right' });
   }
   const topZ = renditions.length * pitch;
   const [tx, ty] = s.project([0, 0, topZ]);
   const done = '4 renditions ready';
-  s.label({ id: 'done', at: { screen: [fitX(tx, done, width, wide ? minWide : narrowest), ty - (renditions[3].size * k * 0.41) - 26 * k] }, html: `<span style="color:${violet[3]}">●</span> 4 renditions ready`, size: 13, anchor: 'bottom' });
+  s.label({ id: 'done', at: { screen: [fitX(tx, done, width, wide ? minWide : narrowest), ty - (renditions[3].size * k * 0.41) - 26 * k] }, html: `<span style="color:${accent}">●</span> 4 renditions ready`, size: 13, anchor: 'bottom' });
 
   s.dropIn('source', 0.1);
   s.intro('source-name', 'opacity', 0.4, 0.3, 0, 1, ease.out);
@@ -121,7 +124,7 @@ export const example: Example = {
   intent: 'inside',
   layout: 'exploded',
   useCase: 'Media',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'transcode-sm', width: 390, height: 450, origin: [195, 308], k: 0.98, wide: false }),
