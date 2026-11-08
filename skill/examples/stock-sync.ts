@@ -1,13 +1,14 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const teal = '#2dd4bf';
-const tealInk = '#5eead4';
-const rose = '#fb7185';
-const okInk = '#34d399';
-const hit = 'rgb(45 212 191 / .26)';
-const out = 'rgb(251 113 133 / .26)';
+const ui = surfaces.light;
+const teal = '#0d9488';
+const tealInk = '#0f766e';
+const rose = '#e11d48';
+const okInk = '#047857';
+const hit = 'rgb(20 184 166 / .16)';
+const out = 'rgb(244 63 94 / .14)';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const merge = 'cubic-bezier(.52,.18,.25,1)';
 const popIn = 'linear(0, 0.007 1.5%, 0.033 3.3%, 0.078 5%, 0.14 6.8%, 0.216 8.5%, 0.305 10.3%, 0.709 17.3%, 0.863 20.3%, 0.936 22%, 0.987 23.5%, 1.03 25.3%, 1.052 26.8%, 1.06 28.2%, 1.06 38.3%, 1.015 67.5%, 1)';
@@ -60,7 +61,7 @@ function build({ name, width, height, origin, k, minPx, sku, log }: Layout) {
   const end = (i: number, side: 1 | -1): Vec3 => [0, y(i) + (side * size) / 2, wz];
 
   for (let i = 0; i < houses.length - 1; i++) {
-    s.wire({ id: `w-${i}`, points: [end(i, 1), end(i + 1, -1)], stroke: 'rgb(255 255 255 / .18)', width: 1.25 });
+    s.wire({ id: `w-${i}`, points: [end(i, 1), end(i + 1, -1)], stroke: ui.wire, width: 1.25 });
     s.wire({ id: `f-${i}`, points: [end(i, 1), end(i + 1, -1)], stroke: 'none' });
     s.wire({ id: `b-${i}`, points: [end(i + 1, -1), end(i, 1)], stroke: 'none' });
     s.pulse({ id: `pf-${i}`, wire: `f-${i}`, color: teal, length: 0.3 });
@@ -71,19 +72,19 @@ function build({ name, width, height, origin, k, minPx, sku, log }: Layout) {
     const at = top(i);
     const r = size * 0.18;
     s.group(`${w.id}-g`, () => {
-      s.slab({ id: w.id, at, size: [size, size], height: h, radius: r, top: ui.top, side: i === order ? paints.gradient(s, ramps.teal) : paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+      s.slab({ id: w.id, at, size: [size, size], height: h, radius: r, top: ui.top, side: i === order ? paints.gradient(s, ramps.teal) : paints.brushed(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: i === order ? 'rgb(15 118 110 / .35)' : line });
       s.face({ id: `${w.id}-hit`, at, size: [size, size], radius: r, fill: hit });
       if (i === order || i === from) s.face({ id: `${w.id}-out`, at, size: [size, size], radius: r, fill: out });
-      s.text({ id: `${w.id}-name`, at: [size / 2 - 12 * k, y(i), 0], text: w.id, size: small, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
-      w.counts.forEach((c, j) => s.text({ id: `${w.id}-c${j}`, at: [2 * k, y(i) - 4 * k, 0], text: c, size: big, weight: 600, font: 'sans', color: '#ececef', on: 'top', anchor: 'middle' }));
-      s.text({ id: `${w.id}-s0`, at: [2 * k, y(i) + 28 * k, 0], text: 'Σ 480', size: small, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+      s.text({ id: `${w.id}-name`, at: [size / 2 - 12 * k, y(i), 0], text: w.id, size: small, color: ui.muted, on: 'top', along: 'y', anchor: 'middle' });
+      w.counts.forEach((c, j) => s.text({ id: `${w.id}-c${j}`, at: [2 * k, y(i) - 4 * k, 0], text: c, size: big, weight: 600, font: 'sans', color: ui.ink, on: 'top', anchor: 'middle' }));
+      s.text({ id: `${w.id}-s0`, at: [2 * k, y(i) + 28 * k, 0], text: 'Σ 480', size: small, color: ui.muted, on: 'top', anchor: 'middle' });
       s.text({ id: `${w.id}-s1`, at: [2 * k, y(i) + 28 * k, 0], text: 'Σ 468', size: small, color: tealInk, on: 'top', anchor: 'middle' });
     });
   });
 
   const box = (id: string, i: number, ramp: typeof ramps.teal | typeof ramps.rose) => {
     s.group(`${id}-move`, () => {
-      s.slab({ id, at: [seat(i)[0], seat(i)[1], h + crateH], size: [crate, crate], height: crateH, radius: 7 * k, top: ramp[3], side: paints.gradient(s, ramp), edge: 'rgb(255 255 255 / .5)', shadow: false });
+      s.slab({ id, at: [seat(i)[0], seat(i)[1], h + crateH], size: [crate, crate], height: crateH, radius: 7 * k, top: ramp[3], side: paints.gradient(s, ramp), edge: ui.edge, outline: `${ramp[1]}66`, shadow: false });
     });
     s.pivot(id, [seat(i)[0], seat(i)[1], h]);
   };
@@ -196,7 +197,7 @@ export const example: Example = {
   intent: 'flow',
   layout: 'diagonal',
   useCase: 'Inventory',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build({ name: 'stock-sm', width: 390, height: 500, origin: [204, 196], k: 0.66, minPx: narrowest, sku: [24, 40], log: { at: [24, 384], gap: 38 } }),
