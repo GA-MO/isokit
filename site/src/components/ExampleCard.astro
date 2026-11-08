@@ -32,7 +32,7 @@ const span = example.layout === 'wide' || example.level === 'complex';
     }
   </div>
   <div class="mt-auto flex flex-col gap-3 border-t border-surface-line p-5 sm:px-7 sm:py-6">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
       <div class="min-w-0">
         <h4 class="flex gap-2 text-base leading-snug font-medium text-balance">
           <span class="font-mono text-surface-accent" aria-hidden="true">&gt;</span>
@@ -45,7 +45,7 @@ const span = example.layout === 'wide' || example.level === 'complex';
         data-prompt-toggle
         aria-expanded="false"
         aria-controls={panel}
-        class="group inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-surface-line px-3 text-xs font-medium text-surface-muted transition-colors duration-150 hover:border-surface-muted hover:text-surface-ink aria-expanded:border-surface-muted aria-expanded:text-surface-ink"
+        class="group ml-5 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full sm:ml-0 border border-surface-line px-3 text-xs font-medium text-surface-muted transition-colors duration-150 hover:border-surface-muted hover:text-surface-ink aria-expanded:border-surface-muted aria-expanded:text-surface-ink"
       >
         Full prompt
         <svg viewBox="0 0 12 12" class="size-3 transition-transform duration-300 ease-settle group-aria-expanded:rotate-180" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>

@@ -39,7 +39,7 @@ const hops = [
 ] as const;
 const hopDur = 0.95;
 
-function build({ name, width, height, origin, k, wide, stops, along, reach, live }: Layout) {
+function build({ name, width, height, origin, k, wide, stops, along, reach, live }: Layout, standalone = false) {
   const s = new Scene({ name, width, height, origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
   const at = (i: number, z = 0): Vec3 => [stops[i]! * along[0] * k, stops[i]! * along[1] * k, z];
   const edge = (i: number, side: 1 | -1, z: number): Vec3 => {
@@ -85,8 +85,17 @@ function build({ name, width, height, origin, k, wide, stops, along, reach, live
   const commitTop = s.project(at(0, 0));
   const prodTop = s.project(at(3, 0));
   const minPx = wide ? 721 : narrowest;
-  s.label({ id: 'sha', at: { screen: [fitX(commitTop[0] + 44 * k, 'main · 4f2a9c1', width, minPx), commitTop[1] - 56 * k] }, text: 'main · 4f2a9c1', size: 13, anchor: 'bottom' });
-  s.label({ id: 'live', at: { screen: [fitX(prodTop[0] + live[0] * k, '✓ live · v2.4.1', width, minPx), prodTop[1] + live[1] * k] }, html: `<span style="color:${done}">✓</span> live · v2.4.1`, size: 13, anchor: wide ? 'bottom' : 'top' });
+  const sha: Vec2 = [fitX(commitTop[0] + 44 * k, 'main · 4f2a9c1', width, minPx), commitTop[1] - 56 * k];
+  const shipped: Vec2 = [fitX(prodTop[0] + live[0] * k, '✓ live · v2.4.1', width, minPx), prodTop[1] + live[1] * k];
+  if (standalone) {
+    const pill = { fill: ui.label.bg, stroke: ui.label.border, radius: ui.label.radius };
+    const half = 12.5;
+    s.text({ id: 'sha', at: { screen: [sha[0], sha[1] - half] }, text: 'main · 4f2a9c1', size: 13, color: ui.ink, pill });
+    s.text({ id: 'live', at: { screen: [shipped[0], shipped[1] + (wide ? -half : half)] }, text: '✓ live · v2.4.1', size: 13, color: done, pill });
+  } else {
+    s.label({ id: 'sha', at: { screen: sha }, text: 'main · 4f2a9c1', size: 13, anchor: 'bottom' });
+    s.label({ id: 'live', at: { screen: shipped }, html: `<span style="color:${done}">✓</span> live · v2.4.1`, size: 13, anchor: wide ? 'bottom' : 'top' });
+  }
 
   stages.forEach((st, i) => s.dropIn(`${st.id}-g`, 0.1 + i * 0.083));
   s.dropIn('pkg', 0.55);
@@ -130,10 +139,10 @@ function build({ name, width, height, origin, k, wide, stops, along, reach, live
   return s;
 }
 
-const arts = (tag = '') =>
+const arts = (tag = '', standalone = false) =>
   art(
-    build({ name: `deploy-sm${tag}`, width: 390, height: 380, origin: [186, 180], k: 0.72, wide: false, stops: [-250, -90, 70, 250], ...chain, live: [0, 92] }),
-    build({ name: `deploy-lg${tag}`, width: 1200, height: 400, origin: [600, 232], k: 1.45, wide: true, stops: [-323, -133, 65, 288], ...strip, live: [0, -100] }),
+    build({ name: `deploy-sm${tag}`, width: 390, height: 380, origin: [186, 180], k: 0.72, wide: false, stops: [-250, -90, 70, 250], ...chain, live: [0, 92] }, standalone),
+    build({ name: `deploy-lg${tag}`, width: 1200, height: 400, origin: [600, 232], k: 1.45, wide: true, stops: [-323, -133, 65, 288], ...strip, live: [0, -100] }, standalone),
     720,
   );
 
@@ -152,6 +161,6 @@ export const example: Example = {
   art: arts(),
 };
 
-export const inContext = arts('-ctx');
+export const inContext = arts('-svg', true);
 
 export default page(example);

@@ -1,11 +1,12 @@
 ---
 import { examples } from '../../../skill/examples/catalog';
 import Art from './Art.astro';
+import CopyButton from './CopyButton.astro';
 
 const spots = examples.filter(e => e.level === 'spot');
 ---
 
-<section id="spots" aria-labelledby="spots-title" class="border-t border-line py-16 sm:py-20">
+<section id="spots" aria-labelledby="spots-title" class="border-t border-line pt-16 sm:pt-20">
   <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
       <h2 id="spots-title" class="text-xl font-semibold tracking-tight text-balance">Also draws small spot illustrations for feature lists and empty states.</h2>
@@ -18,7 +19,10 @@ const spots = examples.filter(e => e.level === 'spot');
             <div class="p-1.5">
               <Art art={e.art} />
             </div>
-            <p class="mt-auto px-3 pb-3 text-xs leading-snug text-surface-muted">{e.ask}</p>
+            <div class="mt-auto flex flex-col items-start gap-2 px-3 pb-3">
+              <p class="text-xs leading-snug text-surface-muted">{e.ask}</p>
+              <CopyButton text={e.prompt} label={`Copy the prompt for ${e.title}`} />
+            </div>
           </li>
         ))
       }

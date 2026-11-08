@@ -1,4 +1,8 @@
-import type { Example } from './shared';
+import type { Art, Example } from './shared';
+import { inContext as abTestInContext } from './ab-test';
+import { inContext as checkoutInContext } from './checkout-payment';
+import { inContext as ciDeployInContext } from './ci-deploy';
+import { inContext as etlInContext } from './etl-pipeline';
 import { example as ciDeploy } from './ci-deploy';
 import { example as notifications } from './notifications';
 import { example as fileUpload } from './file-upload';
@@ -104,3 +108,10 @@ export const examples: readonly Example[] = [
   ragAnswer,
   drillDown,
 ];
+
+export const contexts = {
+  landing: checkoutInContext,
+  docs: etlInContext,
+  deck: abTestInContext,
+  readme: ciDeployInContext,
+} as const satisfies Record<string, Art>;

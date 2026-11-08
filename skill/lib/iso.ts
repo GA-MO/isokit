@@ -268,6 +268,7 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const escAttr = (s: string) => esc(s).replace(/"/g, '&quot;');
 const cls = (c: string | undefined) => (c ? ` class="${escAttr(c)}"` : '');
 const ms = (t: number) => Math.round(t * 1000) / 1000;
+const frac = (x: number) => Math.round(x * 1e5) / 1e5;
 const kebab = /^[a-z][a-z0-9-]*$/;
 
 function rgb(c: string): readonly [number, number, number] {
@@ -958,10 +959,10 @@ export class Scene {
       for (const s of segs) {
         if (ms(s.start + s.dur) > total) throw new Error(`iso: ${target}.${prop} ends at ${fmt(s.start + s.dur)}s, past the ${fmt(total)}s ${phase}`);
         if (s.start < end) throw new Error(`iso: ${target}.${prop} segments overlap at ${fmt(s.start)}s`);
-        const o0 = Math.min(1, Math.max(Number(kf[kf.length - 1]!.offset), s.start / total));
+        const o0 = Math.min(1, Math.max(Number(kf[kf.length - 1]!.offset), frac(s.start / total)));
         if (o0 > 0) kf.push({ offset: o0, [prop]: v(prev), easing: 'linear' });
         kf.push({ offset: o0, [prop]: v(s.from), easing: s.easing });
-        kf.push({ offset: Math.min(1, Math.max(o0, ms(s.start + s.dur) / total)), [prop]: v(s.to), easing: 'linear' });
+        kf.push({ offset: Math.min(1, Math.max(o0, frac(ms(s.start + s.dur) / total))), [prop]: v(s.to), easing: 'linear' });
         prev = s.to;
         end = ms(s.start + s.dur);
       }
@@ -984,7 +985,7 @@ export class Scene {
       tracks.push({
         target: this.ref(a.target),
         prop: a.prop,
-        keyframes: a.values.map((v, i) => ({ offset: i / last, [a.prop]: this.value(a.target, a.prop, v), easing: a.easing })),
+        keyframes: a.values.map((v, i) => ({ offset: frac(i / last), [a.prop]: this.value(a.target, a.prop, v), easing: a.easing })),
         duration: a.period * 1000,
         delay: 0,
         repeat: true,

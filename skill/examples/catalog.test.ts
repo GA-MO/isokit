@@ -1,10 +1,11 @@
 import { expect, test } from 'bun:test';
-import { examples } from './catalog';
+import { contexts, examples } from './catalog';
 import { galleries } from './material-gallery';
-import { hero } from './hero';
+import { hero, readme } from './hero';
 import { intents, layouts } from './shared';
 
-const arts = [...examples.map(e => e.art), hero, ...galleries.map(g => g.art)];
+const arts = [...examples.map(e => e.art), hero, ...galleries.map(g => g.art), ...Object.values(contexts)];
+const variants = [...arts.flatMap(a => [a.compact, ...(a.wide ? [a.wide] : [])]), readme.wide, readme.compact];
 
 test('every intent group has at least five scenes to compare', () => {
   const thin = intents.filter(i => examples.filter(e => e.intent === i).length < 5);
@@ -19,7 +20,7 @@ test('at most one scene in five sits on a dark surface, and none on the plain da
 test('slugs and scene names are unique, so each scene file and id prefix is its own', () => {
   const slugs = examples.map(e => e.slug);
   expect(new Set(slugs).size).toBe(slugs.length);
-  const names = arts.flatMap(a => [a.compact.name, ...(a.wide ? [a.wide.name] : [])]);
+  const names = variants.map(v => v.name);
   expect(new Set(names).size).toBe(names.length);
 });
 
@@ -41,4 +42,9 @@ test('every layout but the single object has at least three scenes, and only spo
 test('a wide card has a wide scene of about 3:1', () => {
   const off = examples.filter(e => e.layout === 'wide' && !(e.art.wide && e.art.wide.width / e.art.wide.height >= 2.6 && e.art.wide.width / e.art.wide.height <= 3.4)).map(e => `${e.slug} ${e.art.wide ? (e.art.wide.width / e.art.wide.height).toFixed(2) : 'none'}`);
   expect(off).toEqual([]);
+});
+
+test('the README context exports as one standalone SVG at both sizes', () => {
+  const { compact, wide } = contexts.readme;
+  for (const v of [compact, ...(wide ? [wide] : [])]) expect(v.scene.exportSvg({ title: 'readme' })).toStartWith('<svg');
 });

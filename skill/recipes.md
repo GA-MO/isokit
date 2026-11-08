@@ -120,7 +120,8 @@ These recipes never use an oscillating spring. What reads as "spring" is two thi
 ## Surfaces
 
 - Dark sites: tops near the page colour with a light `grain` (0.03 to 0.08), a 1 px rim a little lighter, colour only on the sides (`paints.gradient`, brushed metal, stripes, neon). Glow is a blurred copy of the shape under it, not a shadow.
-- Light sites: white tops, white or brand sides, 0.6 to 1 px dark outlines (`slab({ outline, shade: false })`) for line art.
+- Light sites: white tops, white or brand sides, 0.6 to 1 px dark outlines (`slab({ outline, shade: false })`) for line art. Neutral objects get brushed silver; only the object that acts gets a colour ramp. Pulses at a saturated mid tone (`#7c3aed`, `#0284c7`), text on white tops in dark ink or a deep accent.
+- Night (`surfaces.night`, at most one scene in five): a deep indigo backdrop, never a black box on black. Neutral boxes in `paints.brushed(s, ramps.steel)`, the acting object in a colour ramp or glass, `nightFloor()` under the composition, and one static radial halo in the accent under the hero object whose opacity alone animates.
 - A logo or mark on a top face is printed through the face, never rotated on screen: draw it upright in its own units and place it with `s.plane(at, '<g transform="rotate(-90)">' + mark + '</g>')`, so it reads up-right along the face's -y edge like `text({ on: 'top', along: 'y' })`. A screen rotation keeps the mark's right angles and the eye catches it at once.
 - Front-facing tiles (badges): a rounded square, radius 11 % of its side, turned 45 deg and squashed in x to about 0.57; the depth is the face slid sideways by 11 to 12 % of the side, and the side is the hull of the face and the slid face (flat ridges, tight corners), never a rounded polygon through the corners. Ghost copies reuse that hull.
 - Side colour ramps come in bands measured dark to bright; a pale stop in the middle reads as a soft plastic bevel.

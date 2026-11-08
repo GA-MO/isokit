@@ -709,3 +709,15 @@ test('a scene a script holds stays live off screen, and parks once released', ()
 test('scene roots skip rendering off screen only where the clip margin keeps edge labels whole', () => {
   expect(isoCss).toContain('@supports (overflow-clip-margin:1px){.iso{content-visibility:auto;overflow-clip-margin:32px}}');
 });
+
+test('keyframe offsets carry at most five decimals, so a loop of any length stays small on the page', () => {
+  const s = new Scene({ name: 'offsets', width: 200, height: 200 });
+  s.slab({ id: 'a', at: [0, 0, 0], size: [40, 40], height: 10, top: '#fff', side: { kind: 'flat', color: '#999' } });
+  s.at('a', 'opacity', 1.13, 0.37, 0, 1);
+  s.ambient('a', 'scale', 1.7, [1, 1.1, 1.05, 1], 'linear');
+  s.loop(18.23, 2);
+  const offsets = s.motion().tracks.flatMap(t => t.keyframes.map(k => Number(k.offset)));
+  expect(offsets.length).toBeGreaterThan(4);
+  expect(offsets.filter(o => (String(o).split('.')[1] ?? '').length > 5)).toEqual([]);
+  expect(offsets.some(o => o > 0 && o < 1)).toBe(true);
+});

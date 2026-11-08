@@ -1,13 +1,9 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { examples } from '../../../../skill/examples/catalog';
+import { contexts, examples } from '../../../../skill/examples/catalog';
 import { galleries } from '../../../../skill/examples/material-gallery';
-import { inContext as abTest } from '../../../../skill/examples/ab-test';
-import { inContext as checkout } from '../../../../skill/examples/checkout-payment';
-import { inContext as ciDeploy } from '../../../../skill/examples/ci-deploy';
-import { inContext as etl } from '../../../../skill/examples/etl-pipeline';
 
 export const getStaticPaths = (() =>
-  [...examples.map(e => e.art), ...galleries.map(g => g.art), abTest, checkout, ciDeploy, etl]
+  [...examples.map(e => e.art), ...galleries.map(g => g.art), contexts.landing, contexts.docs, contexts.deck]
     .flatMap(a => (a.wide ? [a.compact, a.wide] : [a.compact]))
     .map(v => ({ params: { name: v.name }, props: { markup: v.markup } }))) satisfies GetStaticPaths;
 

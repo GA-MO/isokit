@@ -19,9 +19,9 @@ const chip =
       </p>
     </div>
 
-    <div class="sticky top-14 z-40 -mx-5 mt-8 bg-page/90 px-5 backdrop-blur-md sm:mx-0 sm:px-0">
-      <div class="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0" role="group" aria-label="Show scenes that explain">
-        <div class="flex gap-2 py-3 sm:flex-wrap">
+    <div data-filters class="sticky top-14 z-40 -mx-5 mt-8 border-b border-line bg-page px-5 sm:-mx-8 sm:px-8">
+      <div class="-mx-5 overflow-x-auto px-5 sm:-mx-8 sm:px-8" role="group" aria-label="Show scenes that explain">
+        <div class="flex gap-2 py-3 lg:flex-wrap">
           <button type="button" data-filter="" aria-pressed="true" class={chip}>All</button>
           {
             groups.map(g => (
@@ -66,6 +66,7 @@ const chip =
     for (const chip of root.querySelectorAll<HTMLButtonElement>('[data-filter]')) chip.setAttribute('aria-pressed', String(chip === button));
     for (const group of root.querySelectorAll<HTMLElement>('[data-group]')) group.hidden = filter !== '' && group.dataset.group !== filter;
     const top = root.querySelector<HTMLElement>('[data-group]:not([hidden])');
-    if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView({ block: 'start' });
+    const bar = root.querySelector<HTMLElement>('[data-filters]');
+    if (top && top.getBoundingClientRect().top < (bar?.getBoundingClientRect().bottom ?? 0)) top.scrollIntoView({ block: 'start' });
   });
 </script>

@@ -67,23 +67,24 @@ interface Layout {
   ground: { at: Vec2; size: number; pitch: number };
 }
 
-const T = {
-  hint: 0.3,
-  type: 0.4,
-  sent: 0.4 + prompt.length * typeStep + 0.25,
-  spin: 2.55,
-  crossfade: 3.55,
-  lean: 3.8,
-  fall: 4.1,
-  landed: 4.73,
-  slide: 5.25,
-  pops: 6.7,
-  pool: 9.6,
-  live: 11.9,
-  collapse: 17.9,
-  end: 20,
-  still: 15.5,
-} as const;
+const beats = (lead: number) => ({
+  hint: 0.3 - lead,
+  type: 0.4 - lead,
+  sent: 0.4 + prompt.length * typeStep + 0.25 - lead,
+  spin: 2.55 - lead,
+  crossfade: 3.55 - lead,
+  lean: 3.8 - lead,
+  fall: 4.1 - lead,
+  landed: 4.73 - lead,
+  slide: 5.25 - lead,
+  pops: 6.7 - lead,
+  pool: 9.6 - lead,
+  live: 11.9 - lead,
+  collapse: 17.9 - lead,
+  end: 20 - lead,
+  still: 15.5 - lead,
+});
+const siteLead = beats(0).sent - 0.35;
 
 const num = (v: number) => Number(v.toFixed(2));
 
@@ -119,6 +120,8 @@ function build(l: Layout) {
   s.face({ id: 'ground', at: groundAt, size: [ground.size, ground.size], radius: 0, fill: dots });
   s.face({ id: 'ground-fade', at: groundAt, size: [ground.size * 1.02, ground.size * 1.02], radius: 0, fill: vignette });
   const card = l.card;
+  const T = beats(card ? 0 : siteLead);
+  if (!card) s.introUntil(siteLead);
   const charW = (card?.text ?? 0) * 0.6;
   const line: Vec2 = card ? [card.x + 20, card.y + card.h - 26] : [0, 0];
   if (card) {
@@ -488,14 +491,14 @@ const lift = (l: Layout, name: string, dy: number, trim: number, feed: Vec2, cou
   feed,
 });
 
-const wide = build(lift(wideLayout, 'hero-lg', 90, 30, [0, 60], [700, 30]));
+const wide = build(lift(wideLayout, 'hero-lg', 90, 30, [0, 140], [700, 30]));
 const compact = build(lift(compactLayout, 'hero-sm', 70, 40, [195, 0], [374, 24]));
 export const readme = { wide: build(wideLayout), compact: build({ ...compactLayout, name: 'hero-readme-sm' }) };
 
 const tilt = `<script type="module">
 const fine = matchMedia('(hover: hover) and (pointer: fine)');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-const rest = [${T.live}, ${num(T.collapse - 0.1)}];
+const rest = [${num(beats(siteLead).live)}, ${num(beats(siteLead).collapse - 0.1)}];
 const max = 3.5;
 const bind = (wrap) => {
   if (wrap.dataset.tilt) return;

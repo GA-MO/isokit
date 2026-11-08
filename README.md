@@ -5,7 +5,7 @@
 <h1 align="center">isokit</h1>
 
 <p align="center"><b>Explain how your product works in one sentence. Get an animated diagram for your landing page.</b><br>
-A Claude Code skill that turns one sentence about your system into an animated isometric diagram: one SVG file, no dependencies, yours to edit.<br>
+A Claude Code skill that turns one sentence about your system into an animated isometric diagram: plain SVG with a 1.7 kB player, no dependencies, yours to edit.<br>
 <a href="https://ga-mo.github.io/isokit/">Live showcase</a> · <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#the-kit">The kit</a> · <a href="#numbers">Numbers</a></p>
 
 It is not an animation library or a hosted service. You describe how your product works in a sentence. The `iso` skill storyboards it into three to six beats from measured motion recipes and draws it with a small kit: rounded slabs, wires that draw themselves, light pulses, text, and a loop that returns to its first frame. The scene is plain SVG with CSS and WAAPI motion. It needs no animation library, pauses off screen and shows a still frame for reduced motion. The image above is the showcase hero: one sentence typed to Claude, and the diagram drawn from it, exported by the kit as one SVG that animates with CSS alone, so it plays right here in the README. Paste a scene like it into a landing page hero, a docs page, a pitch deck or a README.
