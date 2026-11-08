@@ -200,48 +200,48 @@ There is also the hero (`readme` holds its README copy with the prompt drawn in 
 
 ## Numbers
 
-All numbers were measured on 2026-11-07 on an Apple silicon Mac with Chrome. 1 kB = 1024 bytes.
+All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome. 1 kB = 1024 bytes.
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero inline, 61 empty scene boxes, folded prompts, the install tabs) | 563.7 kB | 51.9 kB |
-| Showcase CSS | 25.7 kB | 5.8 kB |
+| Showcase `index.html` (the hero inline, 60 empty scene boxes, folded prompts, the install tabs) | 499.0 kB | 49.0 kB |
+| Showcase CSS | 33.5 kB | 7.1 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.5 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
-| All 115 scene files in `site/dist/scenes/` (compact and wide copies) | 14150.0 kB | 1110.0 kB |
-| Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
+| All 113 scene files in `site/dist/scenes/` (compact and wide copies) | 12438.5 kB | 971.1 kB |
+| Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
-| `docs/svg/hero.svg` (the image at the top) | 88.8 kB | 10.0 kB |
+| `docs/svg/hero.svg` (the image at the top) | 94.4 kB | 10.1 kB |
 
-The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (61), not all 115.
+The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60), not all 113.
 
 Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load; the frame rate does not. The hero flashes with `fill` and moves pulses by dash offset, which only repaint, and has no pan or wobble on large groups, because an opacity or transform track on any SVG element re-layerizes the page every frame:
 
 | Viewport | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy |
 |---|---|---|---|---|---|
-| 393 px (phone) | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 22.9 % (18.3 to 23.5) |
-| 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 24.9 % (24.2 to 26.9) |
+| 393 px (phone) | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 21.4 % (18.8 to 22.2) |
+| 1280 px | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 21.7 % (19.6 to 23.2) |
 
-The whole showcase at rest, after scrolling through it once so all 63 scenes are mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s, median of five runs per side alternated with the build before this change, range in brackets. Before, every mounted scene stayed painted and kept its paused animations (1,594 in effect at 1280 px in one run), and Chrome walked all of them every frame. Now a scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. Every median is under 25 %; two single runs went over (25.6 % at 1280 px, 50 %, and 26.4 % at 393 px, 35 %), because a 4 s window catches a busier or quieter part of a scene's loop:
+The whole showcase at rest, after scrolling through it once so every scene has mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s at 1x CPU, alternated with the previous dark showcase (three runs per side at 1280 px, two at 393 px), median with the range in brackets. A scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. The two pages differ in layout, so a stop lands on different scenes in each:
 
-| Stop | 1280 px, DPR 2 | 393 px, DPR 3 |
+| Stop | 1280 px, DPR 2: before → now | 393 px, DPR 3: before → now |
 |---|---|---|
-| 0 % (hero) | 35.2 → 13.0 % (8.8 to 13.6) | 29.0 → 15.1 % (9.8 to 17.7) |
-| 20 % | 99.7 → 19.0 % (16.7 to 23.2) | 56.1 → 17.0 % (13.0 to 18.4) |
-| 35 % | 69.9 → 15.9 % (9.9 to 20.1) | 72.8 → 17.6 % (11.6 to 26.4) |
-| 50 % | 91.8 → 23.1 % (16.3 to 25.6) | 94.5 → 22.8 % (18.5 to 23.4) |
-| 60 % | 47.6 → 12.4 % (12.0 to 21.9) | 93.9 → 15.1 % (14.6 to 21.9) |
-| 80 % | 16.1 → 7.3 % (5.7 to 8.1) | 33.3 → 20.2 % (17.8 to 22.5) |
+| 0 % (hero) | 16.7 → 9.9 % (8.9 to 10.2) | 9.4 to 13.7 → 1.7 % (the phone hero starts below the fold) |
+| 20 % | 25.6 → 17.1 % (15.0 to 23.5) | 15.0 to 15.7 → 12.6 to 16.4 % |
+| 35 % | 14.3 → 21.7 % (20.0 to 22.5) | 10.9 to 20.6 → 13.7 to 19.4 % |
+| 50 % | 17.2 → 16.5 % (14.6 to 21.6) | 16.1 to 19.9 → 15.1 to 18.4 % |
+| 60 % | 13.0 → 20.4 % (19.2 to 26.5) | 17.3 to 31.4 → 8.2 to 22.8 % |
+| 80 % | 5.5 → 6.3 % (4.1 to 8.9) | 14.2 to 20.4 → 4.5 to 8.5 % |
 
-With the CPU throttled 4x the same stops go from 27 to 96 % down to 7 to 50 % at 1280 px, and from 42 to 99.9 % down to 14 to 65 % at 393 px (medians). Scrolling the whole 393 px page in 5 s at 4x drops 0 to 5 frames past 20 ms in most runs (up to 28 in a few later runs on a busy machine), against 70 to 93 before. The page height stays the same while scenes mount and park (34,250 px at 1280, 49,558 px at 393), and the layout shift score stays at 0.0001 or under. What is left is the scenes in view: Chrome's trace at 50 % shows layerize, style and paint for their 114 running tracks. In WebKit (Playwright, iPhone 15 profile, a probe that measures how much of the main thread a script can still get, three runs) the same stops go from 58 to 85 % busy down to 13 to 43 %, with scenes still loading and playing when scrolled to.
+The worst median is 21.7 % now against 25.6 % before. The page is 28,968 px tall at 1280 and 40,759 px at 393, and the layout shift score stays at 0.0001.
 
 How they were measured:
 
 - Sizes: `bun run build && bun run size` at the repo root. `site/scripts/size.ts` gzips each file in `site/dist` at level 9 and sums the inline module scripts and the scene files.
 - Runtime rows: `bun build skill/lib/entry.ts --minify --target browser > out.js`, then `wc -c < out.js` and `gzip -9 -c out.js | wc -c`. The `mountLazy()` row bundles a one-line entry that calls it.
 - SVG rows: `bun run readme:svg`, which writes `docs/svg/` and prints each file's size.
-- Whole page at rest: `node skill/scripts/page-idle.mjs page=<built showcase URL> width=1280 dpr=2` and `width=393 dpr=3 scroll=4`. It scrolls the page through once, then at each stop reads `Performance.getMetrics` over 4 s with the CPU at 1x and 4x, counts frames over 20 ms during a 5 s scroll, and sums layout shift.
+- Whole page at rest: `node skill/scripts/page-idle.mjs page=<built showcase URL> width=1280 dpr=2 throttle=1` and `width=393 dpr=3 throttle=1`, run against each build in turn. It scrolls the page through once, then at each stop reads `Performance.getMetrics` over 4 s, and sums layout shift.
 - Hero motion: `node skill/scripts/perf.mjs page=<built showcase URL> width=393 throttle=4 seconds=20 selector='#top .iso-compact'` (and `width=1280 selector='#top .iso-wide'`). It counts `requestAnimationFrame` frames, reads long tasks, and takes main-thread time from Chrome's `Performance.getMetrics`.
 
 Fonts are not counted. The site self-hosts Inter and Fira Code as `woff2`. The SVGs in `docs/` fall back to the system's sans and monospace fonts.

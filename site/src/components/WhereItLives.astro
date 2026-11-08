@@ -55,7 +55,7 @@ const dots = [0, 1, 2];
             <span class={url}>docs.tidewell.dev/sync</span>
           </div>
           <div class="flex">
-            <ul class="hidden w-32 shrink-0 flex-col gap-1.5 border-r border-line p-4 text-xs text-muted @md:flex" aria-hidden="true">
+            <ul class="hidden w-32 shrink-0 flex-col gap-1.5 border-r border-line p-4 text-xs text-muted @xl:flex" aria-hidden="true">
               <li>Overview</li>
               <li>Quickstart</li>
               <li class="font-medium text-accent">How sync works</li>
@@ -85,9 +85,9 @@ const dots = [0, 1, 2];
             {dots.map(() => <span class="size-2 rounded-full bg-line-strong" />)}
             <span class="ml-3 text-xs text-muted">Vantora · Series A.deck</span>
           </div>
-          <div class="flex flex-1 items-center p-3 @md:p-8">
-          <div class="grid w-full items-center gap-2 rounded-lg bg-page p-4 shadow-md @md:grid-cols-5 @md:p-7">
-            <div class="flex h-full flex-col justify-between gap-3 @md:col-span-2">
+          <div class="flex flex-1 items-center @sm:p-3 @2xl:p-8">
+          <div class="grid w-full items-center gap-2 bg-page p-3 shadow-md @sm:rounded-lg @2xl:grid-cols-5 @2xl:p-7">
+            <div class="flex h-full flex-col justify-between gap-3 @2xl:col-span-2">
               <span class="flex items-center gap-1.5 text-xs font-semibold" aria-hidden="true"><span class="size-3 rounded-full bg-accent" />Vantora</span>
               <div>
                 <p class="text-sm leading-tight font-semibold tracking-tight text-balance @md:text-xl">Variant B wins sign-ups by 4.2 %.</p>
@@ -95,7 +95,7 @@ const dots = [0, 1, 2];
               </div>
               <span class="font-mono text-xs text-muted" aria-hidden="true">07</span>
             </div>
-            <div class="@md:col-span-3">
+            <div class="@2xl:col-span-3">
               <Art art={contexts.deck} />
             </div>
           </div>
