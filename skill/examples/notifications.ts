@@ -1,8 +1,8 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#a78bfa';
+const ui = surfaces.light;
+const accent = '#7c3aed';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 
 const channels = [
@@ -27,15 +27,15 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   });
 
   s.slab({ id: 'core', at: core, size: [coreSize, coreSize], height: 28 * k, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.violet), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'core-glow', at: core, size: [coreSize, coreSize], radius: 18 * k, fill: 'rgb(167 139 250 / .28)' });
-  s.text({ id: 'core-name', at: [core[0], core[1], 0], text: 'event', size: 12, color: '#c4b5fd', on: 'top', anchor: 'middle' });
+  s.face({ id: 'core-glow', at: core, size: [coreSize, coreSize], radius: 18 * k, fill: 'rgb(139 92 246 / .2)' });
+  s.text({ id: 'core-name', at: [core[0], core[1], 0], text: 'event', size: 12, color: '#5b21b6', on: 'top', anchor: 'middle' });
   s.label({ id: 'event', at: [core[0], core[1], 74 * k], text: 'order.shipped', size: 13 });
 
   channels.forEach(c => {
     const at: Vec3 = [chX, c.y * k, 0];
-    s.slab({ id: c.id, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-    s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(167 139 250 / .3)' });
-    s.text({ id: `${c.id}-name`, at, text: c.id, size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+    s.slab({ id: c.id, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
+    s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(139 92 246 / .18)' });
+    s.text({ id: `${c.id}-name`, at, text: c.id, size: 11, color: '#3f3f46', on: 'top', anchor: 'middle' });
     if (latency) {
       const [x, y] = s.project([chX + chSize / 2 + 18, c.y * k - 18, 0]);
       const text = `${c.id} · ${c.ms}`;
@@ -81,7 +81,7 @@ export const example: Example = {
   intent: 'flow',
   layout: 'radial',
   useCase: 'Messaging',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('notify-sm', 390, 380, [205, 190], 0.82, false), build('notify-lg', 720, 400, [330, 196], 1, true), 520),
 };
