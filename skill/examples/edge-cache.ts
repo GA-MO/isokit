@@ -1,9 +1,9 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
 
-const ui = surfaces.dark;
-const hit = '#38bdf8';
-const miss = '#fbbf24';
+const ui = surfaces.light;
+const hit = '#0d9488';
+const miss = '#d97706';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const wireZ = -8;
@@ -104,37 +104,37 @@ function build(l: Layout) {
 
   const sh = l.serverSize;
   s.group('server-g', () => {
-  s.slab({ id: 'server', at: l.server, size: [sh, sh], height: 80 * k * (l.name.endsWith('sm') ? 0.85 : 1), radius: sh * 0.16, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'server-glow', at: l.server, size: [sh, sh], radius: sh * 0.16, fill: 'rgb(251 191 36 / .22)' });
-  s.text({ id: 'server-name', at: l.server, text: 'origin', size: 12, color: '#a1a1aa', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'server', at: l.server, size: [sh, sh], height: 80 * k * (l.name.endsWith('sm') ? 0.85 : 1), radius: sh * 0.16, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
+  s.face({ id: 'server-glow', at: l.server, size: [sh, sh], radius: sh * 0.16, fill: 'rgb(245 158 11 / .2)' });
+  s.text({ id: 'server-name', at: l.server, text: 'origin', size: 12, color: '#52525b', on: 'top', anchor: 'middle' });
   });
 
   const es = l.edgeSize;
   l.edges.forEach((at, i) => {
     const code = codes[i]!;
     s.group(`${code}-g`, () => {
-    s.slab({ id: code, at, size: [es, es], height: 18 * k, radius: es * 0.18, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+    s.slab({ id: code, at, size: [es, es], height: 18 * k, radius: es * 0.18, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
     if (i === near) {
-      s.slab({ id: 'warm', at, size: [es, es], height: 18 * k, radius: es * 0.18, top: '#16232c', side: paints.gradient(s, ramps.sky), grain: 0.06, edge: 'rgb(56 189 248 / .45)' });
-      s.face({ id: 'edge-miss', at, size: [es, es], radius: es * 0.18, fill: 'rgb(251 191 36 / .3)' });
-      s.face({ id: 'edge-hit', at, size: [es, es], radius: es * 0.18, fill: 'rgb(56 189 248 / .4)' });
+      s.slab({ id: 'warm', at, size: [es, es], height: 18 * k, radius: es * 0.18, top: '#f0fdfa', side: paints.gradient(s, ramps.teal), grain: 0.06, edge: ui.edge });
+      s.face({ id: 'edge-miss', at, size: [es, es], radius: es * 0.18, fill: 'rgb(245 158 11 / .22)' });
+      s.face({ id: 'edge-hit', at, size: [es, es], radius: es * 0.18, fill: 'rgb(20 184 166 / .24)' });
     }
-    s.text({ id: `${code}-name`, at, text: code, size: 11, color: i === near ? '#e4e4e7' : '#a1a1aa', on: 'top', anchor: 'middle' });
+    s.text({ id: `${code}-name`, at, text: code, size: 11, color: i === near ? '#115e59' : '#52525b', on: 'top', anchor: 'middle' });
     });
   });
 
   const cs = l.clientSize;
   s.group('client-g', () => {
-  s.slab({ id: 'client', at: l.client, size: [cs, cs], height: 12 * k, radius: cs * 0.2, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'client-glow', at: l.client, size: [cs, cs], radius: cs * 0.2, fill: 'rgb(56 189 248 / .3)' });
-  s.text({ id: 'client-name', at: l.client, text: 'you', size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+  s.slab({ id: 'client', at: l.client, size: [cs, cs], height: 12 * k, radius: cs * 0.2, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge });
+  s.face({ id: 'client-glow', at: l.client, size: [cs, cs], radius: cs * 0.2, fill: 'rgb(20 184 166 / .22)' });
+  s.text({ id: 'client-name', at: l.client, text: 'you', size: 11, color: '#3f3f46', on: 'top', anchor: 'middle' });
   });
 
   s.label({ id: 'get', at: l.get, text: 'GET /hero.jpg', size: 13 });
   const row = (tag: string, color: string, bar: number, ms: string) =>
     `<span style="display:flex;align-items:center;gap:.6em;width:11em"><b style="font-weight:500;color:${color};width:2.6em">${tag}</b><i style="display:block;height:.42em;width:${bar}em;border-radius:1em;background:${color}"></i><span style="color:${ui.muted}">${ms}</span></span>`;
-  s.label({ id: 'lat-miss', at: l.card, html: row('miss', miss, 6.5, '214 ms'), size: 13, anchor: 'top', variant: 'plain' });
-  s.label({ id: 'lat-hit', at: [l.card[0], l.card[1], l.card[2] - 24], html: row('hit', hit, 0.6, '9 ms'), size: 13, anchor: 'top', variant: 'plain' });
+  s.label({ id: 'lat-miss', at: l.card, html: row('miss', '#b45309', 6.5, '214 ms'), size: 13, anchor: 'top', variant: 'plain' });
+  s.label({ id: 'lat-hit', at: [l.card[0], l.card[1], l.card[2] - 24], html: row('hit', '#0f766e', 0.6, '9 ms'), size: 13, anchor: 'top', variant: 'plain' });
 
   s.dropIn('server-g', 0.1);
   l.edges.forEach((_, i) => s.dropIn(`${codes[i]}-g`, 0.3 + i * 0.083));
@@ -191,7 +191,7 @@ export const example: Example = {
   intent: 'change',
   layout: 'diagonal',
   useCase: 'Edge',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build(compact()), build(wide()), 760),
 };
