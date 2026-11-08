@@ -1,9 +1,11 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#2dd4bf';
-const glow = 'rgb(45 212 191 / .26)';
+const ui = surfaces.light;
+const accent = '#0d9488';
+const deep = '#0f766e';
+const glow = 'rgb(20 184 166 / .2)';
+const line = 'rgb(22 23 27 / .14)';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 
@@ -30,27 +32,27 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.pulse({ id: 'p-ok', wire: 'w-cred', color: accent, length: 0.22 });
   s.wire({ id: 'w-app', points: [[idSize / 2, appAt[1], -12 * k], [appAt[0] - appSize / 2, appAt[1], -12 * k]], stroke: ui.wire, width: 1.25 });
 
-  s.slab({ id: 'identity', at: idAt, size: [idSize, idSize], height: idAt[2] - ground, radius: 22 * k, top: ui.top, side: paints.gradient(s, ['#031e1d', '#06403b', '#0f766e', '#5eead4']), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'identity', at: idAt, size: [idSize, idSize], height: idAt[2] - ground, radius: 22 * k, top: ui.top, side: paints.gradient(s, ramps.teal), grain: 0.08, edge: ui.edge, outline: 'rgb(15 118 110 / .3)' });
   s.face({ id: 'identity-glow', at: idAt, size: [idSize, idSize], radius: 22 * k, fill: glow });
-  s.text({ id: 'identity-name', at: [idAt[0] + idSize / 2 - 16 * k, 0, idAt[2]], text: 'identity', size: 12, color: '#99f6e4', on: 'top', along: 'y', anchor: 'middle' });
-  s.face({ id: 'token-slot', at: tokenFrom, size: [tokenSize + 10 * k, tokenSize + 10 * k], radius: 10 * k, stroke: 'rgb(45 212 191 / .35)', dash: '3 3' });
+  s.text({ id: 'identity-name', at: [idAt[0] + idSize / 2 - 16 * k, 0, idAt[2]], text: 'identity', size: 12, color: '#115e59', on: 'top', along: 'y', anchor: 'middle' });
+  s.face({ id: 'token-slot', at: tokenFrom, size: [tokenSize + 10 * k, tokenSize + 10 * k], radius: 10 * k, stroke: 'rgb(13 148 136 / .45)', dash: '3 3' });
 
-  s.slab({ id: 'app', at: appAt, size: [appSize, appSize], height: appAt[2] - ground, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'app', at: appAt, size: [appSize, appSize], height: appAt[2] - ground, radius: 18 * k, top: ui.top, side: paints.brushed(s, ramps.silver), grain: 0.06, edge: ui.edge, outline: line });
   s.face({ id: 'app-glow', at: appAt, size: [appSize, appSize], radius: 18 * k, fill: glow });
-  s.text({ id: 'app-name', at: [appAt[0] + appSize / 2 - 14 * k, appAt[1], 0], text: 'app', size: 12, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle' });
+  s.text({ id: 'app-name', at: [appAt[0] + appSize / 2 - 14 * k, appAt[1], 0], text: 'app', size: 12, color: '#4b4e57', on: 'top', along: 'y', anchor: 'middle' });
 
   const screen = (w: number, h: number) =>
-    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 16 * k}" width="${16 * k}" height="${16 * k}" rx="${8 * k}" fill="rgb(255 255 255 / .14)"/>` +
-    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 44 * k}" width="${w - 16 * k}" height="${12 * k}" rx="${3 * k}" fill="none" stroke="rgb(255 255 255 / .18)" vector-effect="non-scaling-stroke"/>` +
-    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 62 * k}" width="${w - 16 * k}" height="${12 * k}" rx="${3 * k}" fill="none" stroke="rgb(255 255 255 / .18)" vector-effect="non-scaling-stroke"/>` +
-    [0, 1, 2, 3, 4].map(i => `<circle cx="${-w / 2 + 14 * k + i * 6 * k}" cy="${-h / 2 + 68 * k}" r="${1.6 * k}" fill="rgb(255 255 255 / .5)"/>`).join('') +
-    `<rect x="${-w / 2 + 8 * k}" y="${h / 2 - 30 * k}" width="${w - 16 * k}" height="${14 * k}" rx="${4 * k}" fill="rgb(45 212 191 / .22)"/>`;
-  s.panel({ id: 'phone', at: phoneAt, size: [phone.w, phone.h], thickness: phone.t, facing: 'left', radius: 12 * k, front: ui.top, side: '#2a2b33', edge: 'rgb(255 255 255 / .16)', content: screen(phone.w, phone.h) });
+    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 16 * k}" width="${16 * k}" height="${16 * k}" rx="${8 * k}" fill="rgb(22 23 27 / .08)"/>` +
+    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 44 * k}" width="${w - 16 * k}" height="${12 * k}" rx="${3 * k}" fill="none" stroke="rgb(22 23 27 / .16)" vector-effect="non-scaling-stroke"/>` +
+    `<rect x="${-w / 2 + 8 * k}" y="${-h / 2 + 62 * k}" width="${w - 16 * k}" height="${12 * k}" rx="${3 * k}" fill="none" stroke="rgb(22 23 27 / .16)" vector-effect="non-scaling-stroke"/>` +
+    [0, 1, 2, 3, 4].map(i => `<circle cx="${-w / 2 + 14 * k + i * 6 * k}" cy="${-h / 2 + 68 * k}" r="${1.6 * k}" fill="rgb(22 23 27 / .4)"/>`).join('') +
+    `<rect x="${-w / 2 + 8 * k}" y="${h / 2 - 30 * k}" width="${w - 16 * k}" height="${14 * k}" rx="${4 * k}" fill="rgb(20 184 166 / .16)"/>`;
+  s.panel({ id: 'phone', at: phoneAt, size: [phone.w, phone.h], thickness: phone.t, facing: 'left', radius: 12 * k, front: ui.top, side: '#d4d4d8', edge: line, content: screen(phone.w, phone.h) });
   s.svg('phone-btn', `<g transform="${s.planeTransform(phoneAt, 'left')}"><rect x="${-phone.w / 2 + 8 * k}" y="${phone.h / 2 - 30 * k}" width="${phone.w - 16 * k}" height="${14 * k}" rx="${4 * k}" fill="${accent}"/></g>`);
 
   for (let i = handoff.ghosts - 1; i >= 0; i--) s.face({ id: `ghost-${i}`, at: tokenFrom, size: [tokenSize, tokenSize], radius: 9 * k, stroke: accent, strokeWidth: 1 });
   s.group('token-move', () => {
-    s.slab({ id: 'token', at: tokenFrom, size: [tokenSize, tokenSize], height: 9 * k, radius: 9 * k, top: '#ccfbf1', side: paints.gradient(s, ramps.teal), edge: 'rgb(255 255 255 / .5)', shadow: false });
+    s.slab({ id: 'token', at: tokenFrom, size: [tokenSize, tokenSize], height: 9 * k, radius: 9 * k, top: '#ccfbf1', side: paints.gradient(s, ramps.teal), edge: ui.edge, outline: 'rgb(15 118 110 / .35)', shadow: false });
   });
   s.pivot('token', [tokenFrom[0], tokenFrom[1], tokenFrom[2] - 9 * k]);
 
@@ -59,9 +61,9 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const idTop = s.project(idAt);
   const app = s.project(appAt);
   s.label({ id: 'email', at: { screen: [fitX(ph[0] - 8 * k, 'ana@studio.dev', width, minPx, 'top'), ph[1] + 18 * k] }, text: 'ana@studio.dev', size: 13, anchor: 'top' });
-  s.label({ id: 'pass', at: { screen: [idTop[0], idTop[1] - idSize * 0.42 - 54 * k] }, html: `password <span style="color:${accent}">✓</span>`, size: 13, anchor: 'bottom' });
-  s.label({ id: 'mfa', at: { screen: [idTop[0], idTop[1] - idSize * 0.42 - 16 * k] }, html: `2-step <span style="color:${accent}">✓</span>`, size: 13, anchor: 'bottom' });
-  s.label({ id: 'session', at: { screen: [fitX(app[0] - 16 * k, 'session open · 24 h', width, minPx, 'top'), app[1] + appSize * 0.42 + (width > 500 ? 24 : 40) * k] }, html: `session open <span style="color:#8b8d98">· 24 h</span>`, size: 13, anchor: 'top' });
+  s.label({ id: 'pass', at: { screen: [idTop[0], idTop[1] - idSize * 0.42 - 54 * k] }, html: `password <span style="color:${deep}">✓</span>`, size: 13, anchor: 'bottom' });
+  s.label({ id: 'mfa', at: { screen: [idTop[0], idTop[1] - idSize * 0.42 - 16 * k] }, html: `2-step <span style="color:${deep}">✓</span>`, size: 13, anchor: 'bottom' });
+  s.label({ id: 'session', at: { screen: [fitX(app[0] - 16 * k, 'session open · 24 h', width, minPx, 'top'), app[1] + appSize * 0.42 + (width > 500 ? 24 : 40) * k] }, html: `session open <span style="color:${ui.muted}">· 24 h</span>`, size: 13, anchor: 'top' });
 
   s.march('token-slot', 3, 3, 24);
   s.dropIn('identity', 0.1);
@@ -141,7 +143,7 @@ export const example: Example = {
   intent: 'talk',
   layout: 'panels',
   useCase: 'Auth',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(build('auth-sm', 390, 480, [196, 232], 0.86), build('auth-lg', 720, 420, [376, 200], 1), 520),
 };
