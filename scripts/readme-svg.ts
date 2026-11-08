@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { examples } from '../skill/examples/catalog';
-import { hero } from '../skill/examples/hero';
+import { readme } from '../skill/examples/hero';
 import { sampler } from '../skill/examples/material-gallery';
 import { surfaces, type Example } from '../skill/examples/shared';
 
@@ -14,12 +14,12 @@ const write = async (file: string, svg: string) => {
 };
 const card = (surface: Example['surface']) => ({ background: surfaces[surface].card, radius: 24 });
 
-if (!hero.wide) throw new Error('readme-svg: the hero needs a wide scene');
-await write('hero.svg', hero.wide.scene.exportSvg({ title: 'One prompt becomes a whole system', background: surfaces.dark.page, radius: 24 }));
-await write('hero-phone.svg', hero.compact.scene.exportSvg({ title: 'One prompt becomes a whole system', background: surfaces.dark.page, radius: 24 }));
-for (const slug of ['battery-charge', 'sync-loop', 'tile-loader', 'inbox-fill', 'alert-stack', 'keycard-slot']) {
+const hero = { title: 'One sentence becomes an animated diagram of the system', background: surfaces.light.page, radius: 24 };
+await write('hero.svg', readme.wide.exportSvg(hero));
+await write('hero-phone.svg', readme.compact.exportSvg(hero));
+for (const slug of ['sync-loop', 'inbox-fill', 'battery-charge']) {
   const e = examples.find(x => x.slug === slug);
   if (!e) throw new Error(`readme-svg: no example ${slug}`);
   await write(`${slug}.svg`, e.art.compact.scene.exportSvg({ title: e.title, ...card(e.surface) }));
 }
-await write('finish-sampler.svg', sampler().exportSvg({ title: 'Side finishes, eight of 49', ...card('dark') }));
+await write('finish-sampler.svg', sampler().exportSvg({ title: 'Side finishes, eight of 49', ...card('night') }));

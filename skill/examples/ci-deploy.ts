@@ -130,6 +130,13 @@ function build({ name, width, height, origin, k, wide, stops, along, reach, live
   return s;
 }
 
+const arts = (tag = '') =>
+  art(
+    build({ name: `deploy-sm${tag}`, width: 390, height: 380, origin: [186, 180], k: 0.72, wide: false, stops: [-250, -90, 70, 250], ...chain, live: [0, 92] }),
+    build({ name: `deploy-lg${tag}`, width: 1200, height: 400, origin: [600, 232], k: 1.45, wide: true, stops: [-323, -133, 65, 288], ...strip, live: [0, -100] }),
+    720,
+  );
+
 export const example: Example = {
   slug: 'ci-deploy',
   title: 'Commit to production',
@@ -142,11 +149,9 @@ export const example: Example = {
   useCase: 'CI/CD',
   surface: 'light',
   interaction: 'watch',
-  art: art(
-    build({ name: 'deploy-sm', width: 390, height: 380, origin: [186, 180], k: 0.72, wide: false, stops: [-250, -90, 70, 250], ...chain, live: [0, 92] }),
-    build({ name: 'deploy-lg', width: 1200, height: 400, origin: [600, 232], k: 1.45, wide: true, stops: [-323, -133, 65, 288], ...strip, live: [0, -100] }),
-    720,
-  ),
+  art: arts(),
 };
+
+export const inContext = arts('-ctx');
 
 export default page(example);

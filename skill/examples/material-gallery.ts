@@ -2,7 +2,7 @@ import { ISO_X, Scene, ease } from '../lib/iso';
 import { finishCategories, finishes, type Finish, type FinishCategory } from './materials';
 import { art, fonts, page, surfaces, type Art } from './shared';
 
-const ui = surfaces.dark;
+const ui = surfaces.night;
 const iy = ISO_X * Math.tan(Math.PI / 6);
 
 interface Layout {
@@ -39,11 +39,11 @@ function build(name: string, list: readonly Finish[], l: Layout) {
       size: [l.size, l.size],
       height: l.thickness,
       radius: l.size * 0.16,
-      top: '#17181d',
+      top: ui.top,
       grain: 0.06,
       side: f.material(s),
       edge: ui.edge,
-      content: `<text text-anchor="middle" dominant-baseline="central" font-size="${l.nameSize}" font-weight="500" fill="#b4b7c1" style="font-family:var(--iso-font)">${f.name}</text>`,
+      content: `<text text-anchor="middle" dominant-baseline="central" font-size="${l.nameSize}" font-weight="500" fill="#d6daf5" style="font-family:var(--iso-font)">${f.name}</text>`,
       hover: { lift: 16, guides: 'rgb(255 255 255 / .22)' },
     });
     s.dropIn(f.slug, 0.1 + (row + col) * 0.083);
@@ -79,4 +79,4 @@ export function sampler(): Scene {
   return build('finish-sampler-lg', list, wide);
 }
 
-export default { ...page({ title: 'Side finishes', surface: 'dark', art: galleries[0]!.art }), background: ui.page, body: `<main>${galleries.map(g => g.art.html).join('')}</main>` };
+export default { ...page({ title: 'Side finishes', surface: 'night', art: galleries[0]!.art }), background: ui.page, body: `<main>${galleries.map(g => g.art.html).join('')}</main>` };

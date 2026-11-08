@@ -1,12 +1,15 @@
 import { ISO_X, ISO_Y, Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fonts, page, paints, ramps, rng, surfaces } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#a78bfa';
-const hit = 'rgb(167 139 250 / .5)';
-const unlit = 'rgb(167 139 250 / 0)';
-const glow = 'rgb(167 139 250 / .2)';
-const liveInk = '#34d399';
+const ui = surfaces.light;
+const accent = '#7c3aed';
+const hit = 'rgb(124 58 237 / .3)';
+const unlit = 'rgb(124 58 237 / 0)';
+const glow = 'rgb(124 58 237 / .14)';
+const liveInk = '#047857';
+const ink = '#4b4e57';
+const outline = 'rgb(22 23 27 / .1)';
+const terminal = { bg: '#17181d', line: 'rgb(255 255 255 / .1)', ink: '#ececef', muted: '#8b8d98', dot: '#3f414b' };
 const curve = {
   grow: 'cubic-bezier(.4,.1,.1,1)',
   spin: 'cubic-bezier(.8,.9,.3,1)',
@@ -16,7 +19,7 @@ const curve = {
   snapOff: 'cubic-bezier(.45,.86,.17,.96)',
 } as const;
 
-const prompt = 'build an orders API for 1M users';
+export const prompt = 'Show how our orders API scales to 1M users';
 const stack = {
   sans: `${fonts.sans.replace(', sans-serif', '')}, -apple-system, 'Segoe UI', Roboto, sans-serif`,
   mono: `${fonts.mono.replace(', monospace', '')}, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace`,
@@ -58,7 +61,8 @@ interface Layout {
   leaf: { size: number; height: number };
   place: Record<Service | Leaf, Place>;
   pool: { at: Vec2; cols: number; rows: number; pitch: number; pod: number; empty: readonly number[]; from: Leaf };
-  card: { x: number; y: number; w: number; h: number; text: number; head: number };
+  card: { x: number; y: number; w: number; h: number; text: number; head: number } | null;
+  counter: { at: Vec2; text: number };
   feed: Vec2;
   ground: { at: Vec2; size: number; pitch: number };
 }
@@ -109,34 +113,39 @@ function build(l: Layout) {
   };
 
   const ground = l.ground;
-  const dots = s.def('ground-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${ground.pitch}" height="${ground.pitch}"><circle cx="${ground.pitch / 2}" cy="${ground.pitch / 2}" r="1.1" fill="rgb(255 255 255 / .09)"/></pattern>`);
+  const dots = s.def('ground-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${ground.pitch}" height="${ground.pitch}"><circle cx="${ground.pitch / 2}" cy="${ground.pitch / 2}" r="1.1" fill="rgb(22 23 27 / .11)"/></pattern>`);
   const vignette = s.def('ground-vignette', `<radialGradient id="$ID"><stop offset=".35" stop-color="${ui.page}" stop-opacity="0"/><stop offset=".72" stop-color="${ui.page}"/></radialGradient>`);
   const groundAt = s.unproject(ground.at, 0);
   s.face({ id: 'ground', at: groundAt, size: [ground.size, ground.size], radius: 0, fill: dots });
   s.face({ id: 'ground-fade', at: groundAt, size: [ground.size * 1.02, ground.size * 1.02], radius: 0, fill: vignette });
   const card = l.card;
-  const rect = (paint: string) => `<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="12" ${paint}/>`;
-  const dot = (fill: string) => `<circle cx="${card.x + 20}" cy="${card.y + 22}" r="3.5" fill="${fill}"/>`;
-  s.svg('card', rect('fill="#16171c" stroke="rgb(255 255 255 / .1)"') + dot('#3f414b'));
-  s.svg('card-hot', rect('fill="none" stroke="rgb(167 139 250 / .16)" stroke-width="6"') + rect(`fill="none" stroke="${accent}" stroke-opacity=".8"`) + dot(accent));
-  s.text({ id: 'card-head', at: { screen: [card.x + 32, card.y + 22] }, text: 'prompt', size: card.head, color: ui.muted, font: 'sans', weight: 500 });
-  const line: Vec2 = [card.x + 20, card.y + card.h - 26];
-  s.text({ id: 'hint', at: { screen: line }, text: 'describe a system to build', size: card.text, color: '#5d606b' });
-  s.text({ id: 'prompt', at: { screen: line }, text: prompt, size: card.text, color: ui.ink });
-  const charW = card.text * 0.6;
-  s.group('caret', () => s.svg('caret-blink', `<rect x="${line[0] + 1.5}" y="${line[1] - card.text * 0.62}" width="${Math.max(1.5, card.text * 0.09)}" height="${card.text * 1.24}" rx="1" fill="${accent}"/>`));
-  s.ambient('caret-blink', 'opacity', 1.1, [1, 1, 0, 0, 1], 'steps(1, end)');
+  const charW = (card?.text ?? 0) * 0.6;
+  const line: Vec2 = card ? [card.x + 20, card.y + card.h - 26] : [0, 0];
+  if (card) {
+    const rect = (paint: string) => `<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="12" ${paint}/>`;
+    const dots = (fill: string) => [0, 1, 2].map(i => `<circle cx="${card.x + 20 + i * 12}" cy="${card.y + 20}" r="3.5" fill="${fill}"/>`).join('');
+    s.svg('card', rect(`fill="${terminal.bg}" stroke="${terminal.line}"`) + dots(terminal.dot));
+    s.svg('card-hot', rect('fill="none" stroke="rgb(124 58 237 / .18)" stroke-width="6"') + rect(`fill="none" stroke="${accent}" stroke-opacity=".9"`));
+    s.text({ id: 'card-head', at: { screen: [card.x + 62, card.y + 20] }, text: 'claude', size: card.head, color: terminal.muted, font: 'mono' });
+    s.text({ id: 'chevron', at: { screen: line }, text: '>', size: card.text, color: '#c4b5fd' });
+    const typed: Vec2 = [line[0] + charW * 2, line[1]];
+    s.text({ id: 'hint', at: { screen: typed }, text: 'describe your system', size: card.text, color: '#6b6e78' });
+    s.text({ id: 'prompt', at: { screen: typed }, text: prompt, size: card.text, color: terminal.ink });
+    s.group('caret', () => s.svg('caret-blink', `<rect x="${typed[0] + 1.5}" y="${typed[1] - card.text * 0.62}" width="${Math.max(1.5, card.text * 0.09)}" height="${card.text * 1.24}" rx="1" fill="#c4b5fd"/>`));
+    s.ambient('caret-blink', 'opacity', 1.1, [1, 1, 0, 0, 1], 'steps(1, end)');
+  }
 
-  const head: Vec2 = [card.x + card.w - 20, card.y + 22];
+  const head = l.counter.at;
+  const headSize = l.counter.text;
   const counts = [
     { id: 'count-1', text: '1 node', at: T.landed },
     { id: 'count-5', text: '5 nodes', at: T.slide + 0.3 },
     { id: 'count-15', text: '15 nodes', at: T.pops + 1.3 },
   ] as const;
-  counts.forEach(c => s.text({ id: c.id, at: { screen: head }, text: c.text, size: card.head, color: ui.muted, font: 'sans', anchor: 'end' }));
+  counts.forEach(c => s.text({ id: c.id, at: { screen: head }, text: c.text, size: headSize, color: card ? terminal.muted : ui.muted, font: 'sans', anchor: 'end' }));
   const liveText = '40 nodes · live';
-  const pad = card.head * 0.7;
-  s.text({ id: 'count-live', at: { screen: [head[0] + 6 - pad - (liveText.length * card.head * 0.6) / 2, head[1]] }, text: liveText, size: card.head, color: liveInk, pill: { fill: 'rgb(52 211 153 / .1)', stroke: 'rgb(52 211 153 / .32)', padX: pad, radius: card.head * 0.8 } });
+  const pad = headSize * 0.7;
+  s.text({ id: 'count-live', at: { screen: [head[0] + 6 - pad - (liveText.length * headSize * 0.6) / 2, head[1]] }, text: liveText, size: headSize, color: card ? '#6ee7b7' : liveInk, pill: card ? { fill: 'rgb(52 211 153 / .1)', stroke: 'rgb(52 211 153 / .32)', padX: pad, radius: headSize * 0.8 } : { fill: '#ecfdf5', stroke: 'rgb(5 150 105 / .35)', padX: pad, radius: headSize * 0.8 } });
 
   const placeOf = (n: Node): Vec2 => (n === 'core' ? [0, 0] : l.place[n].at);
   const sizeOf = (n: Node) => (n === 'core' ? l.core.size : isLeaf(n) ? l.leaf.size : l.service.size);
@@ -163,15 +172,15 @@ function build(l: Layout) {
   for (const [, b] of edges) s.pulse({ id: `p-${b}`, wire: `w-${b}`, color: accent, length: 0.28, glow: false });
 
   const ring = l.core.size * 1.14;
-  s.face({ id: 'core-target', at: [0, 0, 0], size: [ring, ring], radius: ring * 0.22, stroke: 'rgb(167 139 250 / .55)', dash: '4 4' });
-  const shadow = s.def('shadow-fill', '<radialGradient id="$ID"><stop offset=".4" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>');
+  s.face({ id: 'core-target', at: [0, 0, 0], size: [ring, ring], radius: ring * 0.22, stroke: 'rgb(124 58 237 / .5)', dash: '4 4' });
+  const shadow = s.def('shadow-fill', '<radialGradient id="$ID"><stop offset=".4" stop-color="#1e1b4b" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>');
   const sh = l.core.size * 0.7;
   s.svg('core-shadow', s.plane([8, 8, 0], `<rect x="${-sh}" y="${-sh}" width="${sh * 2}" height="${sh * 2}" rx="${sh * 0.5}" fill="${shadow}"/>`));
   s.face({ id: 'core-ring', at: [0, 0, 0], size: [l.core.size, l.core.size], radius: l.core.size * 0.22, stroke: accent, strokeWidth: 1.5 });
 
   const block = {
-    service: blocks(s, 'service', l.service.size, l.service.height, 0.2, { top: ui.top, side: ['#2b2c33', '#35363e'], edge: ui.edge }),
-    leaf: blocks(s, 'leaf', l.leaf.size, l.leaf.height, 0.2, { top: ui.top, side: ['#212228', '#292a30'], edge: ui.edge }),
+    service: blocks(s, 'service', l.service.size, l.service.height, 0.2, { top: ui.top, side: ['#c9cad2', '#e1e2e7'], edge: outline }),
+    leaf: blocks(s, 'leaf', l.leaf.size, l.leaf.height, 0.2, { top: ui.top, side: ['#d2d3da', '#e7e8ec'], edge: outline }),
   };
   const tile = (n: Service | Leaf, name?: string) => {
     const [x, y] = placeOf(n);
@@ -179,7 +188,7 @@ function build(l: Layout) {
     s.group(`g-${n}`, () => {
       s.svg(n, block[isLeaf(n) ? 'leaf' : 'service']([x, y, h]));
       s.face({ id: `${n}-hit`, at: [x, y, h], size: [size, size], radius: size * 0.2, fill: unlit });
-      if (name) s.text({ id: `${n}-name`, at: [x, y, h], text: name, size: l.service.text, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle', font: 'sans' });
+      if (name) s.text({ id: `${n}-name`, at: [x, y, h], text: name, size: l.service.text, color: ink, on: 'top', along: 'y', anchor: 'middle', font: 'sans' });
     });
     s.pivot(`g-${n}`, [x, y, 0]);
   };
@@ -189,12 +198,12 @@ function build(l: Layout) {
   s.group('core-fall', () =>
     s.group('core-lean', () =>
       s.group('core-live', () => {
-        s.turntable({ id: 'core-spin', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: ['#2e1065', '#3b1580', '#4a1c9b', '#5b21b6', '#7046d0', '#8b5cf6'], edge: 'rgb(196 181 253 / .5)', layers: 5 });
+        s.turntable({ id: 'core-spin', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: ['#2e1065', '#3b1580', '#4a1c9b', '#5b21b6', '#7046d0', '#8b5cf6'], edge: 'rgb(255 255 255 / .9)', layers: 5 });
         s.group('core-body', () => {
-          s.slab({ id: 'core', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: paints.gradient(s, ramps.violet), edge: 'rgb(196 181 253 / .5)', shadow: false });
+          s.slab({ id: 'core', at: [0, 0, height], size: [size, size], height, radius: size * 0.2, top: ui.top, side: paints.gradient(s, ramps.violet), edge: 'rgb(255 255 255 / .9)', outline: 'rgb(91 33 182 / .3)', shadow: false });
           s.face({ id: 'core-glow', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: unlit });
           s.face({ id: 'core-hit', at: [0, 0, height], size: [size, size], radius: size * 0.2, fill: unlit });
-          s.text({ id: 'core-name', at: [0, 0, height], text: 'orders-api', size: l.core.text, color: '#d4d4d8', on: 'top', along: 'y', anchor: 'middle', weight: 500 });
+          s.text({ id: 'core-name', at: [0, 0, height], text: 'orders-api', size: l.core.text, color: '#5b21b6', on: 'top', along: 'y', anchor: 'middle', weight: 500 });
         });
       }),
     ),
@@ -216,7 +225,7 @@ function build(l: Layout) {
   const along = (v: number): Vec3 => (axis === 0 ? [v, src[1], 0] : [src[0], v, 0]);
   s.wire({ id: 'w-pool', points: [along(src[axis] + dir * (l.leaf.size / 2 + 2)), along(centre[axis] - (dir * span[axis]) / 2 - dir * 2)], stroke: ui.wire, width: 1.25, hidden: true });
   s.pulse({ id: 'p-pool', wire: 'w-pool', color: accent, length: 0.28, glow: false });
-  s.slab({ id: 'pool', at: [centre[0], centre[1], 6], size: span, height: 6, radius: pool.pitch * 0.35, top: '#141519', side: paints.flat('#202127'), edge: 'rgb(255 255 255 / .09)', shadow: false });
+  s.slab({ id: 'pool', at: [centre[0], centre[1], 6], size: span, height: 6, radius: pool.pitch * 0.35, top: '#eeeef2', side: paints.flat('#d9dae0'), edge: 'rgb(255 255 255 / .9)', outline, shadow: false });
   const slots = Array.from({ length: pool.cols * pool.rows }, (_, i) => {
     const [c, r] = [i % pool.cols, Math.floor(i / pool.cols)];
     const at: Vec2 = [centre[0] + (c - (pool.cols - 1) / 2) * pool.pitch, centre[1] + (r - (pool.rows - 1) / 2) * pool.pitch];
@@ -225,11 +234,11 @@ function build(l: Layout) {
   const empty = slots.filter(sl => pool.empty.includes(sl.i));
   const pods = slots.filter(sl => !pool.empty.includes(sl.i));
   if (1 + services.length + leaves.length + 1 + pods.length !== 40) throw new Error(`hero ${l.name}: the system must end at 40 objects, the pool holds ${pods.length} pods`);
-  s.group('slots', () => empty.forEach(sl => s.face({ id: `slot-${sl.i}`, at: [sl.at[0], sl.at[1], 6], size: [pool.pod, pool.pod], radius: pool.pod * 0.22, stroke: 'rgb(167 139 250 / .4)', dash: '3 3' })));
+  s.group('slots', () => empty.forEach(sl => s.face({ id: `slot-${sl.i}`, at: [sl.at[0], sl.at[1], 6], size: [pool.pod, pool.pod], radius: pool.pod * 0.22, stroke: 'rgb(124 58 237 / .45)', dash: '3 3' })));
   const podH = Math.round(pool.pod * 0.36);
   const lit = pods.filter((_, k) => k % 7 === 3).map(p => p.i);
   const waves = [...new Set(pods.map(p => p.wave))].sort((a, b) => a - b);
-  const pod = blocks(s, 'pod', pool.pod, podH, 0.22, { top: '#1d1e24', side: ['#25262c', '#2e2f36'], edge: 'rgb(255 255 255 / .1)' });
+  const pod = blocks(s, 'pod', pool.pod, podH, 0.22, { top: ui.top, side: ['#cfd0d7', '#e4e5ea'], edge: outline });
   for (const w of waves) {
     const row = pods.filter(p => p.wave === w);
     s.group(`wave-${w}`, () => {
@@ -241,17 +250,21 @@ function build(l: Layout) {
   const gone = 1.04;
   const draw = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, gone, 0, easing);
   const retract = (wire: string, t: number, dur: number, toward: 'start' | 'end', easing: string) => s.at(wire, 'strokeDashoffset', t, dur, 0, toward === 'start' ? gone : -gone, easing);
-  s.intro('card', 'opacity', 0.1, 0.4, 0, 1, ease.out);
-  s.intro('card-head', 'opacity', 0.1, 0.4, 0, 1, ease.out);
+  if (card) {
+    s.intro('card', 'opacity', 0.1, 0.4, 0, 1, ease.out);
+    s.intro('card-head', 'opacity', 0.1, 0.4, 0, 1, ease.out);
+  }
   for (const n of [...services, ...leaves, 'pool']) s.intro(`p-${n}`, 'opacity', 0, 0.01, 1, 1, ease.linear);
 
-  s.set('card-hot', 'opacity', 0, 0);
-  s.at('card-hot', 'opacity', T.sent, 0.1, 0, 1, ease.linear);
-  s.at('card-hot', 'opacity', T.sent + 0.1, 0.6, 1, 0, ease.linear);
-  s.at('hint', 'opacity', T.hint, 0.15, 1, 0, ease.linear);
   const steps = prompt.length;
-  s.typeIn('prompt', T.type, steps * typeStep, steps);
-  s.at('caret', 'translate', T.type, steps * typeStep, '0 0', `${steps * charW}px 0`, `steps(${steps}, end)`);
+  if (card) {
+    s.set('card-hot', 'opacity', 0, 0);
+    s.at('card-hot', 'opacity', T.sent, 0.1, 0, 1, ease.linear);
+    s.at('card-hot', 'opacity', T.sent + 0.1, 0.6, 1, 0, ease.linear);
+    s.at('hint', 'opacity', T.hint, 0.15, 1, 0, ease.linear);
+    s.typeIn('prompt', T.type, steps * typeStep, steps);
+    s.at('caret', 'translate', T.type, steps * typeStep, '0 0', `${steps * charW}px 0`, `steps(${steps}, end)`);
+  }
 
   draw('feed', T.sent + 0.05, 0.3, ease.out);
   retract('feed', T.sent + 0.6, 0.3, 'end', curve.snapOff);
@@ -386,11 +399,13 @@ function build(l: Layout) {
   s.at('core-shadow', 'opacity', c + 1.3, 0.4, 1, 0, ease.linear);
   s.set('core-body', 'opacity', c + 1.8, 0);
   s.set('core-live', 'scale', c + 1.85, '1 1');
-  s.at('prompt', 'opacity', c + 1.2, 0.3, 1, 0, ease.linear);
-  s.set('prompt', 'clipPath', c + 1.55, 'inset(-20% 100% -20% 0)');
-  s.set('prompt', 'opacity', c + 1.6, 1);
-  s.set('caret', 'translate', c + 1.55, '0 0');
-  s.at('hint', 'opacity', c + 1.6, 0.25, 0, 1, ease.linear);
+  if (card) {
+    s.at('prompt', 'opacity', c + 1.2, 0.3, 1, 0, ease.linear);
+    s.set('prompt', 'clipPath', c + 1.55, 'inset(-20% 100% -20% 0)');
+    s.set('prompt', 'opacity', c + 1.6, 1);
+    s.set('caret', 'translate', c + 1.55, '0 0');
+    s.at('hint', 'opacity', c + 1.6, 0.25, 0, 1, ease.linear);
+  }
   s.loop(T.end, T.still);
   return s;
 }
@@ -400,8 +415,8 @@ const sp = (dx: number, dy: number): Vec2 => {
   return [(a + b) / 2, (b - a) / 2];
 };
 
-const wide = build({
-  name: 'hero-lg',
+const wideLayout: Layout = {
+  name: 'hero-readme-lg',
   width: 720,
   height: 570,
   origin: [282, 300],
@@ -425,12 +440,13 @@ const wide = build({
     'worker-c': { at: [255, 0] },
   },
   pool: { at: [420, 0], cols: 6, rows: 5, pitch: 28, pod: 20, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
-  card: { x: 24, y: 20, w: 480, h: 100, text: 22, head: 15 },
+  card: { x: 24, y: 20, w: 600, h: 100, text: 20, head: 15 },
+  counter: { at: [604, 42], text: 15 },
   feed: [282, 120],
   ground: { at: [400, 330], size: 900, pitch: 24 },
-});
+};
 
-const compact = build({
+const compactLayout: Layout = {
   name: 'hero-sm',
   width: 390,
   height: 580,
@@ -455,10 +471,26 @@ const compact = build({
     'shard-b': { at: sp(-160, -40), exit: 'x' },
   },
   pool: { at: sp(0, 205), cols: 6, rows: 5, pitch: 26, pod: 18, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
-  card: { x: 16, y: 16, w: 358, h: 80, text: 14, head: 12 },
+  card: { x: 16, y: 16, w: 358, h: 80, text: 12, head: 12 },
+  counter: { at: [354, 36], text: 12 },
   feed: [195, 96],
   ground: { at: [195, 290], size: 640, pitch: 18 },
+};
+
+const lift = (l: Layout, name: string, dy: number, trim: number, feed: Vec2, counter: Vec2): Layout => ({
+  ...l,
+  name,
+  height: l.height - dy - trim,
+  origin: [l.origin[0], l.origin[1] - dy],
+  ground: { ...l.ground, at: [l.ground.at[0], l.ground.at[1] - dy] },
+  card: null,
+  counter: { ...l.counter, at: counter },
+  feed,
 });
+
+const wide = build(lift(wideLayout, 'hero-lg', 90, 30, [0, 60], [700, 30]));
+const compact = build(lift(compactLayout, 'hero-sm', 70, 40, [195, 0], [374, 24]));
+export const readme = { wide: build(wideLayout), compact: build({ ...compactLayout, name: 'hero-readme-sm' }) };
 
 const tilt = `<script type="module">
 const fine = matchMedia('(hover: hover) and (pointer: fine)');
@@ -519,4 +551,4 @@ new MutationObserver(scan).observe(document.documentElement, { childList: true, 
 
 export const hero = art(compact, wide, 520, tilt);
 
-export default { ...page({ title: 'One prompt, a whole system', surface: 'dark', art: hero }), background: ui.page };
+export default { ...page({ title: 'One prompt, a whole system', surface: 'light', art: hero }), background: ui.page };

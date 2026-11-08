@@ -1,55 +1,50 @@
 ---
 import { examples } from '../../../skill/examples/catalog';
 import { intents } from '../../../skill/examples/shared';
-import { intentNames, levelOrder, levels } from '../content';
+import { intentNames } from '../content';
 import ExampleCard from './ExampleCard.astro';
 
-const groups = levelOrder
-  .map(level => ({ level, ...levels[level], items: examples.filter(e => e.level === level) }))
-  .filter(g => g.items.length > 0);
-const tabs = intents.filter(c => examples.some(e => e.intent === c));
-const columns = { spot: 'sm:grid-cols-2 lg:grid-cols-3', simple: 'lg:grid-cols-2 lg:grid-flow-dense', medium: 'lg:grid-cols-2 lg:grid-flow-dense', complex: '' } as const;
+const grid = examples.filter(e => e.level !== 'spot');
+const groups = intents.map(intent => ({ intent, ...intentNames[intent], items: grid.filter(e => e.intent === intent) })).filter(g => g.items.length > 0);
 const chip =
-  'h-8 shrink-0 rounded-full border border-line px-3.5 text-sm text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-page';
+  'h-9 shrink-0 rounded-full border border-line bg-page px-4 text-sm text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-page';
 ---
 
-<section id="showcase" data-showcase class="surface-dark py-24 sm:py-32">
+<section id="showcase" data-showcase class="py-24 sm:py-32">
   <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
     <div class="max-w-2xl">
-      <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Live scenes, each with the prompt behind it.</h2>
+      <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Pick what you want to explain.</h2>
       <p class="mt-4 text-lg text-pretty text-muted">
-        {examples.length} {examples.length === 1 ? "example" : "examples"}, from a single icon to a whole system. Copy any prompt and make it yours.
+        {grid.length} live scenes, grouped by the question they answer. Each card is headed by the prompt behind it. Open the full prompt, copy it and make it yours.
       </p>
     </div>
 
-    {
-      tabs.length > 1 && (
-        <div class="-mx-5 mt-8 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0" role="group" aria-label="Filter by category">
-          <div class="flex gap-2 py-2 sm:flex-wrap">
-            <button type="button" data-filter="" aria-pressed="true" class={chip}>
-              All
-            </button>
-            {tabs.map(c => (
-              <button type="button" data-filter={c} aria-pressed="false" class={chip}>
-                {intentNames[c]}
+    <div class="sticky top-14 z-40 -mx-5 mt-8 bg-page/90 px-5 backdrop-blur-md sm:mx-0 sm:px-0">
+      <div class="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0" role="group" aria-label="Show scenes that explain">
+        <div class="flex gap-2 py-3 sm:flex-wrap">
+          <button type="button" data-filter="" aria-pressed="true" class={chip}>All</button>
+          {
+            groups.map(g => (
+              <button type="button" data-filter={g.intent} aria-pressed="false" class={chip}>
+                {g.name}
               </button>
-            ))}
-          </div>
+            ))
+          }
         </div>
-      )
-    }
+      </div>
+    </div>
 
-    <div class="mt-16 flex flex-col gap-20 sm:gap-24">
+    <div class="mt-10 flex flex-col gap-20 sm:gap-24">
       {
         groups.map(g => (
-          <section data-group aria-labelledby={`level-${g.level}`}>
+          <section data-group={g.intent} aria-labelledby={`intent-${g.intent}`} class="scroll-mt-32">
             <header class="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line pb-4">
-              <h3 id={`level-${g.level}`} class="text-2xl font-semibold tracking-tight">
+              <h3 id={`intent-${g.intent}`} class="text-2xl font-semibold tracking-tight">
                 {g.name}
               </h3>
               <p class="text-sm text-muted">{g.note}</p>
             </header>
-            <div class:list={['grid gap-5 sm:gap-6', columns[g.level]]}>
+            <div class="grid gap-5 sm:gap-6 lg:grid-flow-dense lg:grid-cols-2">
               {g.items.map(example => (
                 <ExampleCard example={example} />
               ))}
@@ -64,23 +59,13 @@ const chip =
 <script>
   const root = document.querySelector<HTMLElement>('[data-showcase]');
 
-  function apply(filter: string) {
-    if (!root) return;
-    for (const chip of root.querySelectorAll<HTMLButtonElement>('[role=group] [data-filter]')) {
-      chip.setAttribute('aria-pressed', String(chip.dataset.filter === filter));
-    }
-    for (const group of root.querySelectorAll<HTMLElement>('[data-group]')) {
-      let shown = 0;
-      for (const card of group.querySelectorAll<HTMLElement>('[data-card]')) {
-        card.hidden = filter !== '' && card.dataset.category !== filter;
-        if (!card.hidden) shown++;
-      }
-      group.hidden = shown === 0;
-    }
-  }
-
   root?.addEventListener('click', event => {
     const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-filter]') : null;
-    if (button) apply(button.dataset.filter ?? '');
+    if (!button || !root) return;
+    const filter = button.dataset.filter ?? '';
+    for (const chip of root.querySelectorAll<HTMLButtonElement>('[data-filter]')) chip.setAttribute('aria-pressed', String(chip === button));
+    for (const group of root.querySelectorAll<HTMLElement>('[data-group]')) group.hidden = filter !== '' && group.dataset.group !== filter;
+    const top = root.querySelector<HTMLElement>('[data-group]:not([hidden])');
+    if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView({ block: 'start' });
   });
 </script>

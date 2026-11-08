@@ -139,6 +139,13 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   return s;
 }
 
+const arts = (tag = '') =>
+  art(
+    build(`etl-sm${tag}`, 390, 440, [190, 180], 0.72, { ...column([0, 0], [215, 215], [[56, 0], [215, 0], [215, 117]]), clean: { dx: -86, dy: 64, anchor: 'right' }, store: { dx: 0, dy: 118, anchor: 'top' } }, 10),
+    build(`etl-lg${tag}`, 1260, 420, [630, 186], 1.15, { ...strip(), clean: { dx: 0, dy: 92, anchor: 'top' }, store: { dx: 0, dy: 106, anchor: 'top' } }, 12),
+    720,
+  );
+
 export const example: Example = {
   slug: 'etl-pipeline',
   title: 'Rows into the warehouse',
@@ -151,11 +158,9 @@ export const example: Example = {
   useCase: 'Data',
   surface: 'light',
   interaction: 'watch',
-  art: art(
-    build('etl-sm', 390, 440, [190, 180], 0.72, { ...column([0, 0], [215, 215], [[56, 0], [215, 0], [215, 117]]), clean: { dx: -86, dy: 64, anchor: 'right' }, store: { dx: 0, dy: 118, anchor: 'top' } }, 10),
-    build('etl-lg', 1260, 420, [630, 186], 1.15, { ...strip(), clean: { dx: 0, dy: 92, anchor: 'top' }, store: { dx: 0, dy: 106, anchor: 'top' } }, 12),
-    720,
-  ),
+  art: arts(),
 };
+
+export const inContext = arts('-ctx');
 
 export default page(example);
