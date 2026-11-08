@@ -1,0 +1,127 @@
+---
+import { inContext as abTest } from '../../../skill/examples/ab-test';
+import { inContext as checkout } from '../../../skill/examples/checkout-payment';
+import { inContext as ciDeploy } from '../../../skill/examples/ci-deploy';
+import { inContext as etl } from '../../../skill/examples/etl-pipeline';
+import Art from './Art.astro';
+
+const frame = 'surface-light @container flex-1 overflow-hidden rounded-2xl border border-line bg-page shadow-sm';
+const caption = 'mb-3 flex items-baseline justify-between gap-4 text-sm';
+const bar = 'flex h-9 items-center gap-1.5 border-b border-line bg-panel px-3';
+const url = 'ml-3 truncate rounded-md bg-page px-2.5 py-0.5 font-mono text-xs text-muted';
+const dots = [0, 1, 2];
+---
+
+<section id="where" class="border-t border-line bg-panel py-24 sm:py-32">
+  <div class="mx-auto w-full max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Where it lives.</h2>
+      <p class="mt-4 text-lg text-pretty text-muted">
+        The same file works wherever your product gets explained. These four are real scenes, playing inside made-up pages.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-x-6 gap-y-12 lg:grid-cols-2">
+      <figure class="flex flex-col">
+        <figcaption class={caption}><span class="font-semibold">On a landing page</span><span class="text-muted">the hero of a SaaS site</span></figcaption>
+        <div class={frame}>
+          <div class={bar} aria-hidden="true">
+            {dots.map(() => <span class="size-2 rounded-full bg-line-strong" />)}
+            <span class={url}>paysora.dev</span>
+          </div>
+          <div class="px-5 pt-4 pb-2">
+            <div class="flex items-center justify-between text-xs text-muted" aria-hidden="true">
+              <span class="flex items-center gap-1.5 font-semibold text-ink"><span class="size-3 rounded bg-accent" />Paysora</span>
+              <span class="hidden gap-4 @sm:flex"><span>Product</span><span>Pricing</span><span>Docs</span></span>
+              <span class="rounded-full border border-line px-2.5 py-0.5">Sign in</span>
+            </div>
+            <div class="flex flex-col items-center pt-6 text-center">
+              <p class="text-xs font-medium text-accent">Payments API</p>
+              <p class="mt-1.5 max-w-xs text-xl leading-tight font-semibold tracking-tight text-balance">Every card payment, cleared in one round trip.</p>
+              <p class="mt-2 text-xs leading-relaxed text-muted">Gateway, fraud check and bank in a single call.</p>
+              <span class="mt-3 inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-semibold text-page" aria-hidden="true">Start building</span>
+              <div class="mt-2 w-full max-w-xs">
+                <Art art={checkout} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flex flex-col">
+        <figcaption class={caption}><span class="font-semibold">In your docs</span><span class="text-muted">a guide page</span></figcaption>
+        <div class={frame}>
+          <div class={bar} aria-hidden="true">
+            {dots.map(() => <span class="size-2 rounded-full bg-line-strong" />)}
+            <span class={url}>docs.tidewell.dev/sync</span>
+          </div>
+          <div class="flex">
+            <ul class="hidden w-32 shrink-0 flex-col gap-1.5 border-r border-line p-4 text-xs text-muted @md:flex" aria-hidden="true">
+              <li>Overview</li>
+              <li>Quickstart</li>
+              <li class="font-medium text-accent">How sync works</li>
+              <li>Transforms</li>
+              <li>Warehouse</li>
+              <li>API</li>
+            </ul>
+            <div class="min-w-0 flex-1 p-5">
+              <p class="text-xs text-muted">Guides / Sync</p>
+              <p class="mt-1 text-lg font-semibold tracking-tight">How sync works</p>
+              <p class="mt-1.5 text-xs leading-relaxed text-pretty text-muted">
+                Rows from your sources are cleaned and joined in one transform step, then land in the warehouse in batches.
+              </p>
+              <div class="mt-3 rounded-xl border border-line bg-panel p-1">
+                <div class="mx-auto max-w-sm"><Art art={etl} /></div>
+              </div>
+              <p class="mt-3 text-xs leading-relaxed text-pretty text-muted">Each batch is retried until the warehouse confirms it.</p>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flex flex-col">
+        <figcaption class={caption}><span class="font-semibold">In a pitch deck</span><span class="text-muted">slide 7 of 12</span></figcaption>
+        <div class={`${frame} flex flex-col bg-raised`}>
+          <div class={bar} aria-hidden="true">
+            {dots.map(() => <span class="size-2 rounded-full bg-line-strong" />)}
+            <span class="ml-3 text-xs text-muted">Vantora · Series A.deck</span>
+          </div>
+          <div class="flex flex-1 items-center p-4 @md:p-8">
+          <div class="grid aspect-video w-full grid-cols-5 items-center gap-2 rounded-lg bg-page p-4 shadow-md @md:p-7">
+            <div class="col-span-2 flex h-full flex-col justify-between">
+              <span class="flex items-center gap-1.5 text-xs font-semibold" aria-hidden="true"><span class="size-3 rounded-full bg-accent" />Vantora</span>
+              <div>
+                <p class="text-sm leading-tight font-semibold tracking-tight text-balance @md:text-xl">Variant B wins sign-ups by 4.2 %.</p>
+                <p class="mt-1.5 hidden text-xs leading-relaxed text-muted @sm:block">Half the traffic saw each page for two weeks.</p>
+              </div>
+              <span class="font-mono text-xs text-muted" aria-hidden="true">07</span>
+            </div>
+            <div class="col-span-3">
+              <Art art={abTest} />
+            </div>
+          </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flex flex-col">
+        <figcaption class={caption}><span class="font-semibold">In a README</span><span class="text-muted">on GitHub, as one SVG</span></figcaption>
+        <div class={frame}>
+          <div class={bar} aria-hidden="true">
+            <svg viewBox="0 0 16 16" class="size-3.5 text-muted"><path d="M4 1.5h5.5L13 5v9.5H4z M9.5 1.5V5H13" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /></svg>
+            <span class="font-mono text-xs text-muted">README.md</span>
+          </div>
+          <div class="p-5">
+            <p class="border-b border-line pb-2 text-xl font-semibold tracking-tight">shipcanal</p>
+            <p class="mt-3 text-xs leading-relaxed text-pretty text-muted">Ships every green commit to production. Build, test and release in one pipeline.</p>
+            <div class="mx-auto mt-3 max-w-sm">
+              <Art art={ciDeploy} />
+            </div>
+            <p class="mt-2 text-sm font-semibold">Install</p>
+            <p class="mt-1.5 rounded-md bg-panel px-3 py-2 font-mono text-xs">bun add shipcanal</p>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>

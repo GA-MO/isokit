@@ -3,7 +3,6 @@ import type { Example } from '../../../skill/examples/shared';
 import { hints } from '../content';
 import Art from './Art.astro';
 import CopyButton from './CopyButton.astro';
-import LevelBadge from './LevelBadge.astro';
 
 interface Props {
   example: Example;
@@ -12,30 +11,35 @@ interface Props {
 const { example } = Astro.props;
 const hint = hints[example.interaction];
 const panel = `prompt-${example.slug}`;
+const span = example.layout === 'wide' || example.level === 'complex';
 ---
 
 <article
   data-card
-  data-category={example.intent}
   data-slug={example.slug}
-  data-layout={example.layout}
-  class:list={[`surface-${example.surface}`, 'flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line bg-surface text-surface-ink', example.layout === 'wide' && 'col-span-full']}
+  class:list={[`surface-${example.surface}`, 'surface-card flex min-w-0 flex-col overflow-hidden rounded-3xl border border-surface-line text-surface-ink', span && 'col-span-full']}
 >
   <div class="relative px-2 pt-2 sm:px-4 sm:pt-4">
     <Art art={example.art} />
     {
       hint && (
         <span class="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-surface-line bg-surface-well px-2.5 py-1 text-xs font-medium text-surface-muted sm:right-6 sm:top-6">
-          <span class="size-1.5 rounded-full bg-accent" aria-hidden="true" />
+          <span class="size-1.5 rounded-full bg-surface-accent" aria-hidden="true" />
           <span class="pointer-coarse:hidden">{hint.fine}</span>
           <span class="hidden pointer-coarse:inline">{hint.coarse}</span>
         </span>
       )
     }
   </div>
-  <div class="flex flex-1 flex-col gap-3 border-t border-surface-line p-5 sm:px-7 sm:py-6">
-    <div class="flex items-center justify-between gap-3">
-      <LevelBadge level={example.level} />
+  <div class="mt-auto flex flex-col gap-3 border-t border-surface-line p-5 sm:px-7 sm:py-6">
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h4 class="flex gap-2 text-base leading-snug font-medium text-balance">
+          <span class="font-mono text-surface-accent" aria-hidden="true">&gt;</span>
+          <span>{example.ask}</span>
+        </h4>
+        <p class="mt-1 pl-5 text-xs text-surface-muted">{example.useCase}</p>
+      </div>
       <button
         type="button"
         data-prompt-toggle
@@ -43,13 +47,9 @@ const panel = `prompt-${example.slug}`;
         aria-controls={panel}
         class="group inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-surface-line px-3 text-xs font-medium text-surface-muted transition-colors duration-150 hover:border-surface-muted hover:text-surface-ink aria-expanded:border-surface-muted aria-expanded:text-surface-ink"
       >
-        Prompt
+        Full prompt
         <svg viewBox="0 0 12 12" class="size-3 transition-transform duration-300 ease-settle group-aria-expanded:rotate-180" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </button>
-    </div>
-    <div>
-      <h4 class="text-lg font-semibold tracking-tight text-balance">{example.title}</h4>
-      <p class="mt-1 max-w-xl text-sm leading-relaxed text-pretty text-surface-muted">{example.story}</p>
     </div>
     <div id={panel} class="disclose" inert>
       <div class="min-h-0 overflow-hidden">
