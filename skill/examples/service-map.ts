@@ -2,7 +2,6 @@ import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
 const ui = surfaces.light;
-const amber = ['#92400e', '#d97706', '#fbbf24', '#fef3c7'] as const;
 
 const services = [
   { id: 'api', cell: [-2, -0.5], p95: '38 ms' },
@@ -73,7 +72,7 @@ function build({ name, width, height, origin, k }: Layout) {
       grain: 0.06,
       edge: ui.edge,
       content: name,
-      hover: { lift, top: '#fffbeb', side: paints.gradient(s, amber), edge: 'rgb(255 255 255 / .9)', guides: 'rgb(217 119 6 / .5)', label: `${sv.id}-stat` },
+      hover: { lift, top: '#fffbeb', side: paints.gradient(s, ramps.gold), edge: 'rgb(255 255 255 / .9)', guides: 'rgb(217 119 6 / .5)', label: `${sv.id}-stat` },
     });
   });
 

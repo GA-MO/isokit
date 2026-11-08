@@ -1,9 +1,8 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example, type Ramp } from './shared';
+import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
 const ui = surfaces.night;
 const sky = ramps.sky;
-const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const names = { compact: 'loadslider-sm', wide: 'loadslider-lg' } as const;
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
@@ -73,7 +72,7 @@ function build({ name, width, height, origin, k, minPx, panel }: Layout) {
   [0, 2].forEach(r => s.wire({ id: `lane-${r}-in`, points: lane(r).slice(0, 4), stroke: ui.wire, width: 1.25, corner: 12 * k, hidden: true }));
   const halo = s.def('plate-halo-fill', `<radialGradient id="$ID"><stop offset="0" stop-color="#38bdf8" stop-opacity=".5"/><stop offset=".5" stop-color="#0284c7" stop-opacity=".2"/><stop offset="1" stop-color="#0284c7" stop-opacity="0"/></radialGradient>`);
   s.face({ id: 'plate-halo', at: [plate.at[0], plate.at[1], -plate.height], size: [plate.size[0] * 1.7, plate.size[1] * 1.9], radius: plate.size[1], fill: halo });
-  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 18 * k, top: '#1c2250', side: paints.brushed(s, dusk), edge: ui.edge });
+  s.slab({ id: 'plate', at: plate.at, size: plate.size, height: plate.height, radius: 18 * k, top: '#1c2250', side: paints.brushed(s, ramps.steel), edge: ui.edge });
   order.forEach(([c, r], i) => {
     s.face({ id: `slot-${i}`, at: [cell(c, r)[0], cell(c, r)[1], 0], size: [size, size], radius, stroke: 'rgb(56 189 248 / .3)', dash: '4 4' });
     s.march(`slot-${i}`, 4, 4, 24);
@@ -103,7 +102,7 @@ function build({ name, width, height, origin, k, minPx, panel }: Layout) {
     s.pivot(`node-${i}`, [at[0], at[1], 0]);
   });
 
-  s.slab({ id: 'lb', at: lb.at, size: [lb.size, lb.size], height: lb.height, radius: 13 * k, top: ui.top, side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'lb', at: lb.at, size: [lb.size, lb.size], height: lb.height, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
   s.text({ id: 'lb-name', at: lb.at, text: 'ingress', size: 11, color: ui.ink, on: 'top', anchor: 'middle' });
 
   const x = panel.anchor === 'left' ? fitX(panel.x, 'load 9,600 req/s · 12 nodes  ', width, minPx, 'left') : panel.x;

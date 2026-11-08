@@ -1,9 +1,8 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
+import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, nightFloor, type Example } from './shared';
 
 const ui = surfaces.night;
 const rose = ramps.rose;
-const steel = ['#10143a', '#232a66', '#38418a', '#a5b4fc'] as const;
 const signal = '#a5b4fc';
 const points = '#f0abfc';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
@@ -39,11 +38,8 @@ function build({ name, width, height, origin, k, wide }: Layout) {
 
   const floorAt: Vec3 = [pay.at[0] * 0.4, 0, -base.height];
   const pitch = 18 * k;
-  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${pitch}" height="${pitch}"><circle cx="${pitch / 2}" cy="${pitch / 2}" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>`);
-  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
-  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
   const span = 640 * k;
-  s.svg('floor', s.plane(floorAt, `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  nightFloor(s, floorAt, span, pitch);
   const glow = (id: string, color: string, strength: number) => s.def(id, `<radialGradient id="$ID"><stop offset=".3" stop-color="${color}" stop-opacity="${strength}"/><stop offset=".55" stop-color="${color}" stop-opacity="${strength / 2.5}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`);
   const haloSize = base.size * 2;
   s.face({ id: 'halo', at: [0, 0, -base.height], size: [haloSize, haloSize], radius: haloSize / 2, fill: glow('halo-cool', '#818cf8', 0.3) });
@@ -67,7 +63,7 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const front = path([corner(-1, 1), corner(1, 1), corner(1, -1)]);
   const dash = (d: string, color: string) => `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.25" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`;
 
-  s.slab({ id: 'base', at: [0, 0, 0], size: [base.size, base.size], height: base.height, radius: 20 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'base', at: [0, 0, 0], size: [base.size, base.size], height: base.height, radius: 20 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
   s.face({ id: 'base-glow', at: [0, 0, 0], size: [base.size, base.size], radius: 20 * k, fill: 'rgb(165 180 252 / .16)', stroke: signal, strokeWidth: 1.25 });
   s.text({ id: 'base-name', at: [-base.size / 2 + 16 * k, base.size / 2 - 16 * k, 0], text: 'risk', size: 11, color: ui.muted, on: 'top' });
 
@@ -85,7 +81,7 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   s.svg('ring-front', dash(front, 'rgb(199 210 254 / .35)'));
   s.svg('ring-front-hot', dash(front, rose[2]));
 
-  s.slab({ id: 'pay', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'pay', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
   s.slab({ id: 'pay-hot', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.gradient(s, rose), grain: 0.06, edge: 'rgb(254 205 211 / .3)' });
   s.face({ id: 'pay-glow', at: pay.at, size: [pay.size, pay.size], radius: 14 * k, fill: 'rgb(165 180 252 / .16)', stroke: signal, strokeWidth: 1.25 });
   s.text({ id: 'pay-name', at: [pay.at[0], pay.at[1], 0], text: '$1,240', size: 11, color: ui.ink, on: 'top', anchor: 'middle' });

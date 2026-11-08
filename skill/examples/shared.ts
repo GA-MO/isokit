@@ -1,4 +1,4 @@
-import { responsive, type Material, type Scene, type SidePaint } from '../lib/iso';
+import { responsive, type Material, type Scene, type SidePaint, type Vec3 } from '../lib/iso';
 import type { Page } from '../scripts/render';
 
 export const levels = ['spot', 'simple', 'medium', 'complex'] as const;
@@ -101,6 +101,8 @@ export const ramps = {
   emerald: ['#022c22', '#047857', '#34d399', '#d1fae5'],
   amber: ['#451a03', '#b45309', '#fbbf24', '#fef3c7'],
   rose: ['#4c0519', '#be123c', '#fb7185', '#ffe4e6'],
+  gold: ['#92400e', '#d97706', '#fbbf24', '#fef3c7'],
+  steel: ['#10143a', '#232a66', '#38418a', '#a5b4fc'],
 } as const satisfies Record<string, Ramp>;
 
 type Band = Parameters<SidePaint>[3];
@@ -258,6 +260,14 @@ export const paints = {
   glass,
   random,
 };
+
+export function nightFloor(s: Scene, at: Vec3, span: number, pitch = 16) {
+  if (!(span > 0 && pitch > 0)) throw new Error(`nightFloor: span and pitch must be positive scene units, got ${span} and ${pitch}`);
+  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${n(pitch)}" height="${n(pitch)}"><circle cx="${n(pitch / 2)}" cy="${n(pitch / 2)}" r="1" fill="#c7d2fe" opacity=".25"/></pattern>`);
+  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".72" stop-color="#fff" stop-opacity="0"/></radialGradient>');
+  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
+  s.svg('floor', s.plane(at, `<rect x="${n(-span / 2)}" y="${n(-span / 2)}" width="${n(span)}" height="${n(span)}" fill="${dots}" mask="${mask}"/>`));
+}
 
 export function page(e: { title: string; surface: Surface; art: Art }): Page {
   const s = surfaces[e.surface];

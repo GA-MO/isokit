@@ -1,9 +1,8 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, surfaces, type Example, type Ramp } from './shared';
+import { art, fitX, fonts, narrowest, nightFloor, page, paints, ramps, surfaces, type Example, type Ramp } from './shared';
 
 const ui = surfaces.night;
 const cyan: Ramp = ['#083344', '#0e7490', '#22d3ee', '#cffafe'];
-const steel: Ramp = ['#10143a', '#232a66', '#38418a', '#a5b4fc'];
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const anticipateExit = 'linear(0, -0.007 11.8%, -0.045 37.8%, -0.048 57%, -0.028 63.2%, 0.018 69.3%, 0.079 74.3%, 0.164 79.3%, 0.27 84%, 0.392 88.3%, 0.459 90.3%, 0.535 92.3%, 0.609 94%, 0.694 95.8%, 0.777 97.3%, 0.859 98.5%, 0.942 99.5%, 1)';
 
@@ -40,11 +39,8 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   const floor: Vec3 = [-40 * k, 0, -tileH];
 
   const pitch = 18 * k;
-  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${pitch}" height="${pitch}"><circle cx="${pitch / 2}" cy="${pitch / 2}" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>`);
-  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
-  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
   const span = 560 * k;
-  s.svg('floor', s.plane(floor, `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  nightFloor(s, floor, span, pitch);
   const halo = s.def('halo-fill', '<radialGradient id="$ID"><stop offset=".35" stop-color="#22d3ee" stop-opacity=".45"/><stop offset=".6" stop-color="#22d3ee" stop-opacity=".16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>');
   s.face({ id: 'halo', at: [clock[0], clock[1], -tileH], size: [plate * 1.6, plate * 1.6], radius: plate * 0.8, fill: halo });
 
@@ -54,7 +50,7 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   });
 
   s.group('clock', () => {
-    s.slab({ id: 'plate', at: clock, size: [plate, plate], height: 16 * k, radius: plate / 2, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+    s.slab({ id: 'plate', at: clock, size: [plate, plate], height: 16 * k, radius: plate / 2, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
     Array.from({ length: ticks }, (_, j) => {
       const d = (major(j) ? 16 : 9) * k;
       s.face({ id: `tick-${j}`, at: dial(j), size: [d, d], radius: d / 2, ...(major(j) ? { fill: 'rgb(34 211 238 / .16)', stroke: 'rgb(34 211 238 / .5)' } : { fill: 'rgb(199 210 254 / .16)' }) });
@@ -67,7 +63,7 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
     const at = tileAt(i);
     s.group(`job-${i}`, () => {
       s.slab({ id: `job-${i}-run`, at, size: [tile, tile], height: tileH, radius: 12 * k, top: ui.top, side: paints.stripes(s, cyan, 3), grain: 0.06, edge: ui.edge });
-      s.slab({ id: `job-${i}-rest`, at, size: [tile, tile], height: tileH, radius: 12 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge, shadow: false });
+      s.slab({ id: `job-${i}-rest`, at, size: [tile, tile], height: tileH, radius: 12 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge, shadow: false });
       s.face({ id: `job-${i}-hit`, at, size: [tile, tile], radius: 12 * k, fill: 'rgb(34 211 238 / .1)', stroke: cyan[2], strokeWidth: 1.5 });
       s.text({ id: `job-${i}-time`, at, text: r.time, size: width > 520 ? 14 : 11, color: ui.ink, on: 'top', anchor: 'middle' });
     });

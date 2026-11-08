@@ -1,9 +1,8 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, paints, ramps, surfaces, type Example } from './shared';
+import { art, fonts, page, paints, ramps, surfaces, nightFloor, type Example } from './shared';
 
 const ui = surfaces.night;
 const emerald = ramps.emerald;
-const steel = ['#10143a', '#232a66', '#38418a', '#a5b4fc'] as const;
 const rise = 'cubic-bezier(.32,.5,.06,1)';
 
 const cells = 4;
@@ -18,10 +17,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const base = (i: number): Vec3 => [0, 0, -h + pad + i * (cellH + gap)];
   const ground: Vec3 = [0, 0, -h];
 
-  const dots = s.def('floor-dots', '<pattern id="$ID" patternUnits="userSpaceOnUse" width="14" height="14"><circle cx="7" cy="7" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>');
-  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#fff" stop-opacity=".7"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
-  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
-  s.svg('floor', s.plane(ground, `<rect x="-210" y="-210" width="420" height="420" fill="${dots}" mask="${mask}"/>`));
+  nightFloor(s, ground, 420, 14);
   const halo = s.def('halo-fill', '<radialGradient id="$ID"><stop offset="0" stop-color="#34d399" stop-opacity=".55"/><stop offset=".45" stop-color="#10b981" stop-opacity=".18"/><stop offset="1" stop-color="#10b981" stop-opacity="0"/></radialGradient>');
   s.face({ id: 'halo', at: ground, size: [260, 260], radius: 130, fill: halo });
   s.face({ id: 'halo-full', at: ground, size: [260, 260], radius: 130, fill: halo });
@@ -34,7 +30,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.slab({ id: 'case', at: [0, 0, 0], size: [w, d], height: h, radius: 22, top: 'rgb(199 210 254 / .06)', side: paints.glass(s, '#3b4a9a', 0.3), edge: 'rgb(199 210 254 / .4)', translucent: true });
   s.face({ id: 'case-glow', at: [0, 0, 0], size: [w, d], radius: 22, fill: 'rgb(52 211 153 / .22)' });
   const nub: Vec3 = [0, 0, 13];
-  s.slab({ id: 'nub', at: nub, size: [46, 34], height: 13, radius: 9, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge, shadow: false });
+  s.slab({ id: 'nub', at: nub, size: [46, 34], height: 13, radius: 9, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge, shadow: false });
   s.face({ id: 'nub-lit', at: nub, size: [46, 34], radius: 9, fill: 'rgb(52 211 153 / .7)' });
 
   s.dropIn('case', 0.1);

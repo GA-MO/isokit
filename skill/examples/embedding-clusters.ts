@@ -2,7 +2,6 @@ import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, n, narrowest, page, paints, ramps, rng, surfaces, type Example, type Ramp } from './shared';
 
 const ui = surfaces.night;
-const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const snapOff = 'cubic-bezier(.45,.86,.17,.96)';
 const redraw = 'cubic-bezier(.31,.12,.03,.72)';
@@ -74,7 +73,7 @@ function build(l: Layout) {
   const list = points();
 
   const grid = s.def('plate-grid', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${n(18 * k)}" height="${n(18 * k)}"><circle cx="${n(9 * k)}" cy="${n(9 * k)}" r="1" fill="#c7d2fe" opacity=".16"/></pattern>`);
-  s.slab({ id: 'plate', at: [0, 0, 0], size: [plateSize, plateSize], height: top, radius: 34 * k, top: '#1c2250', side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge, content: `<rect x="${n(-plateSize / 2)}" y="${n(-plateSize / 2)}" width="${n(plateSize)}" height="${n(plateSize)}" fill="${grid}"/>` });
+  s.slab({ id: 'plate', at: [0, 0, 0], size: [plateSize, plateSize], height: top, radius: 34 * k, top: '#1c2250', side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge, content: `<rect x="${n(-plateSize / 2)}" y="${n(-plateSize / 2)}" width="${n(plateSize)}" height="${n(plateSize)}" fill="${grid}"/>` });
 
   clusters.forEach(c => {
     const pool = s.def(`pool-${c.id}-fill`, `<radialGradient id="$ID"><stop offset="0" stop-color="${c.ramp[2]}" stop-opacity=".42"/><stop offset=".5" stop-color="${c.ramp[2]}" stop-opacity=".14"/><stop offset="1" stop-color="${c.ramp[2]}" stop-opacity="0"/></radialGradient>`);
@@ -90,7 +89,7 @@ function build(l: Layout) {
   list.forEach((p, i) => {
     const at = v(p.scatter);
     s.group(`pt-${i}`, () => {
-      s.slab({ id: `pt-${i}-n`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: '#343c78', side: paints.brushed(s, dusk), edge: 'rgb(199 210 254 / .3)' });
+      s.slab({ id: `pt-${i}-n`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: '#343c78', side: paints.brushed(s, ramps.steel), edge: 'rgb(199 210 254 / .3)' });
       s.slab({ id: `pt-${i}-c`, at, size: [dot, dot], height: 7 * k, radius: 5 * k, top: p.cluster.ramp[2], side: paints.gradient(s, p.cluster.ramp), edge: 'rgb(255 255 255 / .45)' });
     });
   });

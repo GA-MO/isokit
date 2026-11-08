@@ -4,7 +4,6 @@ import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Exampl
 const ui = surfaces.light;
 const accent = '#d97706';
 const accentInk = '#b45309';
-const gold = ['#92400e', '#d97706', '#fbbf24', '#fef3c7'] as const;
 const okInk = '#047857';
 const line = 'rgb(22 23 27 / .14)';
 const paidInk = '#065f46';
@@ -99,7 +98,7 @@ function build(l: Layout) {
 
   s.group('engine-g', () => {
     const top: Vec3 = [engine[0], engine[1], engineH];
-    s.slab({ id: 'engine', at: top, size: [engineSize, engineSize], height: engineH, radius: 18 * k, top: ui.top, side: paints.gradient(s, gold), grain: 0.08, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' });
+    s.slab({ id: 'engine', at: top, size: [engineSize, engineSize], height: engineH, radius: 18 * k, top: ui.top, side: paints.gradient(s, ramps.gold), grain: 0.08, edge: ui.edge, outline: 'rgb(180 83 9 / .3)' });
     s.face({ id: 'engine-glow', at: top, size: [engineSize, engineSize], radius: 18 * k, fill: 'rgb(245 158 11 / .22)' });
     s.text({ id: 'engine-name', at: top, text: 'billing', size: 12, color: '#92400e', on: 'top', anchor: 'middle' });
   });

@@ -1,10 +1,9 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, page, paints, ramps, surfaces, type Example } from './shared';
+import { art, fitX, fonts, page, paints, ramps, surfaces, nightFloor, type Example } from './shared';
 
 const ui = surfaces.night;
 const gold = ramps.amber;
 const accent = '#fbbf24';
-const steel = ['#10143a', '#232a66', '#38418a', '#a5b4fc'] as const;
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
@@ -39,11 +38,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const z = -14 * k;
 
   const pitch = 18 * k;
-  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${pitch}" height="${pitch}"><circle cx="${pitch / 2}" cy="${pitch / 2}" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>`);
-  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
-  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
   const span = 620 * k;
-  s.svg('floor', s.plane([-20 * k, 0, -vaultH], `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  nightFloor(s, [-20 * k, 0, -vaultH], span, pitch);
   const halo = s.def('halo-fill', '<radialGradient id="$ID"><stop offset=".3" stop-color="#fcd34d" stop-opacity=".55"/><stop offset=".6" stop-color="#fbbf24" stop-opacity=".18"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/></radialGradient>');
   s.face({ id: 'halo', at: [vault[0], vault[1], -vaultH], size: [vaultSize * 1.8, vaultSize * 1.8], radius: vaultSize * 0.9, fill: halo });
 
@@ -75,7 +71,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   services.forEach(c => {
     const at: Vec3 = [chX, c.y * k, 0];
     s.group(c.id, () => {
-      s.slab({ id: `${c.id}-slab`, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+      s.slab({ id: `${c.id}-slab`, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
       s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(252 211 77 / .1)', stroke: accent, strokeWidth: 1.5 });
       const chip: Vec3 = [at[0] - 8 * k, at[1], 0];
       s.svg(`${c.id}-chip`, s.plane(chip, keyGlyph(k * 0.8, '#5b64a8')));

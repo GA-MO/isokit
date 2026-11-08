@@ -1,8 +1,7 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fonts, n, page, ramps, surfaces, type Example, type Ramp, paints } from './shared';
+import { art, fonts, n, page, ramps, surfaces, type Example, paints, nightFloor } from './shared';
 
 const ui = surfaces.night;
-const dusk: Ramp = ['#12163a', '#232a62', '#3a4391', '#a5b4fc'];
 const metric = '#2dd4bf';
 const trace = '#99f6e4';
 const log = '#b4bbe0';
@@ -93,11 +92,8 @@ function build(l: Layout) {
   const { k } = l;
   const s = new Scene({ name: l.name, width: l.width, height: l.height, origin: l.origin, font: fonts.sans, mono: fonts.mono, label: ui.label });
   const ground = -34 * k;
-  const grid = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="18" height="18"><circle cx="9" cy="9" r="1.1" fill="#c7d2fe" opacity=".2"/></pattern>`);
-  const fade = s.def('floor-fade', `<radialGradient id="$ID"><stop offset=".25" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`);
-  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
   const span = n(720 * k);
-  s.svg('floor', s.plane([l.collector[0], l.collector[1], ground], `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${grid}" mask="${mask}"/>`));
+  nightFloor(s, [l.collector[0], l.collector[1], ground], span, 18);
   const halo = s.def('collector-halo-fill', `<radialGradient id="$ID"><stop offset="0" stop-color="#2dd4bf" stop-opacity=".5"/><stop offset=".45" stop-color="#0d9488" stop-opacity=".18"/><stop offset="1" stop-color="#0d9488" stop-opacity="0"/></radialGradient>`);
   s.face({ id: 'collector-halo', at: [l.collector[0], l.collector[1], ground], size: [300 * k, 300 * k], radius: 150 * k, fill: halo });
 
@@ -133,7 +129,7 @@ function build(l: Layout) {
   l.services.forEach((at, i) => {
     const name = services[i]!;
     s.group(`svc-${name}`, () => {
-      s.slab({ id: `svc-${name}-slab`, at, size: [bs, bs], height: 22 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, dusk), grain: 0.06, edge: ui.edge });
+      s.slab({ id: `svc-${name}-slab`, at, size: [bs, bs], height: 22 * k, radius: 13 * k, top: ui.top, side: paints.brushed(s, ramps.steel), grain: 0.06, edge: ui.edge });
       if (i === spiking) s.face({ id: 'svc-hot', at, size: [bs, bs], radius: 13 * k, fill: 'rgb(251 113 133 / .42)' });
       s.text({ id: `svc-${name}-name`, at, text: name, size: 11, color: ui.ink, on: 'top', anchor: 'middle' });
     });
@@ -147,7 +143,7 @@ function build(l: Layout) {
   });
 
   const [tw, td] = l.timelineSize;
-  s.slab({ id: 'timeline', at: l.timeline, size: [tw, td], height: 12 * k, radius: 12 * k, top: '#1c2250', side: paints.brushed(s, dusk), grain: 0.05, edge: ui.edge });
+  s.slab({ id: 'timeline', at: l.timeline, size: [tw, td], height: 12 * k, radius: 12 * k, top: '#1c2250', side: paints.brushed(s, ramps.steel), grain: 0.05, edge: ui.edge });
   const spans = [
     { id: 'span-root', x0: 0.08, len: 0.7, row: 0, color: trace },
     { id: 'span-auth', x0: 0.2, len: 0.32, row: 1, color: trace },
@@ -163,7 +159,7 @@ function build(l: Layout) {
   });
 
   const [bw, bd] = l.boardSize;
-  s.slab({ id: 'board', at: l.board, size: [bw, bd], height: 12 * k, radius: 12 * k, top: '#1c2250', side: paints.brushed(s, dusk), grain: 0.05, edge: ui.edge });
+  s.slab({ id: 'board', at: l.board, size: [bw, bd], height: 12 * k, radius: 12 * k, top: '#1c2250', side: paints.brushed(s, ramps.steel), grain: 0.05, edge: ui.edge });
   const barAt = (i: number): Vec3 => [l.board[0], l.board[1] + (i - 1) * bd * 0.3, l.board[2]];
   const barSize = 24 * k;
   services.forEach((name, i) => {
