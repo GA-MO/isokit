@@ -471,7 +471,7 @@ const compactLayout: Layout = {
     'shard-b': { at: sp(-160, -40), exit: 'x' },
   },
   pool: { at: sp(0, 205), cols: 6, rows: 5, pitch: 26, pod: 18, empty: [17, 22, 23, 27, 28, 29], from: 'worker-c' },
-  card: { x: 16, y: 16, w: 358, h: 80, text: 13, head: 12 },
+  card: { x: 16, y: 16, w: 358, h: 80, text: 12, head: 12 },
   counter: { at: [354, 36], text: 12 },
   feed: [195, 96],
   ground: { at: [195, 290], size: 640, pitch: 18 },

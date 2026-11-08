@@ -1,29 +1,26 @@
 <p align="center">
-  <img src="docs/svg/hero.svg" alt="A one-line prompt types in, one box spins in and lands, and the system grows to 40 connected nodes with requests flowing through it" width="720">
+  <img src="docs/svg/hero.svg" alt="The sentence Show how our orders API scales to 1M users types into a Claude Code window, one box spins in and lands, and the system grows to 40 connected nodes with requests flowing through it" width="720">
 </p>
 
 <h1 align="center">isokit</h1>
 
-<p align="center"><b>Animated isometric explainers, drawn from a prompt.</b><br>
-An Agent Skill that turns the story of your product into a looping isometric scene in plain SVG.<br>
+<p align="center"><b>Explain how your product works in one sentence. Get an animated diagram for your landing page.</b><br>
+A Claude Code skill that turns one sentence about your system into an animated isometric diagram: one SVG file, no dependencies, yours to edit.<br>
 <a href="https://ga-mo.github.io/isokit/">Live showcase</a> · <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#the-kit">The kit</a> · <a href="#numbers">Numbers</a></p>
 
-You describe a product story. The `iso` skill storyboards it into three to six beats from measured motion recipes and draws it with a small kit: rounded slabs, wires that draw themselves, light pulses, text, and a loop that returns to its first frame. The scene is plain SVG with CSS and WAAPI motion. It needs no animation library, pauses off screen and shows a still frame for reduced motion. The image above is the showcase hero, exported by the kit as one SVG that animates with CSS alone, so it plays right here in the README.
+It is not an animation library or a hosted service. You describe how your product works in a sentence. The `iso` skill storyboards it into three to six beats from measured motion recipes and draws it with a small kit: rounded slabs, wires that draw themselves, light pulses, text, and a loop that returns to its first frame. The scene is plain SVG with CSS and WAAPI motion. It needs no animation library, pauses off screen and shows a still frame for reduced motion. The image above is the showcase hero: one sentence typed to Claude, and the diagram drawn from it, exported by the kit as one SVG that animates with CSS alone, so it plays right here in the README. Paste a scene like it into a landing page hero, a docs page, a pitch deck or a README.
 
 ## Gallery
 
-Every image here is a real scene from `skill/examples/`, written by `exportSvg()` into `docs/svg/`. The [showcase](https://ga-mo.github.io/isokit/) plays all 64 scenes with their prompts.
+Every image here is a real scene from `skill/examples/`, written by `exportSvg()` into `docs/svg/`. The [showcase](https://ga-mo.github.io/isokit/) plays 44 explainers grouped by what they explain (how data flows, how it scales, what's inside, before and after, pick one, who talks to whom), each headed by the prompt behind it, and shows four of them inside made-up pages.
+
+It also draws small spot illustrations for feature lists and empty states, seven of them on the showcase. Three of them:
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/svg/battery-charge.svg" alt="Battery cells fill one by one" width="100%"></td>
     <td width="33%"><img src="docs/svg/sync-loop.svg" alt="Two arrows circle a tile while it syncs" width="100%"></td>
-    <td width="33%"><img src="docs/svg/tile-loader.svg" alt="Nine tiles drop in a diagonal wave" width="100%"></td>
-  </tr>
-  <tr>
-    <td><img src="docs/svg/inbox-fill.svg" alt="Letters stack in a glass tray" width="100%"></td>
-    <td><img src="docs/svg/alert-stack.svg" alt="Notification cards stack on a tile while a badge counts up" width="100%"></td>
-    <td><img src="docs/svg/keycard-slot.svg" alt="A keycard slides into a reader and its light turns green" width="100%"></td>
+    <td width="33%"><img src="docs/svg/inbox-fill.svg" alt="Letters stack in a glass tray" width="100%"></td>
+    <td width="33%"><img src="docs/svg/battery-charge.svg" alt="Battery cells fill one by one" width="100%"></td>
   </tr>
 </table>
 
@@ -187,19 +184,19 @@ s.exportSvg();   // one standalone SVG, animated with CSS @keyframes, no script
 
 ## What is in `skill/examples/`
 
-There are 64 scenes for fictional products at four levels, in four categories (the showcase tabs: Product, Security, Infra, Data & AI), each tagged with one of seven layouts. Every tab has at least one scene at every level.
+There are 51 scenes for fictional products: 44 explainers and 7 spot illustrations. Each explainer has an `intent`, the question it answers and the showcase group it sits in (`flow` how data flows, `scale` how it scales, `inside` what's inside, `change` before and after, `choose` pick one, `talk` who talks to whom), and an `ask`, the short prompt that heads its card. Every scene is tagged with one of seven layouts. Most scenes sit on the light surface; at most one in five uses the `night` surface (a deep indigo backdrop with coloured sides and glow), and none uses a plain dark one.
 
 | Layout | Composition | Scenes |
 |---|---|---|
 | wide | a long strip read left to right, shown as a full-width card at about 3:1 | CI/CD, ETL, queue and workers, a live funnel, a billing cycle, parcel delivery, test shards |
-| diagonal | a long row along an iso axis | database branching, edge cache, a firewall, blue-green, snapshot restore, retrieval-backed answer, training loss, a re-ranking shelf, a kanban card, stock sync, diff to merge, a refund |
-| panels | upright panels facing each other | sign-in with 2-step, live cursors, two approvals, design comments, one message in six languages (Thai included) |
-| radial | a core with things on a ring | notifications, agent tools, payments, observability, key rotation, data erasure, health checks, DNS, cron, A/B test, CMS publishing, sensors to a gateway, a smart home scene, currency conversion |
-| field | a wide field or grid from high up | file upload, a service map you can hover, search index, a flag rollout you can play, zero-trust, a scheduler, autoscaling, embeddings, an OTA rollout, build cache, calendar booking, a load slider you can drag |
-| exploded | layers lifted apart | an audit ledger, video transcoding, image sizes, a fraud gauge, data lineage, a system you click to drill into |
-| object | one or two objects | a keycard reader, a sync loop, a filling inbox, a charging battery, an alert stack, a table scan, a tile loader, an empty box |
+| diagonal | a long row along an iso axis | database branching, edge cache, a firewall, blue-green, snapshot restore, retrieval-backed answer, training loss, a re-ranking shelf, stock sync |
+| panels | upright panels facing each other | sign-in with 2-step, live cursors, two approvals, one message in six languages (Thai included) |
+| radial | a core with things on a ring | notifications, agent tools, payments, observability, key rotation, health checks, DNS, cron, A/B test, a smart home scene |
+| field | a wide field or grid from high up | file upload, a service map you can hover, search index, a flag rollout you can play, a scheduler, embeddings, build cache, calendar booking, a load slider you can drag |
+| exploded | layers lifted apart | an audit ledger, video transcoding, a fraud gauge, data lineage, a system you click to drill into |
+| object | one or two objects | a keycard reader, a sync loop, a filling inbox, a charging battery, a table scan, a tile loader, an empty box |
 
-There is also the hero, and the 49 side finishes in `materials-*.ts` with one gallery per family in `material-gallery.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
+There is also the hero (`readme` holds its README copy with the prompt drawn in a terminal card), four `inContext` copies the showcase plays inside made-up pages, and the 49 side finishes in `materials-*.ts` with one gallery per family in `material-gallery.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
 
 ## Numbers
 
@@ -207,17 +204,17 @@ All numbers were measured on 2026-11-07 on an Apple silicon Mac with Chrome. 1 k
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero inline, 70 empty scene boxes, folded prompts, the install tabs) | 563.7 kB | 51.9 kB |
+| Showcase `index.html` (the hero inline, 61 empty scene boxes, folded prompts, the install tabs) | 563.7 kB | 51.9 kB |
 | Showcase CSS | 25.7 kB | 5.8 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.5 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
-| All 132 scene files in `site/dist/scenes/` (compact and wide copies) | 14150.0 kB | 1110.0 kB |
+| All 115 scene files in `site/dist/scenes/` (compact and wide copies) | 14150.0 kB | 1110.0 kB |
 | Largest scene file (`embed-lg.html`) | 389.6 kB | 21.7 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
 | `docs/svg/hero.svg` (the image at the top) | 88.8 kB | 10.0 kB |
 
-The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (70), not all 132.
+The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (61), not all 115.
 
 Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load; the frame rate does not. The hero flashes with `fill` and moves pulses by dash offset, which only repaint, and has no pan or wobble on large groups, because an opacity or transform track on any SVG element re-layerizes the page every frame:
 
@@ -226,7 +223,7 @@ Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome,
 | 393 px (phone) | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 22.9 % (18.3 to 23.5) |
 | 1280 px | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 24.9 % (24.2 to 26.9) |
 
-The whole showcase at rest, after scrolling through it once so all 72 scenes are mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s, median of five runs per side alternated with the build before this change, range in brackets. Before, every mounted scene stayed painted and kept its paused animations (1,594 in effect at 1280 px in one run), and Chrome walked all of them every frame. Now a scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. Every median is under 25 %; two single runs went over (25.6 % at 1280 px, 50 %, and 26.4 % at 393 px, 35 %), because a 4 s window catches a busier or quieter part of a scene's loop:
+The whole showcase at rest, after scrolling through it once so all 63 scenes are mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s, median of five runs per side alternated with the build before this change, range in brackets. Before, every mounted scene stayed painted and kept its paused animations (1,594 in effect at 1280 px in one run), and Chrome walked all of them every frame. Now a scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. Every median is under 25 %; two single runs went over (25.6 % at 1280 px, 50 %, and 26.4 % at 393 px, 35 %), because a 4 s window catches a busier or quieter part of a scene's loop:
 
 | Stop | 1280 px, DPR 2 | 393 px, DPR 3 |
 |---|---|---|
