@@ -1,9 +1,10 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
+const ui = surfaces.night;
 const gold = ramps.amber;
 const accent = '#fbbf24';
+const steel = ['#10143a', '#232a66', '#38418a', '#a5b4fc'] as const;
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const pull = 'cubic-bezier(.41,.27,.05,.79)';
 const shift = 'cubic-bezier(.49,.19,.28,.81)';
@@ -37,6 +38,15 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const chX = 110 * k;
   const z = -14 * k;
 
+  const pitch = 18 * k;
+  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${pitch}" height="${pitch}"><circle cx="${pitch / 2}" cy="${pitch / 2}" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>`);
+  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
+  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
+  const span = 620 * k;
+  s.svg('floor', s.plane([-20 * k, 0, -vaultH], `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  const halo = s.def('halo-fill', '<radialGradient id="$ID"><stop offset=".3" stop-color="#fcd34d" stop-opacity=".55"/><stop offset=".6" stop-color="#fbbf24" stop-opacity=".18"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/></radialGradient>');
+  s.face({ id: 'halo', at: [vault[0], vault[1], -vaultH], size: [vaultSize * 1.8, vaultSize * 1.8], radius: vaultSize * 0.9, fill: halo });
+
   services.forEach(c => {
     const y = c.y * k;
     const from = vault[0] + vaultSize / 2;
@@ -46,7 +56,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   });
 
   s.group('vault-g', () => {
-    s.slab({ id: 'vault', at: vault, size: [vaultSize, vaultSize], height: vaultH, radius: 22 * k, top: ui.top, side: paints.gradient(s, gold), grain: 0.06, edge: ui.edge });
+    s.slab({ id: 'vault', at: vault, size: [vaultSize, vaultSize], height: vaultH, radius: 22 * k, top: '#2f2a55', side: paints.gradient(s, gold), grain: 0.06, edge: 'rgb(253 230 138 / .45)' });
     s.face({ id: 'vault-glow', at: vault, size: [vaultSize, vaultSize], radius: 22 * k, fill: 'rgb(251 191 36 / .2)' });
     s.text({ id: 'vault-name', at: [vault[0], vault[1] + vaultSize / 2, -vaultH * 0.5], text: 'vault', size: 12, color: '#fffbeb', on: 'left', anchor: 'middle' });
     [slotA, slotB].forEach((at, i) => s.face({ id: `slot-${i}`, at: [at[0], at[1], 0], size: [keySize, keySize], radius: 9 * k, stroke: 'rgb(253 230 138 / .35)', dash: '4 4' }));
@@ -56,7 +66,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
 
   const key = (id: string, at: Vec3) =>
     s.group(id, () => {
-      s.slab({ id: `${id}-slab`, at, size: [keySize, keySize], height: keyH, radius: 9 * k, top: '#231d10', side: paints.gradient(s, gold), grain: 0.06, edge: 'rgb(253 230 138 / .4)' });
+      s.slab({ id: `${id}-slab`, at, size: [keySize, keySize], height: keyH, radius: 9 * k, top: '#3a2c4a', side: paints.gradient(s, gold), grain: 0.06, edge: 'rgb(253 230 138 / .5)' });
       s.svg(`${id}-mark`, s.plane(at, keyGlyph(k, accent)));
     });
   key('key-new', slotB);
@@ -65,12 +75,12 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   services.forEach(c => {
     const at: Vec3 = [chX, c.y * k, 0];
     s.group(c.id, () => {
-      s.slab({ id: `${c.id}-slab`, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-      s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(251 191 36 / .22)' });
+      s.slab({ id: `${c.id}-slab`, at, size: [chSize, chSize], height: 20 * k, radius: 14 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+      s.face({ id: `${c.id}-hit`, at, size: [chSize, chSize], radius: 14 * k, fill: 'rgb(252 211 77 / .1)', stroke: accent, strokeWidth: 1.5 });
       const chip: Vec3 = [at[0] - 8 * k, at[1], 0];
-      s.svg(`${c.id}-chip`, s.plane(chip, keyGlyph(k * 0.8, '#52525b')));
+      s.svg(`${c.id}-chip`, s.plane(chip, keyGlyph(k * 0.8, '#5b64a8')));
       s.svg(`${c.id}-chip-on`, s.plane(chip, keyGlyph(k * 0.8, accent)));
-      s.text({ id: `${c.id}-name`, at: [at[0] + chSize / 2 - 13 * k, at[1], 0], text: c.id, size: wide ? 11 : 10, color: '#a1a1aa', on: 'top', along: 'y', anchor: 'middle' });
+      s.text({ id: `${c.id}-name`, at: [at[0] + chSize / 2 - 13 * k, at[1], 0], text: c.id, size: wide ? 11 : 10, color: ui.muted, on: 'top', along: 'y', anchor: 'middle' });
     });
     if (wide) {
       const [x, y] = s.project([chX + chSize / 2 + 18, c.y * k - 18, 0]);
@@ -134,7 +144,7 @@ export const example: Example = {
   intent: 'change',
   layout: 'radial',
   useCase: 'Secrets',
-  surface: 'dark',
+  surface: 'night',
   interaction: 'watch',
   art: art(build('vault-sm', 390, 400, [200, 206], 0.76, false), build('vault-lg', 720, 400, [334, 212], 1, true), 520),
 };

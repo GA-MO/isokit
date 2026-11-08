@@ -1,9 +1,11 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const amber = ramps.amber;
+const ui = surfaces.night;
 const rose = ramps.rose;
+const steel = ['#10143a', '#232a66', '#38418a', '#a5b4fc'] as const;
+const signal = '#a5b4fc';
+const points = '#f0abfc';
 const settle = 'cubic-bezier(.39,.08,.04,.91)';
 const popIn = 'linear(0, 0.007 1.5%, 0.033 3.3%, 0.078 5%, 0.14 6.8%, 0.216 8.5%, 0.305 10.3%, 0.709 17.3%, 0.863 20.3%, 0.936 22%, 0.987 23.5%, 1.03 25.3%, 1.052 26.8%, 1.06 28.2%, 1.06 38.3%, 1.015 67.5%, 1)';
 
@@ -35,8 +37,20 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const near: Vec3 = [dir * base.size / 2, 0, wz];
   const far: Vec3 = [pay.at[0] - dir * pay.size / 2, 0, wz];
 
+  const floorAt: Vec3 = [pay.at[0] * 0.4, 0, -base.height];
+  const pitch = 18 * k;
+  const dots = s.def('floor-dots', `<pattern id="$ID" patternUnits="userSpaceOnUse" width="${pitch}" height="${pitch}"><circle cx="${pitch / 2}" cy="${pitch / 2}" r=".9" fill="#c7d2fe" opacity=".3"/></pattern>`);
+  const fade = s.def('floor-fade', '<radialGradient id="$ID"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fff" stop-opacity=".6"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient>');
+  const mask = s.def('floor-mask', `<mask id="$ID" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${fade}"/></mask>`);
+  const span = 640 * k;
+  s.svg('floor', s.plane(floorAt, `<rect x="${-span / 2}" y="${-span / 2}" width="${span}" height="${span}" fill="${dots}" mask="${mask}"/>`));
+  const glow = (id: string, color: string, strength: number) => s.def(id, `<radialGradient id="$ID"><stop offset=".3" stop-color="${color}" stop-opacity="${strength}"/><stop offset=".55" stop-color="${color}" stop-opacity="${strength / 2.5}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`);
+  const haloSize = base.size * 2;
+  s.face({ id: 'halo', at: [0, 0, -base.height], size: [haloSize, haloSize], radius: haloSize / 2, fill: glow('halo-cool', '#818cf8', 0.3) });
+  s.face({ id: 'halo-hot', at: [0, 0, -base.height], size: [haloSize, haloSize], radius: haloSize / 2, fill: glow('halo-rose', '#f43f5e', 0.7) });
+
   s.wire({ id: 'w-in', points: [far, near], stroke: ui.wire, width: 1.25 });
-  s.pulse({ id: 'p-in', wire: 'w-in', color: amber[2], length: 0.2 });
+  s.pulse({ id: 'p-in', wire: 'w-in', color: signal, length: 0.2 });
   s.wire({ id: 'w-out', points: [near, far], stroke: 'rgb(255 255 255 / 0)', width: 1.25 });
   s.pulse({ id: 'p-out', wire: 'w-out', color: rose[2], length: 0.2 });
 
@@ -53,33 +67,33 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const front = path([corner(-1, 1), corner(1, 1), corner(1, -1)]);
   const dash = (d: string, color: string) => `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.25" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`;
 
-  s.slab({ id: 'base', at: [0, 0, 0], size: [base.size, base.size], height: base.height, radius: 20 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
-  s.face({ id: 'base-glow', at: [0, 0, 0], size: [base.size, base.size], radius: 20 * k, fill: 'rgb(251 191 36 / .2)' });
-  s.text({ id: 'base-name', at: [-base.size / 2 + 16 * k, base.size / 2 - 16 * k, 0], text: 'risk', size: 11, color: '#a1a1aa', on: 'top' });
+  s.slab({ id: 'base', at: [0, 0, 0], size: [base.size, base.size], height: base.height, radius: 20 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
+  s.face({ id: 'base-glow', at: [0, 0, 0], size: [base.size, base.size], radius: 20 * k, fill: 'rgb(165 180 252 / .16)', stroke: signal, strokeWidth: 1.25 });
+  s.text({ id: 'base-name', at: [-base.size / 2 + 16 * k, base.size / 2 - 16 * k, 0], text: 'risk', size: 11, color: ui.muted, on: 'top' });
 
-  s.svg('ring-back', dash(back, 'rgb(255 255 255 / .28)'));
+  s.svg('ring-back', dash(back, 'rgb(199 210 254 / .35)'));
   s.svg('ring-back-hot', dash(back, rose[2]));
 
   layers.forEach((l, i) => {
     const at: Vec3 = [0, 0, l.z1];
     s.group(`layer-${i}`, () => {
-      s.slab({ id: l.id, at, size: [col, col], height: l.z1 - l.z0, radius: 16 * k, top: ui.top, side: paints.gradient(s, amber), grain: 0.06, edge: 'rgb(253 230 138 / .3)', shadow: false });
+      s.slab({ id: l.id, at, size: [col, col], height: l.z1 - l.z0, radius: 16 * k, top: ui.top, side: paints.glass(s, '#a21caf', 0.72), grain: 0.06, edge: 'rgb(245 208 254 / .45)', shadow: false });
       s.slab({ id: `${l.id}-hot`, at, size: [col, col], height: l.z1 - l.z0, radius: 16 * k, top: ui.top, side: paints.gradient(s, rose), grain: 0.06, edge: 'rgb(254 205 211 / .3)', shadow: false });
     });
   });
 
-  s.svg('ring-front', dash(front, 'rgb(255 255 255 / .28)'));
+  s.svg('ring-front', dash(front, 'rgb(199 210 254 / .35)'));
   s.svg('ring-front-hot', dash(front, rose[2]));
 
-  s.slab({ id: 'pay', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.brushed(s, ramps.graphite), grain: 0.06, edge: ui.edge });
+  s.slab({ id: 'pay', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.brushed(s, steel), grain: 0.06, edge: ui.edge });
   s.slab({ id: 'pay-hot', at: pay.at, size: [pay.size, pay.size], height: pay.height, radius: 14 * k, top: ui.top, side: paints.gradient(s, rose), grain: 0.06, edge: 'rgb(254 205 211 / .3)' });
-  s.face({ id: 'pay-glow', at: pay.at, size: [pay.size, pay.size], radius: 14 * k, fill: 'rgb(251 191 36 / .22)' });
-  s.text({ id: 'pay-name', at: [pay.at[0], pay.at[1], 0], text: '$1,240', size: 11, color: '#d4d4d8', on: 'top', anchor: 'middle' });
+  s.face({ id: 'pay-glow', at: pay.at, size: [pay.size, pay.size], radius: 14 * k, fill: 'rgb(165 180 252 / .16)', stroke: signal, strokeWidth: 1.25 });
+  s.text({ id: 'pay-name', at: [pay.at[0], pay.at[1], 0], text: '$1,240', size: 11, color: ui.ink, on: 'top', anchor: 'middle' });
 
   layers.forEach(l => {
     const [x, y] = wide ? s.project([ring / 2, -ring / 2, (l.z0 + l.z1) / 2]) : s.project([-ring / 2, ring / 2, (l.z0 + l.z1) / 2]);
     const text = `${l.id} +${l.points}`;
-    const html = `${l.id} <span style="color:${amber[2]}">+${l.points}</span>`;
+    const html = `${l.id} <span style="color:${points}">+${l.points}</span>`;
     s.label({ id: `${l.id}-tag`, at: { screen: wide ? [fitX(x + 14, text, width, minPx, 'left'), y] : [fitX(x - 12, text, width, minPx, 'right'), y] }, html, size: 13, anchor: wide ? 'left' : 'right' });
   });
 
@@ -89,7 +103,7 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   sums.forEach((v, i) => {
     const over = v >= threshold;
     const text = `risk ${v} · hold at ${threshold}`;
-    s.label({ id: `score-${i}`, at: { screen: [fitX(sx, text, width, minPx), scoreY] }, html: `risk <span style="color:${over ? rose[2] : '#e4e4e7'}">${v}</span><span style="color:#a1a1aa"> · hold at ${threshold}</span>`, size: 13, anchor: 'bottom' });
+    s.label({ id: `score-${i}`, at: { screen: [fitX(sx, text, width, minPx), scoreY] }, html: `risk <span style="color:${over ? rose[2] : ui.ink}">${v}</span><span style="color:${ui.muted}"> · hold at ${threshold}</span>`, size: 13, anchor: 'bottom' });
   });
 
   const [px, py] = s.project([pay.at[0], pay.at[1], 0]);
@@ -131,7 +145,7 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   });
   s.at('score-2', 'opacity', resetAt, 0.3, 1, 0, ease.linear);
 
-  for (const id of ['ring-back-hot', 'ring-front-hot']) {
+  for (const id of ['ring-back-hot', 'ring-front-hot', 'halo-hot']) {
     s.at(id, 'opacity', crossAt, 0.1, 0, 1, ease.linear);
     s.at(id, 'opacity', resetAt + 0.3, 0.6, 1, 0, ease.linear);
   }
@@ -161,7 +175,7 @@ export const example: Example = {
   intent: 'inside',
   layout: 'exploded',
   useCase: 'Risk',
-  surface: 'dark',
+  surface: 'night',
   interaction: 'watch',
   art: art(
     build({ name: 'fraud-sm', width: 390, height: 430, origin: [226, 262], k: 0.85, wide: false }),
