@@ -1,9 +1,11 @@
 import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
 import { art, fitX, fonts, narrowest, page, surfaces, type Example } from './shared';
 
-const ui = surfaces.dark;
-const accent = '#38bdf8';
-const lit = 'rgb(56 189 248 / .14)';
+const ui = surfaces.light;
+const accent = '#0284c7';
+const lit = 'rgb(14 165 233 / .1)';
+const deep = '#075985';
+const line = 'rgb(22 23 27 / .14)';
 const world = "'Inter Variable', 'Inter', 'Noto Sans Thai', 'Thonburi', 'Leelawadee UI', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', system-ui, sans-serif";
 
 const source = 'Your order has shipped';
@@ -41,22 +43,22 @@ function build(name: string, l: Layout) {
   const rect = (w: number, h: number, r: number, extra: string) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${r}" ${extra}/>`;
 
   const shade = (id: string, at: Vec3, w: number) =>
-    s.svg(id, `<g filter="${s.blur(5)}">${s.plane([at[0], at[1] + 5, 0], `<rect x="${-w / 2}" y="-8" width="${w}" height="16" rx="8" fill="rgb(0 0 0 / .45)"/>`)}</g>`);
+    s.svg(id, `<g filter="${s.blur(5)}">${s.plane([at[0], at[1] + 5, 0], `<rect x="${-w / 2}" y="-8" width="${w}" height="16" rx="8" fill="rgb(22 23 27 / .16)"/>`)}</g>`);
   shade('src-shade', srcAt, SW);
   tgtAt.forEach((at, i) => shade(`t${i}-shade`, at, TW));
 
   const srcContent =
-    `<text x="${-SW / 2 + 12}" y="${-SH / 2 + 16}" font-size="11" fill="#e0f2fe" dominant-baseline="central" style="font-family:var(--iso-mono)">EN</text>` +
-    [0, 1, 2].map(i => `<rect x="${-SW / 2 + 12}" y="${-SH / 2 + 32 + i * 11}" width="${(SW - 24) * [0.9, 0.7, 0.45][i]!}" height="4" rx="2" fill="rgb(255 255 255 / .16)"/>`).join('');
-  s.panel({ id: 'src', at: srcAt, size: [SW, SH], thickness: 9, facing: 'left', radius: 12, front: ui.top, side: '#075985', edge: 'rgb(125 211 252 / .4)', content: srcContent });
+    `<text x="${-SW / 2 + 12}" y="${-SH / 2 + 16}" font-size="11" fill="${deep}" dominant-baseline="central" style="font-family:var(--iso-mono)">EN</text>` +
+    [0, 1, 2].map(i => `<rect x="${-SW / 2 + 12}" y="${-SH / 2 + 32 + i * 11}" width="${(SW - 24) * [0.9, 0.7, 0.45][i]!}" height="4" rx="2" fill="rgb(22 23 27 / .1)"/>`).join('');
+  s.panel({ id: 'src', at: srcAt, size: [SW, SH], thickness: 9, facing: 'left', radius: 12, front: ui.top, side: '#0369a1', edge: 'rgb(3 105 161 / .35)', content: srcContent });
   s.svg('src-glow', `<g transform="${plane(srcAt)}">${rect(SW, SH, 12, `fill="${lit}" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"`)}</g>`);
 
   targets.forEach((tg, i) => {
-    const content = `<text x="${-TW / 2 + 8}" y="${-TH / 2 + 10}" font-size="10" fill="#a1a1aa" dominant-baseline="central" style="font-family:var(--iso-mono)">${tg.code}</text><rect x="${-TW / 2 + 8}" y="${TH / 2 - 10}" width="${TW - 16}" height="3" rx="1.5" fill="rgb(255 255 255 / .16)"/>`;
-    s.panel({ id: `t${i}`, at: tgtAt[i]!, size: [TW, TH], thickness: t, facing: 'left', radius: 7, front: ui.top, side: '#2a2b33', edge: ui.edge, content });
-    s.svg(`t${i}-lit`, `<g transform="${plane(tgtAt[i]!)}">${rect(TW, TH, 7, `fill="${lit}" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"`)}<text x="${-TW / 2 + 8}" y="${-TH / 2 + 10}" font-size="10" fill="#e0f2fe" dominant-baseline="central" style="font-family:var(--iso-mono)">${tg.code}</text></g>`);
+    const content = `<text x="${-TW / 2 + 8}" y="${-TH / 2 + 10}" font-size="10" fill="#52525b" dominant-baseline="central" style="font-family:var(--iso-mono)">${tg.code}</text><rect x="${-TW / 2 + 8}" y="${TH / 2 - 10}" width="${TW - 16}" height="3" rx="1.5" fill="rgb(22 23 27 / .1)"/>`;
+    s.panel({ id: `t${i}`, at: tgtAt[i]!, size: [TW, TH], thickness: t, facing: 'left', radius: 7, front: ui.top, side: '#d4d4d8', edge: line, content });
+    s.svg(`t${i}-lit`, `<g transform="${plane(tgtAt[i]!)}">${rect(TW, TH, 7, `fill="${lit}" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"`)}<text x="${-TW / 2 + 8}" y="${-TH / 2 + 10}" font-size="10" fill="${deep}" dominant-baseline="central" style="font-family:var(--iso-mono)">${tg.code}</text></g>`);
   });
-  tgtAt.forEach((at, i) => s.svg(`sheet-${i}`, `<g transform="${plane(srcAt)}">${rect(TW, TH, 7, `fill="rgb(56 189 248 / .18)" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"`)}</g>`));
+  tgtAt.forEach((at, i) => s.svg(`sheet-${i}`, `<g transform="${plane(srcAt)}">${rect(TW, TH, 7, `fill="rgb(14 165 233 / .14)" stroke="${accent}" stroke-width="1" vector-effect="non-scaling-stroke"`)}</g>`));
 
   const span = (lang: string, text: string) => `<span lang="${lang}" style="font-family:var(--iso-font)">${text}</span>`;
   const srcTop = s.project([srcAt[0], srcAt[1], SH]);
@@ -110,7 +112,7 @@ export const example: Example = {
   intent: 'flow',
   layout: 'panels',
   useCase: 'Localization',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'watch',
   art: art(
     build('translate-sm', { width: 390, height: 490, source: [160, 168], sourceSize: [112, 76], column: [42, 228], pitch: 46 }),
