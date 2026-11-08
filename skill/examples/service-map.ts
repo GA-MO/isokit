@@ -1,8 +1,8 @@
 import { Scene, ease, type Vec3 } from '../lib/iso';
 import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
 
-const ui = surfaces.dark;
-const amber = ramps.amber;
+const ui = surfaces.light;
+const amber = ['#92400e', '#d97706', '#fbbf24', '#fef3c7'] as const;
 
 const services = [
   { id: 'api', cell: [-2, -0.5], p95: '38 ms' },
@@ -43,14 +43,14 @@ function build({ name, width, height, origin, k }: Layout) {
     const dy = Math.sign(b[1] - a[1]);
     const points: Vec3[] = [[a[0] + (dx * size) / 2, a[1] + (dy * size) / 2, -h], [b[0] - (dx * size) / 2, b[1] - (dy * size) / 2, -h]];
     s.wire({ id: `w-${i}`, points, stroke: ui.wire, width: 1.25 });
-    s.wire({ id: `lit-${i}`, points, stroke: 'rgb(251 191 36 / .55)', width: 1.5, hidden: true });
-    s.pulse({ id: `p-${i}`, wire: `w-${i}`, color: amber[2], length: 0.45 });
+    s.wire({ id: `lit-${i}`, points, stroke: '#d97706', width: 1.75, hidden: true });
+    s.pulse({ id: `p-${i}`, wire: `w-${i}`, color: '#d97706', length: 0.45 });
   });
 
   services.forEach(sv => {
     const p = at(sv.id);
     const r = (size + 26 * k) / 2;
-    s.svg(`${sv.id}-glow`, s.plane([p[0], p[1], -h], `<rect x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="${radius * 1.6}" fill="${amber[2]}" opacity=".9" filter="${blur}"/>`));
+    s.svg(`${sv.id}-glow`, s.plane([p[0], p[1], -h], `<rect x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="${radius * 1.6}" fill="#f59e0b" opacity=".6" filter="${blur}"/>`));
   });
 
   services.forEach(sv => {
@@ -61,7 +61,7 @@ function build({ name, width, height, origin, k }: Layout) {
 
   [...services].sort((a, b) => a.cell[0] + a.cell[1] - (b.cell[0] + b.cell[1])).forEach(sv => {
     const p = at(sv.id);
-    const name = `<text text-anchor="middle" dominant-baseline="central" font-size="${11}" fill="#d4d4d8" style="font-family:var(--iso-mono)">${sv.id}</text>`;
+    const name = `<text text-anchor="middle" dominant-baseline="central" font-size="${11}" fill="#3f3f46" style="font-family:var(--iso-mono)">${sv.id}</text>`;
     s.slab({
       id: sv.id,
       at: p,
@@ -69,11 +69,11 @@ function build({ name, width, height, origin, k }: Layout) {
       height: h,
       radius,
       top: ui.top,
-      side: paints.brushed(s, ramps.graphite),
+      side: paints.brushed(s, ramps.silver),
       grain: 0.06,
       edge: ui.edge,
       content: name,
-      hover: { lift, top: '#262014', side: paints.gradient(s, amber), edge: 'rgb(251 191 36 / .7)', guides: 'rgb(251 191 36 / .5)', label: `${sv.id}-stat` },
+      hover: { lift, top: '#fffbeb', side: paints.gradient(s, amber), edge: 'rgb(255 255 255 / .9)', guides: 'rgb(217 119 6 / .5)', label: `${sv.id}-stat` },
     });
   });
 
@@ -120,7 +120,7 @@ export const example: Example = {
   intent: 'talk',
   layout: 'field',
   useCase: 'Platform',
-  surface: 'dark',
+  surface: 'light',
   interaction: 'hover',
   art: art(
     build({ name: 'svcmap-sm', width: 390, height: 330, origin: [197, 166], k: 0.7 }),
