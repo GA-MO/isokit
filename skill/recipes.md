@@ -31,11 +31,11 @@ Every number here was measured frame by frame from production motion design, and
 
 | Recipe | Use for | How (kit) | Numbers |
 |---|---|---|---|
-| Wire with its target | never a wire to empty space | `wire({ hidden: true })` drawn before the objects it joins; `draw(id, popTime + 0.63, 0.24)`; it leaves with the thing it joins | |
-| Outputs slide out from under | a core produces its first results | draw satellites before the core so they start hidden under it; translate `s.offset(insideCore, rest)` in 0.355 s `cubic-bezier(.15,.6,.6,1)`, 0.05 s apart, right after the core's overshoot; each wire draws with the same timing | |
+| Wire with its target | never a wire to empty space | a plain `wire()` added before the boxes it joins, points from source to target; the kit grows it once both have landed and retracts it before either leaves; `joins` for ends that are not slabs or prisms | grows 0.3 s ease-out after the later box lands, retracts 0.2 s ease-in before a box leaves, pulse no earlier than landing + 0.3 s |
+| Outputs slide out from under | a core produces its first results | draw satellites before the core so they start hidden under it; translate `s.offset(insideCore, rest)` in 0.355 s `cubic-bezier(.15,.6,.6,1)`, 0.05 s apart, right after the core's overshoot; each wire grows once its satellite has stopped (the kit times it) | |
 | Pulse | traffic along a wire | `pulse()`, `travel()` | 270 px/s, pulse 12 to 16 % of the wire, target flashes on arrival (rise 0.1 s, fade 0.6 s) |
 | Signal triggers an action | a command runs something | a gradient copy of the wire over the plain one: `draw` 0.2 s, hold 0.3 s, `retract(id, t, 0.25, 'end')` (erases from the source); the action starts 0.15 s after the fill | in a loop, pairs 1.5 s apart |
-| Re-target | the link follows a new choice | `retract` 0.2 s ease-in toward the source, wait 0.26 s, `draw` 0.34 s ease-out to arrive as the new item settles; `tug` the node it pulls into | |
+| Re-target | the link follows a new choice | `retract` 0.2 s ease-in toward the source before the old item moves, wait 0.26 s, `draw` 0.34 s ease-out once the new item has settled; `tug` the node it pulls into | |
 | Tug | wires under tension | `tug(id, t, '-5px 0')`, 5 to 6 px toward the wire; `tug` assumes the element rests at `0 0`, so give a moved element its own `at()` segments | 0.23 s out, 0.25 s hold, 0.65 s back |
 | Engine to tag | name the command a tool ships | wire draws to the pill's far edge; the pill opens from the wire, `scale` '1 0.02' to '1 1' (or 0 to 1.045 and back), pivot on the wire, 0.22 s; text slides up 15 to 18 px inside the pill's clip in 0.13 s, never fades | 0.45 s after the engine settles |
 | Screen rule for a label | name an object at its height | `wire` on `s.unproject([x, y], 0)` points; `draw` 0.6 s `cubic-bezier(.05,1,.6,1)`, then the text fades in 0.2 s | rule starts 18 px off the object |

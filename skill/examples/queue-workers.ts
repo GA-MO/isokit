@@ -106,12 +106,13 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const jobSize = 38 * k;
   const jobZ = 10 * k;
 
-  s.wire({ id: 'feed', points: g.feed, stroke: ui.wire, width: 1.25 });
+  s.wire({ id: 'feed', points: g.feed, stroke: ui.wire, width: 1.25, joins: ['producer', 'tray'] });
   s.pulse({ id: 'p-feed', wire: 'feed', color: idle, length: 0.3 });
   g.routes.forEach((points, i) => {
-    s.wire({ id: `w${i}`, points, stroke: ui.wire, width: 1.25 });
+    const worker = [`wk-${i}`, `wk-hot-${i}`];
+    s.wire({ id: `w${i}`, points, stroke: ui.wire, width: 1.25, joins: ['tray', worker] });
     s.pulse({ id: `p${i}`, wire: `w${i}`, color: accent, length: 0.2 });
-    s.wire({ id: `back${i}`, points: [...points].reverse(), stroke: 'transparent' });
+    s.wire({ id: `back${i}`, points: [...points].reverse(), stroke: 'transparent', joins: [worker, 'tray'] });
     s.pulse({ id: `ack${i}`, wire: `back${i}`, color: idle, length: 0.12, width: 1.5 });
   });
 

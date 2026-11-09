@@ -721,3 +721,123 @@ test('keyframe offsets carry at most five decimals, so a loop of any length stay
   expect(offsets.filter(o => (String(o).split('.')[1] ?? '').length > 5)).toEqual([]);
   expect(offsets.some(o => o > 0 && o < 1)).toBe(true);
 });
+
+const block = (s: Scene, id: string, x: number) => s.slab({ id, at: [x, 0, 10], size: [40, 40], height: 10, top: '#fff', side: { kind: 'flat', color: '#ccc' } });
+const offsetAt = (s: Scene, wire: string, seconds: number, target = wire) => {
+  const spec = s.motion();
+  const tracks = spec.tracks.filter(t => t.target === s.ref(target) && t.prop === 'strokeDashoffset');
+  const intro = tracks.find(t => !t.repeat);
+  const loop = tracks.find(t => t.repeat);
+  const track = seconds < spec.intro || !loop ? intro : loop;
+  if (!track) return 0;
+  const offset = track.repeat ? (seconds - spec.intro) / spec.loop : Math.min(1, seconds / spec.intro);
+  const held = track.keyframes.filter(k => Number(k.offset) <= offset + 1e-9);
+  return Number(held[held.length - 1]!.strokeDashoffset);
+};
+
+test('a wire between two boxes stays hidden until both have dropped in, then grows from its source', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.dropIn('a', 0.1).dropIn('b', 0.5);
+  expect(s.links()).toEqual([{ wire: 'w', ends: [['a'], ['b']], pulses: [] }]);
+  expect(s.render()).toMatch(/id="demo_w"[^>]*stroke-dasharray="1 2"/);
+  expect(s.render()).not.toMatch(/id="demo_w"[^>]*stroke-dashoffset/);
+  expect(offsetAt(s, 'w', 0)).toBe(1);
+  expect(offsetAt(s, 'w', 0.9)).toBe(1);
+  expect(offsetAt(s, 'w', 1.36)).toBe(0);
+  expect(s.motion().intro).toBe(1.35);
+});
+
+test('in the loop a wire retracts before a box it joins leaves, and grows back only once it has landed again', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.loop(6, 1);
+  s.at('b', 'opacity', 4, 0.3, 1, 0).dropAt('b', 5);
+  const intro = s.motion().intro;
+  expect(intro).toBe(0.3);
+  expect(offsetAt(s, 'w', intro + 3.7)).toBe(0);
+  expect(offsetAt(s, 'w', intro + 4.01)).toBe(1);
+  expect(offsetAt(s, 'w', intro + 5.5)).toBe(1);
+  expect(offsetAt(s, 'w', intro + 5.86)).toBe(0);
+  const pulse = scene().wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' }).pulse({ id: 'p', wire: 'w', color: '#7c3aed' });
+  expect(pulse.links()[0]!.pulses).toEqual(['p']);
+});
+
+test('a small hop, a hot copy taking over the same box or a dim leaves the wire drawn', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+  block(s, 'a', 0);
+  s.group('b-tile', () => {
+    block(s, 'b', 120);
+    block(s, 'b-hot', 120);
+  });
+  expect(s.links()[0]!.ends).toEqual([['a'], ['b', 'b-hot']]);
+  s.loop(6, 1);
+  s.at('a', 'translate', 1, 0.3, '0 0', '0 -6px').at('a', 'translate', 1.3, 0.5, '0 -6px', '0 0');
+  s.at('b-hot', 'opacity', 2, 0.2, 1, 0).at('b-hot', 'opacity', 3, 0.2, 0, 1);
+  s.at('b-tile', 'opacity', 4, 0.3, 1, 0.3).at('b-tile', 'opacity', 5, 0.3, 0.3, 1);
+  expect(s.motion().tracks.filter(t => t.target === s.ref('w') && t.repeat)).toEqual([]);
+});
+
+test('joins names ends the kit cannot see, takes alternatives per end, and joins: [] leaves a wire as drawn', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[0, 0, 0], [80, 0, 0]], stroke: '#888888', joins: ['card', ['b', 'b-hot']] });
+  s.wire({ id: 'lane', points: [[0, 40, 0], [80, 40, 0]], stroke: '#888888', joins: [] });
+  s.svg('card', '<rect width="10" height="10"/>');
+  block(s, 'b', 200);
+  block(s, 'b-hot', 200);
+  s.intro('card', 'opacity', 0.2, 0.3, 0, 1);
+  expect(s.links().map(l => l.ends)).toEqual([[['card'], ['b', 'b-hot']], []]);
+  expect(offsetAt(s, 'w', 0.4)).toBe(1);
+  expect(offsetAt(s, 'w', 0.81)).toBe(0);
+  expect(s.motion().tracks.some(t => t.target === s.ref('lane'))).toBe(false);
+  const typo = scene().wire({ id: 'w', points: [[0, 0, 0], [80, 0, 0]], stroke: '#888888', joins: ['nope'] });
+  expect(() => typo.render()).toThrow(/joins "nope", which is not drawn/);
+  const empty = scene().wire({ id: 'w', points: [[0, 0, 0], [80, 0, 0]], stroke: '#888888', joins: [[]] });
+  expect(() => empty.render()).toThrow(/joins an empty list/);
+});
+
+test('a dashed wire grows through a mask, so its own dash pattern is kept', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888', dash: '3 4' });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.dropIn('b', 0.2);
+  const html = s.render();
+  expect(html).toMatch(/id="demo_w"[^>]*stroke-dasharray="3 4"[^>]*mask="url\(#demo_w_grow\)"/);
+  expect(html).toContain('<mask id="demo_w_grow" maskUnits="userSpaceOnUse"');
+  expect(offsetAt(s, 'w', 0.5, 'w_grow-path')).toBe(1);
+  expect(offsetAt(s, 'w', 1.06, 'w_grow-path')).toBe(0);
+  expect(s.exportSvg()).toContain('demo_w_grow-path{animation:');
+});
+
+test('a hidden wire the author draws in the loop stays hidden in the intro until what it joins has landed', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888', hidden: true });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.dropIn('b', 0.2).loop(4, 1).retract('w', 3, 0.2).draw('w', 3.5, 0.3);
+  expect(offsetAt(s, 'w', 0.5)).toBe(1);
+  expect(offsetAt(s, 'w', 1.06)).toBe(0);
+  const authored = scene();
+  authored.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888', hidden: true });
+  block(authored, 'a', 0);
+  block(authored, 'b', 120);
+  authored.dropIn('b', 0.2).loop(4, 1).draw('w', 1, 0.3).retract('w', 3, 0.2);
+  expect(authored.motion().tracks.filter(t => t.target === authored.ref('w')).map(t => t.repeat)).toEqual([true]);
+});
+
+test('wire timing is computed afresh each time, so render() and exportSvg() agree', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.dropIn('a', 0.1);
+  expect(JSON.stringify(s.motion())).toBe(JSON.stringify(s.motion()));
+  s.exportSvg();
+  expect(s.motion().intro).toBe(0.95);
+});

@@ -1,3 +1,5 @@
+import { schedule, type Timed, type Wiring } from './wiring';
+
 export type Vec2 = readonly [number, number];
 export type Vec3 = readonly [number, number, number];
 
@@ -167,7 +169,14 @@ export interface WireOptions {
   corner?: number;
   dash?: string;
   hidden?: boolean;
+  joins?: readonly (string | readonly string[])[];
   className?: string;
+}
+
+export interface Link {
+  wire: string;
+  ends: string[][];
+  pulses: string[];
 }
 
 export interface PulseOptions {
@@ -332,7 +341,8 @@ export class Scene {
   private readonly defs = new Map<string, string>();
   private readonly layers: string[] = [];
   private readonly labels: string[] = [];
-  private readonly wires = new Map<string, { d: string; length: number }>();
+  private readonly wires = new Map<string, { d: string; length: number; points: readonly Vec3[]; joins: readonly (string | readonly string[])[] | undefined; width: number; dashed: boolean }>();
+  private readonly parents = new Map<string, string>();
   private readonly labelIds = new Set<string>();
   private readonly pulses = new Map<string, { wire: string; length: number }>();
   private readonly segments: { phase: 'intro' | 'loop'; seg: Segment }[] = [];
@@ -443,7 +453,9 @@ export class Scene {
     const ref = this.claim(id);
     const start = this.layers.length;
     const labels = this.labels.length;
+    const claimed = this.ids.size;
     build();
+    for (const child of [...this.ids].slice(claimed)) if (!this.parents.has(child)) this.parents.set(child, id);
     if (this.labels.length !== labels) throw new Error(`iso: group "${id}" in scene ${this.name} contains a label(); HTML labels cannot move with a group, use text() instead`);
     const inner = this.layers.splice(start);
     this.layers.push(`<g id="${ref}"${cls(className)}>${inner.join('')}</g>`);
@@ -677,11 +689,16 @@ export class Scene {
     const d = this.wirePath(o.points, o.corner);
     const pts = o.points.map(pt => this.project(pt));
     const length = pts.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - pts[i]![0], p[1] - pts[i]![1]), 0);
-    this.wires.set(o.id, { d, length });
+    this.wires.set(o.id, { d, length, points: o.points, joins: o.joins, width: o.width ?? 1, dashed: o.dash !== undefined });
     if (o.hidden && o.dash) throw new Error(`iso: wire "${o.id}" is hidden (it draws in with a dash of its own), so it cannot also take dash "${o.dash}"`);
     if (o.hidden) this.hiddenWires.add(o.id);
+    if (o.dash && !o.hidden) {
+      const [xs, ys] = [pts.map(p => p[0]), pts.map(p => p[1])];
+      const pad = (o.width ?? 1) + 4;
+      this.defs.set(`${id}_grow`, `<mask id="${id}_grow" maskUnits="userSpaceOnUse" ${attr({ x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, width: Math.max(...xs) - Math.min(...xs) + 2 * pad, height: Math.max(...ys) - Math.min(...ys) + 2 * pad })}><path id="${id}_grow-path" ${attr({ d, fill: 'none', stroke: '#fff', 'stroke-width': (o.width ?? 1) + 2, 'stroke-dasharray': '1 2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 })}/></mask>`);
+    }
     this.layers.push(
-      `<path id="${id}"${cls(o.className)} ${attr({ d, fill: 'none', stroke: o.stroke, 'stroke-width': o.width ?? 1, 'stroke-dasharray': o.hidden ? '1 2' : o.dash, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, style: o.hidden ? 'stroke-dashoffset:1' : undefined })}/>`,
+      `<path id="${id}"${cls(o.className)} ${attr({ d, fill: 'none', stroke: o.stroke, 'stroke-width': o.width ?? 1, 'stroke-dasharray': o.dash ?? '1 2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, mask: o.dash && !o.hidden ? `url(#${id}_grow)` : undefined, style: o.hidden ? 'stroke-dashoffset:1' : undefined })}/>`,
     );
     return this;
   }
@@ -710,6 +727,25 @@ export class Scene {
     const w = this.wires.get(id);
     if (!w) throw new Error(`iso: no wire "${id}" in scene ${this.name}`);
     return w.length;
+  }
+
+  links(): Link[] {
+    const near = 2;
+    const touches = ([x, y, z]: Vec3) => this.solids.filter(b => x >= b.x[0] - near && x <= b.x[1] + near && y >= b.y[0] - near && y <= b.y[1] + near && z >= b.z[0] - near && z <= b.z[1] + near);
+    const ends = (points: readonly Vec3[]) => {
+      const byBox = new Map<string, Set<string>>();
+      for (const b of [points[0]!, points[points.length - 1]!].flatMap(touches)) {
+        const box = [...b.x, ...b.y, ...b.z].map(v => Math.round(v * 2)).join();
+        byBox.set(box, (byBox.get(box) ?? new Set()).add(b.id));
+      }
+      return [...byBox.values()].map(ids => [...ids]);
+    };
+    return [...this.wires].map(([wire, w]) => {
+      const joins = w.joins?.map(end => (typeof end === 'string' ? [end] : [...end]));
+      if (joins?.some(end => !end.length)) throw new Error(`iso: wire "${wire}" joins an empty list; name at least one id for each end, or pass joins: [] for a wire that joins nothing`);
+      for (const id of joins?.flat() ?? []) if (!this.ids.has(id)) throw new Error(`iso: wire "${wire}" joins "${id}", which is not drawn in scene ${this.name}`);
+      return { wire, ends: joins ?? ends(w.points), pulses: [...this.pulses].filter(([, p]) => p.wire === wire).map(([id]) => id) };
+    });
   }
 
   label(o: LabelOptions): this {
@@ -931,10 +967,36 @@ export class Scene {
     return v.replace(/(-?\d*\.?\d+)px/g, (_, n: string) => `calc(${n} * 100cqw / ${this.width})`);
   }
 
+  private wiring(): { segments: { phase: 'intro' | 'loop'; seg: Segment }[]; intro: number } {
+    const authored: Timed[] = this.segments.map(({ phase, seg }) => ({ phase, ...seg }));
+    const carriers = (id: string) => {
+      const chain = [id];
+      for (let p = this.parents.get(id); p; p = this.parents.get(p)) chain.push(p);
+      return chain;
+    };
+    const wirings: Wiring[] = this.links().flatMap(({ wire, ends }): Wiring[] => {
+      const w = this.wires.get(wire)!;
+      const own = authored.filter(s => s.target === wire && s.prop === 'strokeDashoffset');
+      const join = ends.map(alts => alts.map(carriers));
+      if (!ends.length) return [];
+      if (this.hiddenWires.has(wire)) {
+        const last = own.filter(s => s.phase === 'loop').reduce<Timed | undefined>((a, s) => (!a || s.start >= a.start ? s : a), undefined);
+        const opensDrawn = last !== undefined && Math.abs(Number(last.to)) < 1;
+        return this.introLength === 0 || own.some(s => s.phase === 'intro') || !opensDrawn ? [] : [{ target: wire, ends: join, loop: false }];
+      }
+      if (!w.dashed && (own.length || this.ambients.some(a => a.target === wire && a.prop === 'strokeDashoffset'))) return [];
+      return [{ target: w.dashed ? `${wire}_grow-path` : wire, ends: join, loop: true }];
+    });
+    const wired = schedule(wirings, authored, this.introLength, this.loopLength);
+    return { segments: wired.segments.map(({ phase, ...seg }) => ({ phase, seg: { ...seg, start: ms(seg.start), dur: ms(ms(seg.start) + seg.dur) - ms(seg.start) } })), intro: ms(wired.intro) };
+  }
+
   motion(): MotionSpec {
     const group = new Map<string, { phase: 'intro' | 'loop'; target: string; prop: AnimatedProp; segs: Segment[] }>();
-    for (const { phase, seg } of this.segments) {
-      if (!this.ids.has(seg.target)) throw new Error(`iso: an animation in scene ${this.name} targets unknown id "${seg.target}"`);
+    const wired = this.wiring();
+    const introLength = wired.intro;
+    for (const { phase, seg } of [...this.segments, ...wired.segments]) {
+      if (!this.ids.has(seg.target) && !seg.target.endsWith('_grow-path')) throw new Error(`iso: an animation in scene ${this.name} targets unknown id "${seg.target}"`);
       const key = `${phase}|${seg.target}|${seg.prop}`;
       const g = group.get(key) ?? { phase, target: seg.target, prop: seg.prop, segs: [] };
       g.segs.push(seg);
@@ -947,7 +1009,7 @@ export class Scene {
     if (this.segments.some(s => s.phase === 'loop') && !(this.loopLength > 0)) throw new Error(`iso: scene ${this.name} uses at() but never calls loop()`);
     const tracks: Track[] = [];
     for (const { phase, target, prop, segs } of group.values()) {
-      const total = phase === 'intro' ? this.introLength : this.loopLength;
+      const total = phase === 'intro' ? introLength : this.loopLength;
       segs.sort((a, b) => a.start - b.start);
       const first = segs[0]!;
       const last = segs[segs.length - 1]!;
@@ -973,7 +1035,7 @@ export class Scene {
         prop,
         keyframes: kf,
         duration: total * 1000,
-        delay: phase === 'loop' ? this.introLength * 1000 : 0,
+        delay: phase === 'loop' ? introLength * 1000 : 0,
         repeat: phase === 'loop',
         fill: phase === 'intro' ? 'both' : hasIntro ? 'none' : 'backwards',
       });
@@ -993,7 +1055,7 @@ export class Scene {
       });
     }
     tracks.sort((a, b) => Number(a.repeat) - Number(b.repeat));
-    return { intro: this.introLength, loop: this.loopLength, still: this.stillAt, tracks };
+    return { intro: introLength, loop: this.loopLength, still: this.stillAt, tracks };
   }
 
   private checkSideTexts() {

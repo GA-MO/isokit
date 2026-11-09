@@ -42,6 +42,7 @@ Eight of the 49 side finishes, from all six families: metal, glass, natural, tec
 | Calm by default | Plays when scrolled into view, pauses off screen, drops its animations far off screen, shows a still that tells the whole story under reduced motion |
 | Labels that never overflow | Text has a 13 px floor on phones, and `fitX()` keeps each label inside its scene at the narrowest width it will be shown |
 | Readable text, checked | `skill/scripts/contrast.mjs` measures every text in every scene against the pixels behind it at five moments; CI fails under 4.5:1. The kit throws when a side label would sit on a face nobody can see |
+| Boxes first, then wires | The kit finds the boxes each wire joins, grows the wire only once they have landed, runs its pulse after that and retracts it before they leave. `skill/scripts/order.mjs` seeks every scene every 50 ms (25,100 frames over the showcase, hero and contexts); CI fails on any frame with a wire or pulse ahead of its boxes. Before the kit did this, 1,587 frames of 22,980 did |
 | Six compositions | Wide strips, diagonal rows, upright panels, radial cores, high fields and exploded stacks, plus single objects for feature lists |
 | Scenes you can play | A switch that steps a rollout, a slider that drives load (mouse and touch), parts you click to drill into |
 | 49 side finishes | Metal, glass, natural, tech pattern, retro and seeded generative paints that bend round the slab's rounded corner as one line |
@@ -200,16 +201,16 @@ There is also the hero (four stories in `examples/hero/` that the showcase plays
 
 ## Numbers
 
-All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the hero's on 2026-11-09. 1 kB = 1024 bytes.
+All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the hero's on 2026-11-09, the showcase page and scene files on 2026-11-10. 1 kB = 1024 bytes.
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 430.6 kB | 44.0 kB |
+| Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 430.7 kB | 44.0 kB |
 | Showcase CSS | 36.4 kB | 7.5 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.7 kB |
 | Hero script (story order, prompt chips, lift-off, tilt) | 8.3 kB | 3.6 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag, slider and drill-down demos) | 14.8 kB | 4.2 kB |
-| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12775.1 kB | 1000.9 kB |
+| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12920.1 kB | 1008.8 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
@@ -257,6 +258,7 @@ bun run build        # static build into site/dist, served under /isokit/
 bun run test         # kit and example tests
 bun run readme:svg   # rewrite the animated SVGs in docs/svg/
 bun run check:contrast  # every text in every scene at 4.5:1 or more (needs skill/scripts deps and Chrome)
+bun run check:order     # no wire or pulse before the boxes it joins, every 50 ms (needs skill/scripts deps and Chrome)
 ```
 
 Pushing to `main` deploys the site to GitHub Pages through `.github/workflows/pages.yml`. Set the repository's Pages source to GitHub Actions (Settings, Pages) once before the first deploy.

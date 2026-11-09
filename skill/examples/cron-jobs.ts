@@ -8,7 +8,7 @@ const anticipateExit = 'linear(0, -0.007 11.8%, -0.045 37.8%, -0.048 57%, -0.028
 
 const ticks = 12;
 const step = 0.7;
-const loop = ticks * step;
+const loop = ticks * step + 0.7;
 const tickAt = (j: number) => 0.2 + j * step;
 const runs = [
   { tick: 0, time: '12:00' },
@@ -17,7 +17,7 @@ const runs = [
 ] as const;
 const schedule = '*/20 * * * *';
 const runFor = 0.6;
-const clear = 7.45;
+const clear = 8.15;
 const reset = loop - 0.35;
 
 type Layout = { name: string; width: number; height: number; origin: Vec2; k: number; minPx: number };
@@ -45,7 +45,7 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   s.face({ id: 'halo', at: [clock[0], clock[1], -tileH], size: [plate * 1.6, plate * 1.6], radius: plate * 0.8, fill: halo });
 
   runs.forEach((_, i) => {
-    s.wire({ id: `w-${i}`, points: [[clock[0] + plate / 2, 0, wz], [tileAt(i)[0] - tile / 2, 0, wz]], stroke: 'rgb(34 211 238 / .4)', width: 1.25, hidden: true });
+    s.wire({ id: `w-${i}`, points: [[clock[0] + plate / 2, 0, wz], [tileAt(i)[0] - tile / 2, 0, wz]], stroke: 'rgb(34 211 238 / .4)', width: 1.25 });
     s.pulse({ id: `p-${i}`, wire: `w-${i}`, color: cyan[2], length: 0.22 });
   });
 
@@ -78,7 +78,7 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   s.intro('cron', 'translate', 0.45, 0.4, '0 8px', '0 0', ease.out);
   s.introUntil(0.7);
 
-  s.loop(loop, 7.3);
+  s.loop(loop, 7.9);
   Array.from({ length: ticks }, (_, j) => {
     const t = tickAt(j);
     s.at(`lit-${j}`, 'opacity', t, 0.12, 0, 1, ease.linear);
@@ -89,25 +89,24 @@ function build({ name, width, height, origin, k, minPx }: Layout) {
   });
 
   runs.forEach((r, i) => {
-    const fire = tickAt(r.tick) + 0.1;
+    const pop = tickAt(r.tick) + 0.1;
+    const wired = pop + 0.47 + 0.3;
     const dur = Math.max(0.3, s.wireLength(`w-${i}`) / 270);
-    const arrive = fire + 0.12 + dur;
-    s.draw(`w-${i}`, fire, 0.24);
-    s.at('hub', 'translate', fire, 0.14, '0 0', '0 2px', ease.out);
-    s.at('hub', 'translate', fire + 0.14, 0.74, '0 2px', '0 0', settle);
-    s.travel(`p-${i}`, fire + 0.12, dur);
-    s.at(`job-${i}`, 'opacity', arrive, 0.05, 0, 1, ease.linear);
-    s.at(`job-${i}`, 'scale', arrive, 0.23, 0.05, 1.14, ease.out);
-    s.at(`job-${i}`, 'scale', arrive + 0.23, 0.24, 1.14, 1, ease.io);
-    s.at(`job-${i}-hit`, 'opacity', arrive + 0.1, 0.1, 0, 1, ease.linear);
-    s.at(`job-${i}-hit`, 'opacity', arrive + 0.2, 0.6, 1, 0, ease.linear);
-    s.set(`job-${i}-rest`, 'opacity', fire, 0);
+    const arrive = wired + dur;
+    s.at(`job-${i}`, 'opacity', pop, 0.05, 0, 1, ease.linear);
+    s.at(`job-${i}`, 'scale', pop, 0.23, 0.05, 1.14, ease.out);
+    s.at(`job-${i}`, 'scale', pop + 0.23, 0.24, 1.14, 1, ease.io);
+    s.at('hub', 'translate', wired, 0.14, '0 0', '0 2px', ease.out);
+    s.at('hub', 'translate', wired + 0.14, 0.74, '0 2px', '0 0', settle);
+    s.travel(`p-${i}`, wired, dur);
+    s.at(`job-${i}-hit`, 'opacity', arrive, 0.1, 0, 1, ease.linear);
+    s.at(`job-${i}-hit`, 'opacity', arrive + 0.1, 0.6, 1, 0, ease.linear);
+    s.at(`job-${i}-rest`, 'opacity', arrive, 0.12, 1, 0, ease.linear);
     s.at(`job-${i}-rest`, 'opacity', arrive + runFor, 0.5, 0, 1, ease.linear);
 
     const out = clear + (runs.length - 1 - i) * 0.06;
     s.at(`job-${i}`, 'scale', out, 0.745, 1, 0, anticipateExit);
     s.at(`job-${i}`, 'opacity', out + 0.6, 0.145, 1, 0, ease.linear);
-    s.retract(`w-${i}`, out + 0.2, 0.25, 'start', ease.in);
   });
   return s;
 }
@@ -116,8 +115,8 @@ export const example: Example = {
   slug: 'cron-jobs',
   title: 'Scheduled jobs',
   ask: 'Show scheduled jobs firing every twenty minutes.',
-  story: 'A dial lights minute by minute, and every twenty minutes a pulse leaves it and a job tile pops in, runs and comes to rest.',
-  prompt: 'Draw a cron schedule as a dial whose ticks light up in turn; at each scheduled tick a pulse runs to a new job tile that pops in, runs and rests.',
+  story: 'A dial lights minute by minute, and every twenty minutes a job tile pops in, the dial wires to it and a pulse sets it running before it comes to rest.',
+  prompt: 'Draw a cron schedule as a dial whose ticks light up in turn; at each scheduled tick a new job tile pops in, a wire grows to it from the dial and a pulse sets it running before it rests.',
   level: 'simple',
   intent: 'scale',
   layout: 'radial',

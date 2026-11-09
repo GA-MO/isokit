@@ -33,12 +33,12 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const lanes = [118, 96];
   reviewers.forEach((r, i) => {
     const pts = [v(6, lanes[i]!), v(r.x, lanes[i]!), v(r.x, 6)];
-    s.wire({ id: `w-${r.id}`, points: pts, stroke: ui.wire, width: 1.25 });
-    s.wire({ id: `w-${r.id}-back`, points: [...pts].reverse(), stroke: 'none' });
+    s.wire({ id: `w-${r.id}`, points: pts, stroke: ui.wire, width: 1.25, joins: ['req', `rev-${r.id}`] });
+    s.wire({ id: `w-${r.id}-back`, points: [...pts].reverse(), stroke: 'none', joins: [`rev-${r.id}`, 'req'] });
     s.pulse({ id: `ask-${r.id}`, wire: `w-${r.id}`, color: accent, length: 0.2 });
     s.pulse({ id: `yes-${r.id}`, wire: `w-${r.id}-back`, color: ok, length: 0.2 });
   });
-  s.wire({ id: 'w-main', points: [v(6, 180), v(196 - 52, 180)], stroke: ui.wire, width: 1.25, hidden: true });
+  s.wire({ id: 'w-main', points: [v(6, 180), v(196 - 52, 180)], stroke: ui.wire, width: 1.25, hidden: true, joins: ['req', 'main'] });
   s.pulse({ id: 'ship', wire: 'w-main', color: ok, length: 0.3 });
 
   reviewers.forEach(r => {
@@ -149,8 +149,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const go = unlock + 0.5;
   s.draw('w-main', go, 0.24);
   const shipDur = dur('w-main');
-  s.travel('ship', go + 0.1, shipDur);
-  const land = go + 0.1 + shipDur;
+  s.travel('ship', go + 0.24, shipDur);
+  const land = go + 0.24 + shipDur;
   s.at('main-glow', 'opacity', land, 0.1, 0, 1, ease.linear);
   s.tug('main', land, '0 5px');
   s.at('merged', 'opacity', land + 0.1, 0.3, 0, 1, ease.out);

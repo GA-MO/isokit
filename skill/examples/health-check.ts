@@ -17,7 +17,7 @@ const nodes = [
   { id: 'c', y: 125 },
 ] as const;
 const sick = 1;
-const fail = { check: 3.4, retract: 4.35, out: 4.45 } as const;
+const fail = { check: 3.4, retract: 4.2, out: 4.45 } as const;
 const heal = { at: 7.0, back: 7.25, draw: 7.7 } as const;
 const checks = [0.35, fail.check, 6.1, 9.0] as const;
 const traffic = [1.25, 1.55, 1.85, 2.2, 2.5, 2.8, 4.7, 5.0, 5.3, 5.65, 6.75, 7.05, 8.3, 8.6, 8.9, 9.55, 9.85] as const;

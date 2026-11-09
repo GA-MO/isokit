@@ -115,7 +115,6 @@ function build({ name, width, height, origin, k, spread, wide }: Layout) {
       s.at(`part-${o.id}`, 'opacity', t + closeAt + 0.2, 0.5, dim, 1, ease.linear);
     }
     for (const w of parts.slice(1)) {
-      if (w.id === p.id) continue;
       s.at(`w-${w.id}`, 'opacity', t + openAt, 0.4, 1, dim, ease.linear);
       s.at(`w-${w.id}`, 'opacity', t + closeAt + 0.2, 0.5, dim, 1, ease.linear);
     }

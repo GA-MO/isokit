@@ -67,8 +67,8 @@ function build(l: Layout) {
   const xA = vanStart[0] - 50 * k;
   const xB = house[0] + 20 * k;
   s.face({ id: 'road-2', at: [(xA + xB) / 2, 0, 0], size: [xB - xA, road], radius: road / 2, fill: 'rgb(22 23 27 / .045)' });
-  s.wire({ id: 'lane-1', points: [[0, legA + 20 * k, 0], [0, legB - 20 * k, 0]], stroke: 'rgb(22 23 27 / .14)', width: 1, dash: '6 6' });
-  s.wire({ id: 'lane-2', points: [[xA + 20 * k, 0, 0], [xB - 20 * k, 0, 0]], stroke: 'rgb(22 23 27 / .14)', width: 1, dash: '6 6' });
+  s.wire({ id: 'lane-1', points: [[0, legA + 20 * k, 0], [0, legB - 20 * k, 0]], stroke: 'rgb(22 23 27 / .14)', width: 1, dash: '6 6', joins: [] });
+  s.wire({ id: 'lane-2', points: [[xA + 20 * k, 0, 0], [xB - 20 * k, 0, 0]], stroke: 'rgb(22 23 27 / .14)', width: 1, dash: '6 6', joins: [] });
 
   const solid = (id: string, at: Vec3, size: Vec2, height: number, radius: number, extra: { grain?: number; shadow?: boolean } = {}) =>
     s.slab({ id, at, size, height, radius, top: ui.top, side: paints.gradient(s, ramps.silver), edge: ui.edge, outline: line, ...extra });

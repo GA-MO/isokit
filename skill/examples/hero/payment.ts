@@ -32,7 +32,7 @@ function draw(s: Scene, v: Variant) {
   piece(s, 'p-halo', () => s.face({ id: 'p-halo-face', at: [0, 0, 0], size: [k.span * 3, k.span * 3], radius: k.span * 1.5, fill: halo }), 0.05);
 
   const ring = [...stops, stops[0]!].map(st => at(st.corner));
-  piece(s, 'p-loop', () => link(s, { id: 'p-track', points: ring, stroke: 'rgb(6 95 70 / .22)', width: 1.5, corner: 1 }, { pulse: { id: 'p-coin', color: money, length: 0.07, width: 3.5, glow: false } }));
+  piece(s, 'p-loop', () => link(s, { id: 'p-track', points: ring, stroke: 'rgb(6 95 70 / .22)', width: 1.5, corner: 1, joins: stops.map(st => `p-${st.id}-box`) }, { pulse: { id: 'p-coin', color: money, length: 0.07, width: 3.5, glow: false } }));
 
   const [cw, ch] = k.card;
   const cardTop = '#065f46';

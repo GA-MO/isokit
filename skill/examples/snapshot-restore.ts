@@ -30,7 +30,7 @@ function build({ name, width, height, origin, k, noteBelow }: Layout) {
   const tile = 40 * k;
   const tileH = 10 * k;
 
-  s.wire({ id: 'axis', points: [[cardX(0) - card / 2 - 12 * k, 0, -cardH / 2], [db[0] - disc / 2, 0, -cardH / 2]], stroke: ui.wire, width: 1.25 });
+  s.wire({ id: 'axis', points: [[cardX(0) - card / 2 - 12 * k, 0, -cardH / 2], [db[0] - disc / 2, 0, -cardH / 2]], stroke: ui.wire, width: 1.25, joins: ['card-0', 'disc-0'] });
   s.face({ id: 'cursor', at: [cardX(latest), 0, -cardH], size: [card + 18 * k, card + 18 * k], radius: 16 * k, fill: 'rgb(20 184 166 / .1)', stroke: accent, strokeWidth: 1.5 });
 
   snapshots.forEach((time, i) => {

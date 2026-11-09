@@ -83,7 +83,7 @@ function build(l: Layout) {
     const dx = Math.sign(c.centre[0] - probeFrom[0]);
     const dy = Math.sign(c.centre[1] - probeFrom[1]);
     const end: Vec2 = [c.centre[0] - dx * 30, c.centre[1] - dy * 30];
-    s.wire({ id: `probe-${c.id}`, points: [v([probeFrom[0] + dx * 14, probeFrom[1] + dy * 14]), v(end)], stroke: c === nearest ? c.ink : 'rgb(199 210 254 / .4)', width: 1.25, hidden: true });
+    s.wire({ id: `probe-${c.id}`, points: [v([probeFrom[0] + dx * 14, probeFrom[1] + dy * 14]), v(end)], stroke: c === nearest ? c.ink : 'rgb(199 210 254 / .4)', width: 1.25, hidden: true, joins: ['new', `ring-${c.id}`] });
   });
 
   list.forEach((p, i) => {
@@ -132,12 +132,11 @@ function build(l: Layout) {
   s.dropAt('new', 3.2, 40 * k);
   clusters.forEach((c, j) => {
     s.draw(`probe-${c.id}`, 3.9 + j * 0.08, 0.37, redraw);
-    if (c !== nearest) s.retract(`probe-${c.id}`, 4.6 + j * 0.05, 0.23, 'start', snapOff);
+    s.retract(`probe-${c.id}`, c === nearest ? 4.75 : 4.6 + j * 0.05, 0.23, 'start', snapOff);
   });
-  const move = 4.9;
+  const move = 5.0;
   const join = s.offset(v(probeFrom), v([nearest.centre[0] + joinSpot[0], nearest.centre[1] + joinSpot[1]]));
   s.at('new', 'translate', move, 0.95, '0 0', join, settle);
-  s.retract(`probe-${nearest.id}`, move, 0.8, 'end', settle);
   s.at('new-c', 'opacity', move + 0.6, 0.4, 0, 1, ease.linear);
   const shown = move + 1.0;
   s.at('verdict', 'opacity', shown, 0.25, 0, 1, ease.out);

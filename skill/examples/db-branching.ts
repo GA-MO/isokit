@@ -23,7 +23,7 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   const onMain: Vec3 = [main[0], main[1], tileH];
 
   const route: Vec3[] = wide ? [[main[0] + size / 2, main[1], wz], [d, d, wz], [d, -d + size / 2, wz]] : [[main[0] + size / 2, 0, wz], [branch[0] - size / 2, 0, wz]];
-  s.wire({ id: 'w-branch', points: route, stroke: 'rgb(79 70 229 / .45)', width: 1.25, corner: 18 * k, hidden: true });
+  s.wire({ id: 'w-branch', points: route, stroke: 'rgb(79 70 229 / .45)', width: 1.25, corner: 18 * k, hidden: true, joins: ['main', ['ghost', 'branch']] });
 
   s.slab({ id: 'main', at: main, size: [size, size], height: h, radius, top: ui.top, side: paints.gradient(s, indigo), grain: 0.06, edge: ui.edge });
   s.face({ id: 'main-glow', at: main, size: [size, size], radius, fill: 'rgb(99 102 241 / .2)' });
@@ -45,13 +45,13 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   s.introUntil(0.8);
 
   s.loop(9, 4.2);
-  s.draw('w-branch', 0.5, 0.45, ease.out);
-  s.at('ghost', 'opacity', 0.75, 0.25, 0, 1, ease.linear);
+  s.at('ghost', 'opacity', 0.5, 0.25, 0, 1, ease.linear);
+  s.draw('w-branch', 0.75, 0.45, ease.out);
   s.at('branch-note', 'opacity', 0.85, 0.25, 0, 1, ease.out);
   s.at('branch-note', 'translate', 0.85, 0.4, wide ? '0 8px' : '0 -8px', '0 0', ease.out);
   s.at('branch', 'opacity', 1.45, 0.4, 0, 1, ease.linear);
   s.at('branch-name', 'opacity', 1.45, 0.4, 0, 1, ease.linear);
-  s.at('ghost', 'opacity', 1.65, 0.3, 1, 0, ease.linear);
+  s.at('ghost', 'opacity', 1.85, 0.3, 1, 0, ease.linear);
 
   s.dropAt('change', 2.4, 34 * k);
   s.at('branch-hit', 'opacity', 2.72, 0.1, 0, 1, ease.linear);
@@ -71,12 +71,12 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   s.at('change', 'opacity', land - 0.05, 0.35, 1, 0, ease.linear);
   s.set('change', 'translate', land + 0.4, '0 0');
 
+  s.retract('w-branch', 6.0, 0.4, 'start', ease.in);
   s.at('branch', 'opacity', 6.4, 0.35, 1, 0, ease.linear);
   s.at('branch-name', 'opacity', 6.4, 0.35, 1, 0, ease.linear);
   s.at('ghost', 'opacity', 6.4, 0.3, 0, 1, ease.linear);
   s.at('ghost', 'opacity', 7.0, 0.3, 1, 0, ease.linear);
   s.at('branch-note', 'opacity', 6.8, 0.3, 1, 0, ease.linear);
-  s.retract('w-branch', 7.2, 0.4, 'start', ease.in);
   s.march('ghost', 4, 4, 24);
   return s;
 }

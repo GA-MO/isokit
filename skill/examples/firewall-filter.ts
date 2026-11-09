@@ -41,7 +41,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const lineArt = (id: string, p: Vec3, size: readonly [number, number], h: number) =>
     s.slab({ id, at: p, size, height: h, radius: Math.min(size[0], size[1]) * 0.18, top: ui.top, side: paints.flat('#f4f4f2'), outline: line, shade: false, shadow: true, edge: line });
 
-  s.wire({ id: 'lane', points: [[0, src[1] - srcSize / 2, floor + 2 * k], [0, api[1] + apiSize / 2, floor + 2 * k]], stroke: ui.wire, width: 1.25, dash: '3 4' });
+  s.wire({ id: 'lane', points: [[0, src[1] - srcSize / 2, floor + 2 * k], [0, api[1] + apiSize / 2, floor + 2 * k]], stroke: ui.wire, width: 1.25, dash: '3 4', joins: ['src', 'api'] });
 
   s.group('src-g', () => {
     lineArt('src', src, [srcSize, srcSize], 18 * k);

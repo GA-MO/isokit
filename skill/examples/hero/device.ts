@@ -77,7 +77,7 @@ function draw(s: Scene, v: Variant) {
       const [x, y] = anchor(i);
       link(
         s,
-        { id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1 },
+        { id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1, joins: [`d-pin-${l.id}`] },
         {
           pin: { id: `d-pin-${l.id}`, build: () => s.svg(`d-pin-${l.id}-dot`, `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="#4338ca" stroke="#fff" stroke-width="1.5"/>`) },
           label: {

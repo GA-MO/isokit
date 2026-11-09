@@ -168,16 +168,17 @@ function build({ name, width, height, origin, k, wide }: Layout) {
   light(selected, selectAt);
   for (let i = top - 1; i >= 0; i--) {
     const start = traceAt + (top - 1 - i) * hop;
+    const grow = 0.25;
     const dur = 0.45;
     edges.filter(e => e.lit && tierOf.get(e.down.id) === i).forEach((e, n) => {
       const t0 = start + n * 0.06;
-      s.draw(`${e.id}-on`, t0, dur, 'cubic-bezier(.31,.12,.03,.72)');
-      s.travel(`${e.id}-p`, t0, dur);
+      s.draw(`${e.id}-on`, t0, grow, 'cubic-bezier(.31,.12,.03,.72)');
+      s.travel(`${e.id}-p`, t0 + grow, dur);
       s.at(`${e.id}-on`, 'opacity', releaseAt, 0.4, 1, 0, ease.linear);
       s.set(`${e.id}-on`, 'strokeDashoffset', loopLength - 0.1, 1);
       s.set(`${e.id}-on`, 'opacity', loopLength - 0.05, 1);
     });
-    const land = start + dur;
+    const land = start + grow + dur;
     tiers[i]!.tables.filter(t => path.has(t.id)).forEach((t, n) => light(t.id, land + n * 0.06));
     const pill = wide ? `pick-${tiers[i]!.id}` : i === 0 ? 'pick-src' : null;
     if (pill) {

@@ -30,7 +30,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   s.wire({ id: 'w-docs', points: [v(-230 + 30, 0, wz), v(-plateSize[0] / 2 / k, 0, wz)], stroke: ui.wire, width: 1.25 });
   s.wire({ id: 'w-ask', points: [v(0, -200 + 28, wz), v(0, -plateSize[1] / 2 / k, wz)], stroke: ui.wire, width: 1.25 });
   const out = ranked.map(at => [[at[0], plateSize[1] / 2, wz * k], [at[0], at[1] - 30 * k, wz * k]] as const);
-  out.forEach((points, i) => s.wire({ id: `w-out-${i}`, points, stroke: ui.wire, width: 1.25, hidden: true }));
+  out.forEach((points, i) => s.wire({ id: `w-out-${i}`, points, stroke: ui.wire, width: 1.25 }));
   s.pulse({ id: 'p-docs', wire: 'w-docs', color: accent, length: 0.22 });
   s.pulse({ id: 'p-ask', wire: 'w-ask', color: accent, length: 0.22 });
 
@@ -105,18 +105,16 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const send = found + 0.45;
   ranked.forEach((_, i) => {
     const at = send + i * 0.22;
-    s.draw(`w-out-${i}`, at, 0.3);
-    s.at(`r-${i}`, 'opacity', at + 0.2, 0.2, 0, 1, ease.linear);
-    s.at(`r-${i}`, 'translate', at + 0.2, 0.6, '0 18px', '0 0', rise);
+    s.at(`r-${i}`, 'opacity', at, 0.2, 0, 1, ease.linear);
+    s.at(`r-${i}`, 'translate', at, 0.6, '0 18px', '0 0', rise);
   });
-  const shown = send + 2 * 0.22 + 0.8;
+  const shown = send + 2 * 0.22 + 0.9;
 
   const clear = shown + 2.2;
   s.at('q', 'opacity', clear, 0.3, 1, 0, ease.linear);
   s.set('q', 'clipPath', clear + 0.3, 'inset(-20% 100% -20% 0)');
   ranked.forEach((_, i) => {
     s.at(`r-${i}`, 'opacity', clear + 0.1 + i * 0.06, 0.3, 1, 0, ease.linear);
-    s.retract(`w-out-${i}`, clear + i * 0.06, 0.25, 'start');
   });
   terms.forEach((term, i) => {
     if (!(query as readonly string[]).includes(term)) return;

@@ -41,7 +41,7 @@ function build(l: Layout) {
   const tall = 150 * k;
   const wz = -14 * k;
 
-  s.wire({ id: 'w-feed', points: [[dataAt[0] + dataSize / 2, 0, wz], [modelAt[0] - modelSize / 2, 0, wz]], stroke: ui.wire, width: 1.25 });
+  s.wire({ id: 'w-feed', points: [[dataAt[0] + dataSize / 2, 0, wz], [modelAt[0] - modelSize / 2, 0, wz]], stroke: ui.wire, width: 1.25, joins: ['data', 'model-slab'] });
   s.wire({ id: 'w-out', points: [[modelAt[0] + modelSize / 2, 0, wz], [plateAt[0] - plateLen / 2, 0, wz]], stroke: ui.wire, width: 1.25 });
   s.pulse({ id: 'p-feed', wire: 'w-feed', color: accent, length: 0.3 });
   s.pulse({ id: 'p-out', wire: 'w-out', color: accent, length: 0.3 });

@@ -48,8 +48,8 @@ function build({ name, width, height, origin, k, wide }: Layout) {
       s.slab({ id: r.id, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.gradient(s, ramps.silver), grain: 0.08, edge: ui.edge, outline: line, shadow: false });
       s.slab({ id: `${r.id}-on`, at, size: [size, size], height: thick, radius, top: ui.top, side: paints.gradient(s, rose), grain: 0.08, edge: ui.edge, outline: 'rgb(190 18 60 / .35)', shadow: false });
       s.face({ id: `${r.id}-glow`, at, size: [size, size], radius, fill: 'rgb(244 63 94 / .16)', stroke: 'rgb(225 29 72 / .5)' });
-      s.wire({ id: `${r.id}-track`, points: bar, stroke: 'rgb(22 23 27 / .1)', width: 3 });
-      s.wire({ id: `${r.id}-bar`, points: bar, stroke: accent, width: 3, hidden: true });
+      s.wire({ id: `${r.id}-track`, points: bar, stroke: 'rgb(22 23 27 / .1)', width: 3, joins: [] });
+      s.wire({ id: `${r.id}-bar`, points: bar, stroke: accent, width: 3, hidden: true, joins: [] });
       s.text({ id: `${r.id}-name`, at: [-size / 2 + 18 * k, edgeY - 13 * k, z], text: r.name, size: wide ? 12 : 11, color: ink, on: 'top' });
     });
     const start = encodeAt;

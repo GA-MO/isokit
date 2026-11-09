@@ -25,8 +25,8 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   const tokenTo: Vec3 = [appAt[0], appAt[1], appAt[2] + 10 * k];
 
   const wz = 8 * k;
-  s.wire({ id: 'w-cred', points: [[phoneAt[0], phoneAt[1] - phone.t, wz], [phoneAt[0], idSize / 2, wz]], stroke: ui.wire, width: 1.25 });
-  s.wire({ id: 'w-push', points: [[phoneAt[0], idSize / 2, wz], [phoneAt[0], phoneAt[1] - phone.t, wz]], stroke: 'none' });
+  s.wire({ id: 'w-cred', points: [[phoneAt[0], phoneAt[1] - phone.t, wz], [phoneAt[0], idSize / 2, wz]], stroke: ui.wire, width: 1.25, joins: ['phone', 'identity'] });
+  s.wire({ id: 'w-push', points: [[phoneAt[0], idSize / 2, wz], [phoneAt[0], phoneAt[1] - phone.t, wz]], stroke: 'none', joins: ['identity', 'phone'] });
   s.pulse({ id: 'p-cred', wire: 'w-cred', color: accent, length: 0.22 });
   s.pulse({ id: 'p-push', wire: 'w-push', color: accent, length: 0.22 });
   s.pulse({ id: 'p-ok', wire: 'w-cred', color: accent, length: 0.22 });
