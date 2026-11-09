@@ -114,8 +114,8 @@ for (const file of files) {
       bad += result.bad;
       table.push(result);
       if (result.bad) console.log(`FAIL ${basename(file)} ${result.name}: ${result.bad} of ${result.frames} frames\n  ${result.first.join('\n  ')}`);
-      if (result.loose.length) {
-        loose++;
+      if (result.loose.length && w === widths[0]) {
+        loose += result.loose.length;
         console.log(`FAIL ${basename(file)} ${result.name}: ${result.loose.join(', ')} start or end on no slab or prism, so the kit cannot time them; name what each joins with wire({ joins }), or joins: [] for a line that joins nothing`);
       }
     }
@@ -123,5 +123,5 @@ for (const file of files) {
 }
 await browser.close();
 if (opts.table) for (const r of table) console.log(`${r.name.padEnd(28)} ${String(r.bad).padStart(4)} / ${r.frames}${r.unjoined.length ? `  unjoined: ${r.unjoined.join(', ')}` : ''}`);
-console.log(`${frames} frames in ${files.length} pages at ${widths.join(', ')} px every ${step * 1000} ms; ${bad ? `${bad} show a wire or pulse before what it joins is in place` : 'no wire or pulse shows before what it joins is in place'}`);
+console.log(`${frames} frames in ${files.length} pages at ${widths.join(', ')} px every ${step * 1000} ms; ${bad ? `${bad} show a wire or pulse before what it joins is in place` : 'no wire or pulse shows before what it joins is in place'}${loose ? `; ${loose} wires join no box the kit can find` : ''}`);
 process.exit(bad || loose ? 1 : 0);
