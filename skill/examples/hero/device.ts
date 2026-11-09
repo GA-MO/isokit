@@ -85,14 +85,14 @@ function draw(s: Scene, v: Variant) {
     const t = 0.95 + n * 0.08;
     s.at(`d-rule-${id}`, 'strokeDashoffset', t, 0.6, 1.04, 0, curve.rule);
     s.at(`d-note-${id}`, 'opacity', t + 0.3, 0.2, 0, 1, ease.linear);
-    s.at(`d-note-${id}`, 'opacity', 3.0, 0.2, 1, 0, ease.linear);
-    s.at(`d-rule-${id}`, 'strokeDashoffset', 2.95, 0.23, 0, -1.04, curve.snapOff);
+    s.at(`d-note-${id}`, 'opacity', 3.7, 0.2, 1, 0, ease.linear);
+    s.at(`d-rule-${id}`, 'strokeDashoffset', 3.65, 0.23, 0, -1.04, curve.snapOff);
   });
   s.at('d-chip', 'fill', 1.7, 0.15, off, amber, ease.linear);
   s.at('d-chip', 'fill', 1.85, 1.2, amber, off, ease.linear);
-  order.forEach((i, n) => s.at(`d-lift-${layers[i]!.id}`, 'translate', 3.2 + n * 0.08, 0.74, `0 ${-lifted(i)}px`, '0 0', curve.settle));
-  s.at('d-led', 'fill', 4.25, 0.1, ledOff, ledOn, ease.linear);
-  s.at('d-led', 'fill', 5.8, 0.15, ledOn, ledOff, ease.linear);
+  order.forEach((i, n) => s.at(`d-lift-${layers[i]!.id}`, 'translate', 3.9 + n * 0.08, 0.74, `0 ${-lifted(i)}px`, '0 0', curve.settle));
+  s.at('d-led', 'fill', 4.95, 0.1, ledOff, ledOn, ease.linear);
+  s.at('d-led', 'fill', 6.2, 0.15, ledOn, ledOff, ease.linear);
 }
 
 export const device: Story = {
@@ -105,8 +105,8 @@ export const device: Story = {
   alt: 'A titanium edge device lifts apart into its five layers, case, battery, edge chip, radio and lid, each named, then closes again',
   swatch: 'linear-gradient(135deg, #ecc38a, #c4568e 50%, #5b5bd6)',
   enter: 1.0,
-  loop: 6.0,
-  peak: 4.7,
+  loop: 6.4,
+  peak: 5.3,
   still: 2.4,
   origin: { wide: [300, 340], compact: [140, 306] },
   draw,

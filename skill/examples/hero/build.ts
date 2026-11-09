@@ -34,7 +34,7 @@ function draw(s: Scene, v: Variant) {
     const pillX = t.anchor === 'start' ? t.at[0] + t.size * 3.6 + 44 : t.at[0];
     const pillY = t.anchor === 'start' ? t.at[1] : t.at[1] + t.size * 0.95;
     s.group('b-faster', () => s.text({ id: 'b-faster-text', at: { screen: [pillX, pillY] }, text: '6.8× faster', size: k.text, color: '#9a3412', font: 'sans', weight: 600, pill: { fill: '#ffedd5', stroke: 'rgb(234 88 12 / .35)', radius: k.text * 0.8 } }));
-   }, 0.4);
+  }, 0.4);
 
   bars.forEach((b, i) => {
     const x = (i - 1) * k.pitch;

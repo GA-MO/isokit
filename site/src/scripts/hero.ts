@@ -65,11 +65,12 @@ export function playHero(root: HTMLElement) {
     return window.setTimeout(() => mine === turn && run(), Math.max(0, ms));
   };
 
+  const terminal = root.querySelector<HTMLElement>('[data-terminal]') ?? root;
   const typePrompt = (s: Story, t: Typing) => {
-    root.style.setProperty('--lead', `${t.lead * 1000}ms`);
-    root.style.setProperty('--step', `${t.step * 1000}ms`);
+    terminal.style.setProperty('--lead', `${t.lead * 1000}ms`);
+    terminal.style.setProperty('--step', `${t.step * 1000}ms`);
     for (const other of stories) for (const el of other.lines) el.toggleAttribute('data-on', false);
-    root.getBoundingClientRect();
+    terminal.getBoundingClientRect();
     for (const el of s.lines) el.toggleAttribute('data-on', true);
   };
 
@@ -90,7 +91,7 @@ export function playHero(root: HTMLElement) {
     const anims = pieces.flatMap((p, k) => liftOff(p, k * lift.stagger));
     exits.set(s, anims);
     window.setTimeout(() => {
-      if (exits.get(s) !== anims || s === story(active)) return;
+      if (exits.get(s) !== anims) return;
       show(s, false);
       for (const h of handles(s)) h.pause();
       for (const a of anims) a.cancel();
@@ -272,12 +273,11 @@ export function playHero(root: HTMLElement) {
   new ResizeObserver(() => {
     const s = story(active);
     const now = shown(s);
-    if (!seen || !now || now === seen) return;
+    if (!seen || !now || now === seen || (!live && !reduce.matches)) return;
     const t = clock(seen);
     seen.iso?.pause();
     seen = now;
     if (reduce.matches) return now.iso?.seek(now.iso.spec.intro + now.iso.spec.still);
-    if (!live) return;
     now.iso?.seek(t ?? 0);
     resume();
   }).observe(box);
@@ -339,8 +339,14 @@ export function playHero(root: HTMLElement) {
   const first = story(0);
   for (const s of stories) for (const h of handles(s)) h.seek(s === first && reduce.matches ? h.spec.intro + h.spec.still : 0);
   if (reduce.matches) return;
-  const typed = first.lines.flatMap(l => [...l.querySelectorAll('.type-in > span')])[0]?.getAnimations()[0];
-  const begun = typed?.startTime != null && document.timeline.currentTime != null ? Number(document.timeline.currentTime) - Number(typed.startTime) : null;
-  if (begun === null) typePrompt(first, typing);
-  swap = later(typeTime(first.prompt) * 1000 - (begun ?? 0), () => enter(first));
+  const typed = first.lines.flatMap(l => [...l.querySelectorAll('.type-in > span')]).at(-1)?.getAnimations()[0];
+  if (!typed) {
+    typePrompt(first, typing);
+    swap = later(typeTime(first.prompt) * 1000, () => enter(first));
+    return;
+  }
+  const mine = turn;
+  typed.finished.then(() => {
+    if (mine === turn) swap = later(typing.send * 1000, () => enter(first));
+  });
 }

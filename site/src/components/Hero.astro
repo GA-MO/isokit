@@ -98,7 +98,7 @@ const steps = [
                 tabindex={i === 0 ? 0 : -1}
                 data-prompt={story.prompt}
                 data-peak={story.peak}
-                class="relative inline-flex h-10 min-w-0 items-center gap-2 overflow-hidden rounded-full border border-line bg-page/60 px-3 text-sm font-medium whitespace-nowrap text-muted transition duration-150 active:scale-97 sm:px-4 hover:border-line-strong hover:text-ink aria-selected:border-line-strong aria-selected:bg-page aria-selected:text-ink aria-selected:shadow-sm"
+                class="relative inline-flex h-10 min-w-0 items-center gap-1.5 overflow-hidden rounded-full border border-line bg-page/60 px-3 text-sm font-medium whitespace-nowrap text-muted transition duration-150 active:scale-97 sm:gap-2 sm:px-4 hover:border-line-strong hover:text-ink aria-selected:border-line-strong aria-selected:bg-page aria-selected:text-ink aria-selected:shadow-sm"
               >
                 <span class="size-2.5 shrink-0 rounded-full ring-1 ring-ink/10" style={`background:${story.swatch}`} aria-hidden="true" />
                 {story.label}
@@ -108,10 +108,10 @@ const steps = [
           }
         </div>
       </div>
-      <div class="relative z-20 hidden items-center justify-center lg:-mr-6 lg:flex lg:w-12 lg:shrink-0" aria-hidden="true">
+      <div class="relative z-20 hidden items-center justify-center lg:-mr-6 lg:w-12 lg:shrink-0 xl:flex" aria-hidden="true">
         <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-page px-3 py-1 font-mono text-xs font-medium whitespace-nowrap text-accent shadow-sm lg:-translate-x-3">
           1 prompt
-          <svg viewBox="0 0 12 12" class="size-3 rotate-90 lg:rotate-0"><path d="M2 6h8M7 3l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <svg viewBox="0 0 12 12" class="size-3"><path d="M2 6h8M7 3l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </span>
       </div>
       <div id="hero-scene" role="tabpanel" aria-labelledby={`hero-tab-${lines[0]!.slug}`} class="grid min-w-0 flex-1">

@@ -15,4 +15,4 @@ export const readme = (v: Variant) => reel(list, v, title);
 
 const preview: Art = stories[0]!.art;
 
-export default { ...page({ title: 'Four prompts, four scenes', surface: 'light', art: preview }), background: ui.page };
+export default { ...page({ title: 'Hero, first story', surface: 'light', art: preview }), background: ui.page };
