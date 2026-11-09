@@ -69,7 +69,10 @@ export function playHero(root: HTMLElement) {
   const typePrompt = (s: Story, t: Typing) => {
     terminal.style.setProperty('--lead', `${t.lead * 1000}ms`);
     terminal.style.setProperty('--step', `${t.step * 1000}ms`);
-    for (const other of stories) for (const el of other.lines) el.toggleAttribute('data-on', false);
+    for (const el of stories.flatMap(other => other.lines)) {
+      el.removeAttribute('data-on');
+      el.removeAttribute('data-drawn');
+    }
     terminal.getBoundingClientRect();
     for (const el of s.lines) el.toggleAttribute('data-on', true);
   };
@@ -156,6 +159,7 @@ export function playHero(root: HTMLElement) {
       for (const a of exits.get(s) ?? []) a.cancel();
       exits.delete(s);
       show(s, true);
+      for (const el of s.lines) el.toggleAttribute('data-drawn', true);
       seen = shown(s);
       seen?.iso?.seek(0);
       live = true;
@@ -193,7 +197,7 @@ export function playHero(root: HTMLElement) {
     const next = story(i);
     const prev = story(active);
     if (how === 'pick') holdUntil = Math.max(holdUntil, performance.now() + holdAfterPick * 1000);
-    if (next === prev) {
+    if (next === prev && (live || how === 'auto')) {
       if (how === 'pick') schedule();
       return;
     }
@@ -346,7 +350,10 @@ export function playHero(root: HTMLElement) {
     return;
   }
   const mine = turn;
-  typed.finished.then(() => {
-    if (mine === turn) swap = later(typing.send * 1000, () => enter(first));
-  });
+  typed.finished.then(
+    () => {
+      if (mine === turn) swap = later(typing.send * 1000, () => enter(first));
+    },
+    () => undefined,
+  );
 }

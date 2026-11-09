@@ -108,9 +108,9 @@
     animation-delay: calc(var(--lead, 400ms) + var(--i) * var(--step, 35ms));
   }
 
-  [data-on] .reveal {
+  [data-drawn] .reveal {
     animation: reveal 0.4s var(--ease-settle) both;
-    animation-delay: calc(var(--lead, 400ms) + var(--n) * var(--step, 35ms) + var(--at));
+    animation-delay: var(--at);
   }
 
   .caret {
@@ -145,7 +145,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     [data-on] .type-in > span,
-    [data-on] .reveal,
+    [data-drawn] .reveal,
     .type-in > span,
     .reveal,
     .caret {
