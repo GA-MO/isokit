@@ -275,15 +275,17 @@ export function playHero(root: HTMLElement) {
   });
 
   new ResizeObserver(() => {
-    const s = story(active);
-    const now = shown(s);
-    if (!seen || !now || now === seen || (!live && !reduce.matches)) return;
-    const t = clock(seen);
-    seen.iso?.pause();
+    const was = seen;
+    const owner = was && stories.find(s => s.panel.contains(was));
+    const now = owner && shown(owner);
+    if (!was || !now || now === was) return;
+    const t = clock(was);
+    was.iso?.pause();
     seen = now;
     if (reduce.matches) return now.iso?.seek(now.iso.spec.intro + now.iso.spec.still);
     now.iso?.seek(t ?? 0);
-    resume();
+    if (owner === story(active)) return resume();
+    if (inView) now.iso?.play();
   }).observe(box);
 
   let preloaded = false;
