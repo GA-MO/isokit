@@ -699,7 +699,7 @@ export class Scene {
       this.defs.set(`${id}_grow`, `<mask id="${id}_grow" maskUnits="userSpaceOnUse" ${attr({ x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, width: Math.max(...xs) - Math.min(...xs) + 2 * pad, height: Math.max(...ys) - Math.min(...ys) + 2 * pad })}><path id="${id}_grow-path" ${attr({ d, fill: 'none', stroke: '#fff', 'stroke-width': (o.width ?? 1) + 2, 'stroke-dasharray': '1 2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 })}/></mask>`);
     }
     this.layers.push(
-      `<path id="${id}"${cls(o.className)} ${attr({ d, fill: 'none', stroke: o.stroke, 'stroke-width': o.width ?? 1, 'stroke-dasharray': o.dash ?? '1 2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, mask: o.dash && !o.hidden ? `url(#${id}_grow)` : undefined, style: o.hidden ? 'stroke-dashoffset:1' : undefined })}/>`,
+      `<path id="${id}"${cls(o.className)} ${attr({ d, fill: 'none', stroke: o.stroke, 'stroke-width': o.width ?? 1, 'stroke-dasharray': o.dash ?? '1 2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: o.dash ? undefined : 1, mask: o.dash && !o.hidden ? `url(#${id}_grow)` : undefined, style: o.hidden ? 'stroke-dashoffset:1' : undefined })}/>`,
     );
     return this;
   }

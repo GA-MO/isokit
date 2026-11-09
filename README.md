@@ -210,7 +210,7 @@ All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.7 kB |
 | Hero script (story order, prompt chips, lift-off, tilt) | 8.3 kB | 3.6 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag, slider and drill-down demos) | 14.8 kB | 4.2 kB |
-| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12921.1 kB | 1008.9 kB |
+| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12920.9 kB | 1008.9 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |

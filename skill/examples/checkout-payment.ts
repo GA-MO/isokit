@@ -41,8 +41,7 @@ function build(name: string, width: number, height: number, origin: readonly [nu
   }
   const bank = at(4);
   const checkout = at(0);
-  const backLength = (2 * R - half(4) - half(0)) * Math.hypot(Math.SQRT1_2, Math.SQRT1_2 * Math.tan(Math.PI / 6));
-  s.wire({ id: 'w-back', points: [[bank[0], bank[1] + half(4), wz], [R, R, wz], [checkout[0] + half(0), R, wz]], stroke: ui.wire, width: 1.25, dash: `${(3 / backLength).toFixed(4)} ${(5 / backLength).toFixed(4)}` });
+  s.wire({ id: 'w-back', points: [[bank[0], bank[1] + half(4), wz], [R, R, wz], [checkout[0] + half(0), R, wz]], stroke: ui.wire, width: 1.25, dash: '3 5' });
 
   const order = [2, 1, 3, 0, 4];
   order.forEach(i => {

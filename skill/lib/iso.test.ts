@@ -802,7 +802,7 @@ test('joins names ends the kit cannot see, takes alternatives per end, and joins
   expect(() => empty.render()).toThrow(/joins an empty list/);
 });
 
-test('a dashed wire grows through a mask, so its own dash pattern is kept', () => {
+test('a dashed wire takes its dash in px and grows through a mask, so its own dash pattern is kept', () => {
   const s = scene();
   s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888', dash: '3 4' });
   block(s, 'a', 0);
@@ -811,6 +811,8 @@ test('a dashed wire grows through a mask, so its own dash pattern is kept', () =
   const html = s.render();
   expect(html).toMatch(/id="demo_w"[^>]*stroke-dasharray="3 4"[^>]*mask="url\(#demo_w_grow\)"/);
   expect(html).toContain('<mask id="demo_w_grow" maskUnits="userSpaceOnUse"');
+  expect(html).not.toMatch(/id="demo_w"[^>]*pathLength/);
+  expect(html).toMatch(/id="demo_w_grow-path"[^>]*pathLength="1"/);
   expect(offsetAt(s, 'w', 0.5, 'w_grow-path')).toBe(1);
   expect(offsetAt(s, 'w', 1.06, 'w_grow-path')).toBe(0);
   expect(s.exportSvg()).toContain('demo_w_grow-path{animation:');
