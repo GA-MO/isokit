@@ -37,15 +37,16 @@ function liftOff(el: Element, delay: number): Animation[] {
   ];
 }
 
-function unwire(view: Element): { wired: boolean; anims: Animation[] } {
+function unwire(view: Element): { time: number; anims: Animation[] } {
   const wires = [...view.querySelectorAll('.hero-wire')].map(w => ({ w, at: parseFloat(getComputedStyle(w).strokeDashoffset) || 0 }));
-  const wired = wires.some(({ at }) => Math.abs(at) < 1);
-  const stop = { duration: lift.stop * 1000, fill: 'forwards' as const };
+  const time = unwireTime(wires.some(({ at }) => Math.abs(at) < 1), view.querySelector('.hero-pin') !== null);
+  const fade = (selector: string, delay: number, dur: number) =>
+    [...view.querySelectorAll(selector)].map(el => el.animate([{ opacity: getComputedStyle(el).opacity }, { opacity: 0 }], { duration: dur * 1000, delay: delay * 1000, fill: 'both' }));
   const retract = { duration: lift.retract * 1000, delay: lift.stop * 1000, easing: lift.retractEase, fill: 'both' as const };
   const gone = (at: number) => (Math.abs(at) >= 1 ? at : at < 0 ? -hidden : hidden);
   return {
-    wired,
-    anims: [...[...view.querySelectorAll('.hero-pulse')].map(p => p.animate([{ opacity: 1 }, { opacity: 0 }], stop)), ...wires.map(({ w, at }) => w.animate([{ strokeDashoffset: at }, { strokeDashoffset: gone(at) }], retract))],
+    time,
+    anims: [...fade('.hero-pulse, .hero-label', 0, lift.stop), ...wires.map(({ w, at }) => w.animate([{ strokeDashoffset: at }, { strokeDashoffset: gone(at) }], retract)), ...fade('.hero-pin', lift.stop + lift.retract, lift.unpin)],
   };
 }
 
@@ -111,12 +112,12 @@ export function playHero(root: HTMLElement) {
     if (exits.has(s) || off(s)) return 0;
     const view = shown(s);
     for (const a of view?.getAnimations({ subtree: true }) ?? []) a.persist();
-    const { wired, anims: unwiring } = view ? unwire(view) : { wired: false, anims: [] };
+    const { time, anims: unwiring } = view ? unwire(view) : { time: 0, anims: [] };
     const pieces = [...(view?.querySelectorAll('.hero-piece') ?? [])].reverse();
-    const anims = [...unwiring, ...pieces.flatMap((p, k) => liftOff(p, unwireTime(wired) + k * lift.stagger))];
+    const anims = [...unwiring, ...pieces.flatMap((p, k) => liftOff(p, time + k * lift.stagger))];
     exits.set(s, anims);
-    window.setTimeout(() => exits.get(s) === anims && finish(s), liftTime(pieces.length, wired) * 1000 + 60);
-    return handoverAfter(pieces.length, wired);
+    window.setTimeout(() => exits.get(s) === anims && finish(s), liftTime(pieces.length, time) * 1000 + 60);
+    return handoverAfter(pieces.length, time);
   };
 
   const loads = new Map<Story, Promise<boolean>>();
@@ -228,7 +229,7 @@ export function playHero(root: HTMLElement) {
     if (!typed) typePrompt(next, t);
     if (reduce.matches) return still(next);
     const sent = typed ? 0 : typeTime(next.prompt, t) * 1000;
-    const out = () => Math.max(handoverAfter(0, false), ...stories.map(s => (s === next ? 0 : leave(s)))) * 1000;
+    const out = () => Math.max(handoverAfter(0, 0), ...stories.map(s => (s === next ? 0 : leave(s)))) * 1000;
     if (how === 'pick') {
       const clear = out();
       swap = later(Math.max(sent, clear), () => enter(next));

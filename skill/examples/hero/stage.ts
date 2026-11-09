@@ -44,16 +44,34 @@ export function piece(s: Scene, id: string, build: () => unknown, drop?: number)
   if (drop !== undefined) s.dropIn(id, drop);
 }
 
-const wiring = new WeakMap<Scene, { wires: string[]; pulses: string[] }>();
-const wiresOf = (s: Scene) => wiring.get(s) ?? { wires: [], pulses: [] };
+interface Wiring {
+  wires: string[];
+  pulses: string[];
+  pins: string[];
+  labels: string[];
+}
+interface Part {
+  id: string;
+  build: () => unknown;
+}
+const wiring = new WeakMap<Scene, Wiring>();
+const wiresOf = (s: Scene): Wiring => wiring.get(s) ?? { wires: [], pulses: [], pins: [], labels: [] };
 
-export function link(s: Scene, wire: Omit<WireOptions, 'hidden' | 'className'>, pulse?: Omit<PulseOptions, 'wire'>) {
+export function link(s: Scene, wire: Omit<WireOptions, 'hidden' | 'className'>, parts: { pulse?: Omit<PulseOptions, 'wire'>; pin?: Part; label?: Part } = {}) {
+  const { pulse, pin, label } = parts;
+  const add = (kind: string, part: Part | undefined) => {
+    if (!part) return [];
+    s.group(part.id, part.build, `hero-${kind}`);
+    return [part.id];
+  };
   s.wire({ ...wire, hidden: true, className: 'hero-wire' });
-  const { wires, pulses } = wiresOf(s);
-  if (!pulse) return wiring.set(s, { wires: [...wires, wire.id], pulses });
-  const run = `${pulse.id}-run`;
-  s.group(run, () => s.pulse({ ...pulse, wire: wire.id }), 'hero-pulse');
-  wiring.set(s, { wires: [...wires, wire.id], pulses: [...pulses, run] });
+  const was = wiresOf(s);
+  wiring.set(s, {
+    wires: [...was.wires, wire.id],
+    pulses: [...was.pulses, ...add('pulse', pulse && { id: `${pulse.id}-run`, build: () => s.pulse({ ...pulse, wire: wire.id }) })],
+    pins: [...was.pins, ...add('pin', pin)],
+    labels: [...was.labels, ...add('label', label)],
+  });
 }
 
 const num = (v: number) => Number(v.toFixed(2));
@@ -109,7 +127,7 @@ interface Seg {
 
 class Slot extends Scene {
   readonly queue: Seg[] = [];
-  wired = false;
+  unwire = 0;
   private readonly rest = new Map<string, { intro: boolean; start: number; value: string | number }>();
 
   constructor(
@@ -149,36 +167,38 @@ class Slot extends Scene {
     return this.story.enter + this.story.peak;
   }
 
-  private drawnAtExit(wire: string) {
-    const segs = this.queue.filter(q => q.target === wire && q.prop === 'strokeDashoffset' && q.start < this.exit);
-    const open = segs.find(q => q.start + q.dur > this.exit);
-    if (open) throw new Error(`hero reel ${this.name}: wire ${wire} is still moving at the peak ${this.exit.toFixed(2)}s; let it finish first`);
+  private atExit(target: string, prop: 'strokeDashoffset' | 'opacity', unset: number) {
+    const segs = this.queue.filter(q => q.target === target && q.prop === prop && q.start < this.exit);
+    if (segs.some(q => q.start + q.dur > this.exit)) throw new Error(`hero reel ${this.name}: ${target}.${prop} is still moving at the peak ${this.exit.toFixed(2)}s; let it finish first`);
     const last = segs.reduce<Seg | undefined>((a, q) => (!a || q.start > a.start ? q : a), undefined);
-    const at = Number(last?.to ?? 1);
-    return Math.abs(at) < 1 ? at : null;
+    return Number(last?.to ?? unset);
   }
 
   lift() {
-    const { wires, pulses: runs } = wiresOf(this);
-    const drawn = wires.flatMap(w => {
-      const at = this.drawnAtExit(w);
-      return at === null ? [] : [{ w, at }];
-    });
-    this.wired = drawn.length > 0;
-    if (this.wired) {
-      for (const run of runs) this.queue.push({ target: run, prop: 'opacity', start: this.exit, dur: lift.stop, from: 1, to: 0, easing: ease.linear });
+    const { wires, pulses, pins, labels } = wiresOf(this);
+    const drawn = wires.map(w => ({ w, at: this.atExit(w, 'strokeDashoffset', 1) })).filter(({ at }) => Math.abs(at) < 1);
+    this.unwire = unwireTime(drawn.length > 0, pins.length > 0);
+    const fade = (ids: string[], start: number, dur: number) => {
+      for (const id of ids) {
+        const from = this.atExit(id, 'opacity', 1);
+        if (from > 0) this.queue.push({ target: id, prop: 'opacity', start, dur, from, to: 0, easing: ease.linear });
+      }
+    };
+    if (drawn.length) {
+      fade([...pulses, ...labels], this.exit, lift.stop);
       for (const { w, at } of drawn) this.queue.push({ target: w, prop: 'strokeDashoffset', start: this.exit + lift.stop, dur: lift.retract, from: at, to: at < 0 ? -hidden : hidden, easing: lift.retractEase });
+      fade(pins, this.exit + lift.stop + lift.retract, lift.unpin);
     }
     const pieces = [...piecesOf(this)].reverse();
     pieces.forEach((id, i) => {
-      const t = this.exit + unwireTime(this.wired) + i * lift.stagger;
+      const t = this.exit + this.unwire + i * lift.stagger;
       if (!this.rest.has(`${id}|opacity`)) this.queue.push({ target: id, prop: 'opacity', start: 0, dur: 0.001, from: 1, to: 1, easing: ease.linear });
       this.queue.push(
         { target: id, prop: 'translate', start: t, dur: lift.dur, from: '0 0', to: `0 ${-lift.distance}px`, easing: lift.ease },
         { target: id, prop: 'opacity', start: t + lift.dur * lift.fadeFrom, dur: lift.dur * (1 - lift.fadeFrom), from: 1, to: 0, easing: ease.linear },
       );
     });
-    const reset = this.exit + liftTime(pieces.length, this.wired) + 0.05;
+    const reset = this.exit + liftTime(pieces.length, this.unwire) + 0.05;
     const late = this.queue.find(q => q.start + q.dur > reset);
     if (late) throw new Error(`hero reel ${this.name}: ${late.target}.${late.prop} runs until ${(late.start + late.dur).toFixed(2)}s, past the lift-off at ${reset.toFixed(2)}s; end it before the peak`);
     const keys = new Map(this.queue.map(q => [`${q.target}|${q.prop}`, q] as const));
@@ -244,7 +264,7 @@ export function reel(stories: readonly Story[], v: Variant, title: string): stri
     slot.lift();
     return slot;
   });
-  const handovers = slots.map(sl => handoverAfter(piecesOf(sl).length, sl.wired));
+  const handovers = slots.map(sl => handoverAfter(piecesOf(sl).length, sl.unwire));
   const lengths = slots.map((sl, i) => Math.round((sl.exit + handovers[i]!) * 1000) / 1000);
   const total = Math.round(lengths.reduce((a, b) => a + b, 0) * 1000) / 1000;
   const lead = handovers[handovers.length - 1]!;

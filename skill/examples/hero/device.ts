@@ -75,12 +75,20 @@ function draw(s: Scene, v: Variant) {
   piece(s, 'd-notes', () => {
     layers.forEach((l, i) => {
       const [x, y] = anchor(i);
-      link(s, { id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1 });
-      s.group(`d-note-${l.id}`, () => {
-        s.svg(`d-pin-${l.id}`, `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="#4338ca" stroke="#fff" stroke-width="1.5"/>`);
-        s.text({ id: `d-name-${l.id}`, at: { screen: [k.noteX, y - k.text * 0.5] }, text: l.note, size: k.text, color: '#27272a', font: 'sans', weight: 600 });
-        s.text({ id: `d-spec-${l.id}`, at: { screen: [k.noteX, y + k.text * 0.72] }, text: l.spec, size: k.text - 2, color: ui.muted, font: 'sans', weight: 500 });
-      });
+      link(
+        s,
+        { id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1 },
+        {
+          pin: { id: `d-pin-${l.id}`, build: () => s.svg(`d-pin-${l.id}-dot`, `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="#4338ca" stroke="#fff" stroke-width="1.5"/>`) },
+          label: {
+            id: `d-note-${l.id}`,
+            build: () => {
+              s.text({ id: `d-name-${l.id}`, at: { screen: [k.noteX, y - k.text * 0.5] }, text: l.note, size: k.text, color: '#27272a', font: 'sans', weight: 600 });
+              s.text({ id: `d-spec-${l.id}`, at: { screen: [k.noteX, y + k.text * 0.72] }, text: l.spec, size: k.text - 2, color: ui.muted, font: 'sans', weight: 500 });
+            },
+          },
+        },
+      );
     });
   });
 
@@ -89,10 +97,12 @@ function draw(s: Scene, v: Variant) {
   [...layers.keys()].reverse().forEach((i, n) => {
     const id = layers[i]!.id;
     const t = 0.95 + n * 0.08;
-    s.at(`d-rule-${id}`, 'strokeDashoffset', t, 0.6, hidden, 0, curve.rule);
-    s.at(`d-note-${id}`, 'opacity', t + 0.3, 0.2, 0, 1, ease.linear);
-    s.at(`d-note-${id}`, 'opacity', 3.7, 0.2, 1, 0, ease.linear);
-    s.at(`d-rule-${id}`, 'strokeDashoffset', 3.65, 0.23, 0, -hidden, curve.snapOff);
+    s.at(`d-pin-${id}`, 'opacity', t, 0.12, 0, 1, ease.out);
+    s.at(`d-rule-${id}`, 'strokeDashoffset', t + 0.12, 0.6, hidden, 0, curve.rule);
+    s.at(`d-note-${id}`, 'opacity', t + 0.42, 0.2, 0, 1, ease.linear);
+    s.at(`d-note-${id}`, 'opacity', 3.45, 0.15, 1, 0, ease.linear);
+    s.at(`d-rule-${id}`, 'strokeDashoffset', 3.6, 0.2, 0, hidden, curve.snapOff);
+    s.at(`d-pin-${id}`, 'opacity', 3.8, 0.08, 1, 0, ease.linear);
   });
   s.at('d-chip', 'fill', 1.7, 0.15, off, amber, ease.linear);
   s.at('d-chip', 'fill', 1.85, 1.2, amber, off, ease.linear);

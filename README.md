@@ -207,13 +207,13 @@ All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the
 | Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 430.6 kB | 44.0 kB |
 | Showcase CSS | 36.4 kB | 7.5 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.7 kB |
-| Hero script (story order, prompt chips, lift-off, tilt) | 8.2 kB | 3.5 kB |
+| Hero script (story order, prompt chips, lift-off, tilt) | 8.3 kB | 3.6 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag, slider and drill-down demos) | 14.8 kB | 4.2 kB |
-| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12769.4 kB | 1000.5 kB |
+| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12775.1 kB | 1000.9 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
-| `docs/svg/hero.svg` (the image at the top, all four stories) | 220.0 kB | 20.9 kB |
+| `docs/svg/hero.svg` (the image at the top, all four stories) | 222.6 kB | 21.1 kB |
 
 The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60) and the hero's other three stories, not all 117.
 

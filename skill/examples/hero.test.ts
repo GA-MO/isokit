@@ -63,7 +63,7 @@ test('each Edge device label line meets the middle of its own layer edge once th
   }
 });
 
-test('in every story a wire is drawn only while the boxes it joins hold still in place, so no line shows before or after its boxes', () => {
+test('in every story a wire is drawn only while what it joins holds still in place (boxes, and each Edge device pin), so no line shows before or after it', () => {
   const svcs = ['db', 'cache', 'queue', 'gateway'];
   const joins: Record<string, { wire: string; boxes: string[] }[]> = {
     orders: svcs.flatMap(n => [
@@ -71,7 +71,7 @@ test('in every story a wire is drawn only while the boxes it joins hold still in
       ...['a', 'b'].map(l => ({ wire: `o-w-${n}-${l}`, boxes: [`o-svc-${n}`, `o-g-${n}`, `o-leaves-${n}`, `o-g-${n}-${l}`] })),
     ]),
     payment: [{ wire: 'p-track', boxes: ['p-checkout', 'p-gateway', 'p-network', 'p-bank'] }],
-    device: ['case', 'battery', 'board', 'radio', 'lid'].map(id => ({ wire: `d-rule-${id}`, boxes: [`d-${id}`, `d-lift-${id}`] })),
+    device: ['case', 'battery', 'board', 'radio', 'lid'].map(id => ({ wire: `d-rule-${id}`, boxes: [`d-${id}`, `d-lift-${id}`, `d-pin-${id}`] })),
   };
   for (const story of stories) {
     for (const v of ['compact', 'wide'] as const) {

@@ -71,7 +71,7 @@ function draw(s: Scene, v: Variant) {
 
   piece(s, 'o-links', () => {
     const links = services.flatMap(n => [['core', n], [n, `${n}-a`], [n, `${n}-b`]] as const);
-    for (const [from, to] of links) link(s, { id: `o-w-${to}`, points: route(from, to), stroke: ui.wire, width: 1.25 }, { id: `o-p-${to}`, color: accent, length: isLeaf(to) ? 0.3 : 0.28, glow: false });
+    for (const [from, to] of links) link(s, { id: `o-w-${to}`, points: route(from, to), stroke: ui.wire, width: 1.25 }, { pulse: { id: `o-p-${to}`, color: accent, length: isLeaf(to) ? 0.3 : 0.28, glow: false } });
   });
 
   const tile = {
