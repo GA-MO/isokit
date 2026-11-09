@@ -13,6 +13,6 @@ export const stage: Art = stageArt();
 const title = 'Four sentences typed to Claude become four animated diagrams: an API that scales, a device taken apart, a payment round trip and a faster build';
 export const readme = (v: Variant) => reel(list, v, title);
 
-const preview: Art = { ...stage, html: `<div style="display:grid">${[stage, ...stories.map(s => s.art)].map(a => `<div style="grid-area:1/1">${a.html}</div>`).join('')}</div>` };
+const preview: Art = stories[0]!.art;
 
 export default { ...page({ title: 'Four prompts, four scenes', surface: 'light', art: preview }), background: ui.page };

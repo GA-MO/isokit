@@ -204,16 +204,16 @@ All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 431.8 kB | 43.8 kB |
-| Showcase CSS | 35.7 kB | 7.4 kB |
+| Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 428.0 kB | 43.6 kB |
+| Showcase CSS | 36.1 kB | 7.5 kB |
 | Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.6 kB | 2.7 kB |
-| Hero script (story order, prompt chips, lift-off, tilt) | 6.4 kB | 2.9 kB |
+| Hero script (story order, prompt chips, lift-off, tilt) | 7.2 kB | 3.2 kB |
 | Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag, slider and drill-down demos) | 14.8 kB | 4.2 kB |
-| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12837.2 kB | 1003.4 kB |
+| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12764.8 kB | 999.8 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
-| `docs/svg/hero.svg` (the image at the top, all four stories) | 278.8 kB | 24.5 kB |
+| `docs/svg/hero.svg` (the image at the top, all four stories) | 216.4 kB | 20.6 kB |
 
 The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60) and the hero's other three stories, not all 117.
 
@@ -221,9 +221,9 @@ Hero motion on the built showcase, 20 s of play (three stories and two switches)
 
 | Viewport, CPU | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy: before → now |
 |---|---|---|---|---|---|
-| 1280 px, 1x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 8.9 % (8.4 to 9.4) → 9.0 % (8.7 to 10.1) |
-| 393 px (phone), 4x | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 31.0 % (26.2 to 34.9) → 33.7 % (33.6 to 38.7) |
-| 1280 px, 4x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 23.9 % (23.5 to 41.2) → 31.9 % (31.0 to 34.8) |
+| 1280 px, 1x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 8.6 % (8.1 to 9.3) → 8.85 % (8.3 to 10.0), four runs |
+| 393 px (phone), 4x | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 20.0 % (18.4 to 21.5) → 19.0 % (18.9 to 19.9) |
+| 1280 px, 4x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 22.0 % (20.7 to 28.9) → 29.2 % (20.5 to 29.7) |
 
 The whole showcase at rest, after scrolling through it once so every scene has mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s at 1x CPU, alternated with the previous dark showcase (three runs per side at 1280 px, two at 393 px), median with the range in brackets. A scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. The two pages differ in layout, so a stop lands on different scenes in each:
 

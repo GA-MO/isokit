@@ -11,7 +11,7 @@ const lines = stories.map(story => {
     progress: [
       { at: 450, mark: '⏺', text: story.beats },
       { at: 1300, mark: '⏺', text: `Drawing ${story.file} with the kit` },
-      { at: 2600, mark: '✓', text: `1 SVG file · no dependencies · ${kb(story.art.wide!.scene.exportSvg())} kB gzip`, ok: true },
+      { at: 2600, mark: '✓', text: `1 SVG · no dependencies · ${kb(story.art.wide!.scene.exportSvg())} kB gzip`, ok: true },
     ],
   };
 });
@@ -71,7 +71,7 @@ const steps = [
                       aria-hidden="true"
                     />
                   </p>
-                  <ul class="mt-4 hidden flex-col gap-1.5 text-terminal-muted sm:flex" aria-hidden="true">
+                  <ul class="mt-4 hidden flex-col gap-1.5 text-terminal-muted sm:flex data-failed:hidden" aria-hidden="true">
                     {
                       story.progress.map(p => (
                         <li class="reveal flex gap-2" style={`--at:${p.at}ms`}>
@@ -98,7 +98,7 @@ const steps = [
                 tabindex={i === 0 ? 0 : -1}
                 data-prompt={story.prompt}
                 data-peak={story.peak}
-                class="relative inline-flex h-10 min-w-0 items-center gap-2 overflow-hidden rounded-full border border-line bg-page/60 px-4 text-sm font-medium text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-selected:border-line-strong aria-selected:bg-page aria-selected:text-ink aria-selected:shadow-sm"
+                class="relative inline-flex h-10 min-w-0 items-center gap-2 overflow-hidden rounded-full border border-line bg-page/60 px-3 text-sm font-medium whitespace-nowrap text-muted transition duration-150 active:scale-97 sm:px-4 hover:border-line-strong hover:text-ink aria-selected:border-line-strong aria-selected:bg-page aria-selected:text-ink aria-selected:shadow-sm"
               >
                 <span class="size-2.5 shrink-0 rounded-full ring-1 ring-ink/10" style={`background:${story.swatch}`} aria-hidden="true" />
                 {story.label}
@@ -108,7 +108,7 @@ const steps = [
           }
         </div>
       </div>
-      <div class="relative z-20 flex items-center justify-center lg:-mr-6 lg:w-12 lg:shrink-0" aria-hidden="true">
+      <div class="relative z-20 hidden items-center justify-center lg:-mr-6 lg:flex lg:w-12 lg:shrink-0" aria-hidden="true">
         <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-page px-3 py-1 font-mono text-xs font-medium whitespace-nowrap text-accent shadow-sm lg:-translate-x-3">
           1 prompt
           <svg viewBox="0 0 12 12" class="size-3 rotate-90 lg:rotate-0"><path d="M2 6h8M7 3l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>

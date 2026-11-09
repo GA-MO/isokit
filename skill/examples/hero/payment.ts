@@ -32,8 +32,7 @@ function draw(s: Scene, v: Variant) {
   const ring = [...stops, stops[0]!].map(st => at(st.corner));
   piece(s, 'p-loop', () => {
     s.wire({ id: 'p-track', points: ring, stroke: 'rgb(6 95 70 / .22)', width: 1.5, corner: 1, hidden: true });
-    s.pulse({ id: 'p-glow', wire: 'p-track', color: 'rgb(16 185 129 / .22)', length: 0.07, width: 9, glow: false });
-    s.pulse({ id: 'p-coin', wire: 'p-track', color: money, length: 0.07, width: 3, glow: false });
+    s.pulse({ id: 'p-coin', wire: 'p-track', color: money, length: 0.07, width: 3.5, glow: false });
   });
 
   const [cw, ch] = k.card;
@@ -71,12 +70,12 @@ function draw(s: Scene, v: Variant) {
   piece(s, 'p-tags', () => {
     for (const st of stops) {
       const [x, y] = s.project(at(st.corner, k.tileH));
-      s.group(`p-tag-${st.id}`, () => s.text({ id: `p-tag-${st.id}-text`, at: { screen: [x, y - k.tile * 0.62] }, text: st.tag, size: k.tag, color: '#065f46', font: 'sans', weight: 500, pill: { fill: '#ffffff', stroke: 'rgb(5 150 105 / .4)', radius: k.tag * 0.8 } }));
+      s.group(`p-tag-${st.id}`, () => s.text({ id: `p-tag-${st.id}-text`, at: { screen: [x, st.id === 'bank' ? y + k.tile * 0.62 + k.tileH : y - k.tile * 0.62] }, text: st.tag, size: k.tag, color: '#065f46', font: 'sans', weight: 500, pill: { fill: '#ffffff', stroke: 'rgb(5 150 105 / .4)', radius: k.tag * 0.8 } }));
     }
   });
 
   s.intro('p-track', 'strokeDashoffset', 0.45, 0.6, 1.04, 0, ease.out);
-  for (const p of ['p-glow', 'p-coin']) {
+  for (const p of ['p-coin']) {
     s.intro(p, 'opacity', 0, 0.01, 1, 1, ease.linear);
     s.at(p, 'strokeDashoffset', depart, leg * 4, 0.07, -1, ease.linear);
   }
@@ -103,13 +102,13 @@ export const payment: Story = {
   prompt: 'Walk a card payment round trip',
   dir: '~/payments',
   file: 'card-payment.svg',
-  beats: 'Storyboarding 4 beats: route, check, approve, paid',
+  beats: 'Storyboarding the round trip',
   alt: 'A green pulse of money leaves checkout, passes the gateway, the card network and the bank, and comes back to checkout marked paid',
   swatch: 'linear-gradient(135deg, #a7f3d0, #059669)',
   enter: 1.0,
   loop: 6.2,
   peak: 4.8,
   still: 3.9,
-  origin: { wide: [372, 236], compact: [195, 250] },
+  origin: { wide: [372, 236], compact: [195, 214] },
   draw,
 };

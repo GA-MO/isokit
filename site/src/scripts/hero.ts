@@ -1,5 +1,5 @@
 import { mountAll } from '../../../skill/lib/runtime';
-import { handover, holdAfterPick, lift, liftTime, quickTyping, typeTime, typing, type Typing } from '../../../skill/examples/hero/motion';
+import { handoverAfter, holdAfterPick, lift, liftTime, quickTyping, typeTime, typing, type Typing } from '../../../skill/examples/hero/motion';
 
 interface Story {
   tab: HTMLButtonElement;
@@ -57,8 +57,10 @@ export function playHero(root: HTMLElement) {
   let holdUntil = 0;
   let progress: Animation | null = null;
   let seen: HTMLElement | undefined;
+  let live = false;
+  let inView = false;
   const story = (i: number) => stories[((i % stories.length) + stories.length) % stories.length]!;
-  const later = (ms: number, run: () => void) => {
+  const later = (ms: number, run: () => unknown) => {
     const mine = turn;
     return window.setTimeout(() => mine === turn && run(), Math.max(0, ms));
   };
@@ -67,7 +69,7 @@ export function playHero(root: HTMLElement) {
     root.style.setProperty('--lead', `${t.lead * 1000}ms`);
     root.style.setProperty('--step', `${t.step * 1000}ms`);
     for (const other of stories) for (const el of other.lines) el.toggleAttribute('data-on', false);
-    void root.offsetWidth;
+    root.getBoundingClientRect();
     for (const el of s.lines) el.toggleAttribute('data-on', true);
   };
 
@@ -82,20 +84,19 @@ export function playHero(root: HTMLElement) {
     progress = null;
   };
 
-  const leave = (s: Story) => {
-    if (exits.has(s) || off(s)) return;
+  const leave = (s: Story): number => {
+    if (exits.has(s) || off(s)) return 0;
     const pieces = [...(shown(s)?.querySelectorAll('.hero-piece') ?? [])].reverse();
     const anims = pieces.flatMap((p, k) => liftOff(p, k * lift.stagger));
     exits.set(s, anims);
     window.setTimeout(() => {
-      if (exits.get(s) !== anims) return;
-      if (s !== story(active)) {
-        show(s, false);
-        for (const h of handles(s)) h.pause();
-      }
+      if (exits.get(s) !== anims || s === story(active)) return;
+      show(s, false);
+      for (const h of handles(s)) h.pause();
       for (const a of anims) a.cancel();
       exits.delete(s);
     }, liftTime(pieces.length) * 1000 + 60);
+    return pieces.length;
   };
 
   const loads = new Map<Story, Promise<boolean>>();
@@ -113,6 +114,7 @@ export function playHero(root: HTMLElement) {
           const t = document.createElement('template');
           t.innerHTML = markup;
           s.panel.querySelector('[data-retry]')?.remove();
+          for (const el of s.lines) el.querySelector('ul')?.toggleAttribute('data-failed', false);
           s.panel.append(t.content);
           mountAll(s.panel);
           for (const h of handles(s)) h.seek(0);
@@ -130,6 +132,7 @@ export function playHero(root: HTMLElement) {
 
   const failed = (s: Story) => {
     show(s, true);
+    for (const el of s.lines) el.querySelector('ul')?.toggleAttribute('data-failed', true);
     if (s.panel.querySelector('[data-retry]')) return;
     const note = document.createElement('p');
     note.dataset.retry = '';
@@ -154,15 +157,28 @@ export function playHero(root: HTMLElement) {
       show(s, true);
       seen = shown(s);
       seen?.iso?.seek(0);
-      seen?.iso?.play();
-      schedule();
+      live = true;
+      resume();
     });
+  };
+
+  const resume = () => {
+    if (!live || reduce.matches) return;
+    if (!inView) {
+      seen?.iso?.pause();
+      clearTimeout(tick);
+      progress?.pause();
+      return;
+    }
+    seen?.iso?.play();
+    schedule();
   };
 
   const still = async (s: Story) => {
     const mine = turn;
-    if (!(await load(s))) return failed(s);
+    const ok = await load(s);
     if (mine !== turn) return;
+    if (!ok) return failed(s);
     for (const other of stories) {
       for (const a of exits.get(other) ?? []) a.cancel();
       exits.delete(other);
@@ -175,12 +191,13 @@ export function playHero(root: HTMLElement) {
   const select = (i: number, how: How) => {
     const next = story(i);
     const prev = story(active);
-    if (how === 'pick') holdUntil = performance.now() + holdAfterPick * 1000;
-    if (next === prev && !exits.has(next)) {
+    if (how === 'pick') holdUntil = Math.max(holdUntil, performance.now() + holdAfterPick * 1000);
+    if (next === prev) {
       if (how === 'pick') schedule();
       return;
     }
     turn++;
+    live = false;
     clearTimeout(tick);
     clearTimeout(swap);
     active = stories.indexOf(next);
@@ -189,20 +206,19 @@ export function playHero(root: HTMLElement) {
     typePrompt(next, t);
     if (reduce.matches) return still(next);
     const sent = typeTime(next.prompt, t) * 1000;
-    const out = () => stories.forEach(s => s !== next && leave(s));
+    const out = () => handoverAfter(Math.max(0, ...stories.map(s => (s === next ? 0 : leave(s))))) * 1000;
     if (how === 'pick') {
-      out();
-      swap = later(sent, () => enter(next));
+      const clear = out();
+      swap = later(Math.max(sent, clear), () => enter(next));
     } else
       swap = later(sent, () => {
-        out();
-        swap = later(handover * 1000, () => enter(next));
+        swap = later(out(), () => enter(next));
       });
   };
 
   function schedule() {
     clearTimeout(tick);
-    if (reduce.matches) return;
+    if (reduce.matches || !live || !inView) return;
     const s = story(active);
     const view = shown(s);
     const now = view ? clock(view) : null;
@@ -242,28 +258,49 @@ export function playHero(root: HTMLElement) {
   list.addEventListener('focusout', e => {
     if (e.relatedTarget instanceof Node && list.contains(e.relatedTarget)) return;
     holdUntil = performance.now() + holdAfterPick * 1000;
-    if (!exits.size) schedule();
+    schedule();
   });
   reduce.addEventListener('change', () => {
     turn++;
     clearTimeout(tick);
     clearTimeout(swap);
     if (reduce.matches) return still(story(active));
+    live = false;
     enter(story(active));
   });
 
   new ResizeObserver(() => {
     const s = story(active);
     const now = shown(s);
-    if (!now || now === seen) return;
-    const t = seen ? clock(seen) : null;
-    seen?.iso?.pause();
+    if (!seen || !now || now === seen) return;
+    const t = clock(seen);
+    seen.iso?.pause();
     seen = now;
-    if (off(s)) return;
     if (reduce.matches) return now.iso?.seek(now.iso.spec.intro + now.iso.spec.still);
+    if (!live) return;
     now.iso?.seek(t ?? 0);
-    now.iso?.play();
+    resume();
   }).observe(box);
+
+  let preloaded = false;
+  let ratio = 0;
+  const watch = () => {
+    const was = inView;
+    inView = ratio > 0.1 && !document.hidden;
+    if (inView && !preloaded) {
+      preloaded = true;
+      stories.slice(1).reduce<Promise<unknown>>((chain, s) => chain.then(() => load(s)), Promise.resolve());
+    }
+    if (was !== inView) resume();
+  };
+  new IntersectionObserver(
+    entries => {
+      ratio = entries[entries.length - 1]?.intersectionRatio ?? 0;
+      watch();
+    },
+    { threshold: [0, 0.1, 0.2] },
+  ).observe(box);
+  document.addEventListener('visibilitychange', watch);
 
   let pointer: [number, number] | null = null;
   let frame = 0;
@@ -302,7 +339,8 @@ export function playHero(root: HTMLElement) {
   const first = story(0);
   for (const s of stories) for (const h of handles(s)) h.seek(s === first && reduce.matches ? h.spec.intro + h.spec.still : 0);
   if (reduce.matches) return;
-  typePrompt(first, typing);
-  swap = later(typeTime(first.prompt) * 1000, () => enter(first));
-  stories.slice(1).reduce<Promise<unknown>>((chain, s) => chain.then(() => load(s)), Promise.resolve());
+  const typed = first.lines.flatMap(l => [...l.querySelectorAll('.type-in > span')])[0]?.getAnimations()[0];
+  const begun = typed?.startTime != null && document.timeline.currentTime != null ? Number(document.timeline.currentTime) - Number(typed.startTime) : null;
+  if (begun === null) typePrompt(first, typing);
+  swap = later(typeTime(first.prompt) * 1000 - (begun ?? 0), () => enter(first));
 }

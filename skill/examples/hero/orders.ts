@@ -162,7 +162,7 @@ function draw(s: Scene, v: Variant) {
 
   const r = rng(11);
   let turn = 0;
-  for (let t = 2.5; t < 5.5; t += 0.36 + r() * 0.18) {
+  for (let t = 2.5; t < 5.5; t += 0.55 + r() * 0.25) {
     const leaf = leaves[(turn * 3 + 1) % leaves.length]!;
     const svc = parent(leaf);
     const inbound = turn % 3 === 2;
@@ -199,13 +199,13 @@ export const orders: Story = {
   prompt: 'Show how our orders API scales',
   dir: '~/orders-api',
   file: 'orders-api.svg',
-  beats: 'Storyboarding 3 beats: 1, 5, then 13 nodes',
+  beats: 'Storyboarding 1, 5, then 13 nodes',
   alt: 'One violet glass box, the orders API, grows into a system of 13 connected nodes with requests flowing through it',
   swatch: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
   enter: 0.9,
   loop: 7.4,
   peak: 5.0,
   still: 3.2,
-  origin: { wide: [360, 222], compact: [195, 252] },
+  origin: { wide: [360, 222], compact: [195, 220] },
   draw,
 };

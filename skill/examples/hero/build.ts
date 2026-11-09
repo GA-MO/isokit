@@ -14,7 +14,7 @@ const bars = [
 
 const sizes: Record<Variant, { pitch: number; bar: number; reach: number; text: number; name: number; total: { at: Vec2; size: number; caption: number; anchor: 'start' | 'middle' } }> = {
   wide: { pitch: 116, bar: 64, reach: 210, text: 14, name: 12, total: { at: [40, 70], size: 36, caption: 13, anchor: 'start' } },
-  compact: { pitch: 88, bar: 52, reach: 170, text: 13, name: 11, total: { at: [195, 58], size: 30, caption: 12, anchor: 'middle' } },
+  compact: { pitch: 84, bar: 50, reach: 150, text: 13, name: 11, total: { at: [195, 52], size: 30, caption: 12, anchor: 'middle' } },
 };
 
 const shrinkAt = [0.3, 1.2, 2.1];
@@ -34,7 +34,7 @@ function draw(s: Scene, v: Variant) {
     const pillX = t.anchor === 'start' ? t.at[0] + t.size * 3.6 + 44 : t.at[0];
     const pillY = t.anchor === 'start' ? t.at[1] : t.at[1] + t.size * 0.95;
     s.group('b-faster', () => s.text({ id: 'b-faster-text', at: { screen: [pillX, pillY] }, text: '6.8× faster', size: k.text, color: '#9a3412', font: 'sans', weight: 600, pill: { fill: '#ffedd5', stroke: 'rgb(234 88 12 / .35)', radius: k.text * 0.8 } }));
-  });
+   }, 0.4);
 
   bars.forEach((b, i) => {
     const x = (i - 1) * k.pitch;
@@ -65,7 +65,7 @@ function draw(s: Scene, v: Variant) {
     s.heightTo(`b-${b.id}-fast`, at, 0.75, tall, short, squash);
     s.at(`b-${b.id}-was`, 'opacity', at + 0.15, 0.3, 0, 1, ease.linear);
     s.at(`b-${b.id}-after`, 'opacity', at + 0.55, 0.25, 0, 1, ease.linear);
-    const back = 5.3 + i * 0.08;
+    const back = 5.9 + i * 0.08;
     s.heightTo(`b-${b.id}-slow`, back, 0.9, short, tall, ease.io);
     s.heightTo(`b-${b.id}-fast`, back, 0.9, short, tall, ease.io);
     s.at(`b-${b.id}-fast`, 'opacity', back, 0.5, 1, 0, ease.linear);
@@ -77,9 +77,9 @@ function draw(s: Scene, v: Variant) {
   s.at('b-faster', 'opacity', 3.2, 0.12, 0, 1, ease.linear);
   s.at('b-faster', 'translate', 3.2, 0.35, '-12px 0', '2px 0', ease.out);
   s.at('b-faster', 'translate', 3.55, 0.5, '2px 0', '0 0', ease.io);
-  s.at('b-total-before', 'opacity', 5.6, 0.3, 0, 1, ease.linear);
-  s.at('b-total-after', 'opacity', 5.3, 0.25, 1, 0, ease.linear);
-  s.at('b-faster', 'opacity', 5.3, 0.25, 1, 0, ease.linear);
+  s.at('b-total-before', 'opacity', 6.2, 0.3, 0, 1, ease.linear);
+  s.at('b-total-after', 'opacity', 5.9, 0.25, 1, 0, ease.linear);
+  s.at('b-faster', 'opacity', 5.9, 0.25, 1, 0, ease.linear);
 }
 
 export const build: Story = {
@@ -88,13 +88,13 @@ export const build: Story = {
   prompt: 'Compare our build time before and after',
   dir: '~/ci',
   file: 'build-time.svg',
-  beats: 'Storyboarding 3 beats: install, compile, test',
+  beats: 'Storyboarding install, compile, test',
   alt: 'Three tall white bars for install, compile and test squash into short orange bars, and the build time drops from 12 minutes 40 seconds to 1 minute 52 seconds',
   swatch: 'linear-gradient(135deg, #fdba74, #ea580c)',
   enter: 1.0,
-  loop: 6.4,
-  peak: 4.9,
+  loop: 7.0,
+  peak: 5.3,
   still: 3.9,
-  origin: { wide: [420, 330], compact: [195, 360] },
+  origin: { wide: [420, 330], compact: [195, 318] },
   draw,
 };

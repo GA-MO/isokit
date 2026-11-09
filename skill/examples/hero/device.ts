@@ -1,10 +1,11 @@
-import { ease, type Scene, type Vec2 } from '../../lib/iso';
+import { ease, type Material, type Scene, type Vec2 } from '../../lib/iso';
 import { metal } from '../materials-metal';
 import { paints, ramps } from '../shared';
 import { piece, ui, type Story, type Variant } from './stage';
 
 const curve = { shift: 'cubic-bezier(.49,.19,.28,.81)', settle: 'cubic-bezier(.39,.08,.04,.91)', rule: 'cubic-bezier(.05,1,.6,1)', snapOff: 'cubic-bezier(.45,.86,.17,.96)' } as const;
 const titanium = metal.find(f => f.slug === 'titanium')!.material;
+const faded = (m: Material): Material => (m.kind === 'custom' ? { ...m, corner: 'fade' } : m);
 
 type Layer = 'case' | 'battery' | 'board' | 'radio' | 'lid';
 const layers: readonly { id: Layer; height: number; note: string; metal: boolean }[] = [
@@ -30,8 +31,8 @@ function draw(s: Scene, v: Variant) {
   const r = k.size * 0.2;
   const tops: number[] = [];
   layers.reduce((z, l) => (tops.push(z + l.height), z + l.height), 0);
-  const silver = paints.gradient(s, ramps.silver);
-  const side = titanium(s);
+  const silver = faded(paints.gradient(s, ramps.silver));
+  const side = faded(titanium(s));
   const halo = s.def('d-halo-fill', '<radialGradient id="$ID"><stop offset="0" stop-color="#f0abfc" stop-opacity=".32"/><stop offset=".5" stop-color="#a5b4fc" stop-opacity=".12"/><stop offset="1" stop-color="#a5b4fc" stop-opacity="0"/></radialGradient>');
   piece(s, 'd-halo', () => s.face({ id: 'd-halo-face', at: [0, 0, 0], size: [k.size * 2.2, k.size * 2.2], radius: k.size * 1.1, fill: halo }), 0.05);
 
@@ -100,13 +101,13 @@ export const device: Story = {
   prompt: "Show what's inside our edge device",
   dir: '~/edge-device',
   file: 'edge-device.svg',
-  beats: 'Storyboarding 3 beats: closed, apart, closed',
+  beats: 'Storyboarding closed, apart, closed',
   alt: 'A titanium edge device lifts apart into its five layers, case, battery, edge chip, radio and lid, each named, then closes again',
   swatch: 'linear-gradient(135deg, #ecc38a, #c4568e 50%, #5b5bd6)',
   enter: 1.0,
   loop: 6.0,
   peak: 4.7,
   still: 2.4,
-  origin: { wide: [300, 340], compact: [140, 330] },
+  origin: { wide: [300, 340], compact: [140, 306] },
   draw,
 };

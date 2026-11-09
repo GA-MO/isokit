@@ -1,12 +1,12 @@
 import { Scene, ease, type AnimatedProp, type SceneOptions, type ValueOf, type Vec2 } from '../../lib/iso';
 import { art, fonts, surfaces, type Art } from '../shared';
-import { handover, lift, liftTime, typeTime, typing } from './motion';
+import { handoverAfter, lift, liftTime, typeTime, typing } from './motion';
 
 export type Variant = 'wide' | 'compact';
 
 export const frames: Record<Variant, { width: number; height: number; suffix: string }> = {
   wide: { width: 720, height: 450, suffix: 'lg' },
-  compact: { width: 390, height: 470, suffix: 'sm' },
+  compact: { width: 390, height: 410, suffix: 'sm' },
 };
 export const breakpoint = 520;
 
@@ -30,7 +30,7 @@ export interface Story {
   peak: number;
   still: number;
   origin: Record<Variant, Vec2>;
-  draw(s: Scene, v: Variant): void;
+  draw(s: Scene, v: Variant): unknown;
 }
 
 const options = (name: string, v: Variant, origin: Vec2): SceneOptions => ({ name, width: frames[v].width, height: frames[v].height, origin, font: stack.sans, mono: stack.mono, label: ui.label });
@@ -38,7 +38,7 @@ const options = (name: string, v: Variant, origin: Vec2): SceneOptions => ({ nam
 const registry = new WeakMap<Scene, string[]>();
 const piecesOf = (s: Scene) => registry.get(s) ?? [];
 
-export function piece(s: Scene, id: string, build: () => void, drop?: number) {
+export function piece(s: Scene, id: string, build: () => unknown, drop?: number) {
   s.group(id, build, 'hero-piece');
   registry.set(s, [...piecesOf(s), id]);
   if (drop !== undefined) s.dropIn(id, drop);
@@ -212,12 +212,14 @@ export function reel(stories: readonly Story[], v: Variant, title: string): stri
     slot.lift();
     return slot;
   });
-  const lengths = slots.map(sl => Math.round((sl.exit + handover) * 1000) / 1000);
+  const handovers = slots.map(sl => handoverAfter(piecesOf(sl).length));
+  const lengths = slots.map((sl, i) => Math.round((sl.exit + handovers[i]!) * 1000) / 1000);
   const total = Math.round(lengths.reduce((a, b) => a + b, 0) * 1000) / 1000;
-  const offsets = lengths.map((_, i) => Math.round((handover + lengths.slice(0, i).reduce((a, b) => a + b, 0)) * 1000) / 1000);
+  const lead = handovers[handovers.length - 1]!;
+  const offsets = lengths.map((_, i) => Math.round((lead + lengths.slice(0, i).reduce((a, b) => a + b, 0)) * 1000) / 1000);
   const still = offsets[0]! + slots[0]!.story.enter + slots[0]!.story.still;
   slots.forEach((sl, i) => sl.flush(offsets[i]!, total, still));
-  const sent = slots.map((sl, i) => ({ story: sl.story, sent: offsets[i]! - handover }));
+  const sent = slots.map((sl, i) => ({ story: sl.story, sent: offsets[i]! - handovers[(i + slots.length - 1) % slots.length]! }));
   const c = cards[v];
   const { width, height } = frames[v];
   const nest = (svg: string, y: number) => svg.replace(/^<svg /, `<svg x="0" y="${y}" `);
