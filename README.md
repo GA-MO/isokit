@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/svg/hero.svg" alt="The sentence Show how our orders API scales to 1M users types into a Claude Code window, one box spins in and lands, and the system grows to 40 connected nodes with requests flowing through it" width="720">
+  <img src="docs/svg/hero.svg" alt="Four sentences type into a Claude Code window in turn, and each becomes its own diagram: a violet glass API that grows to 13 nodes, a titanium device that lifts apart into its layers, a green payment that travels a round trip, and orange build bars that shrink from 12m 40s to 1m 52s" width="720">
 </p>
 
 <h1 align="center">isokit</h1>
@@ -8,7 +8,7 @@
 A Claude Code skill that turns one sentence about your system into an animated isometric diagram: plain SVG with a 1.7 kB player, no dependencies, yours to edit.<br>
 <a href="https://ga-mo.github.io/isokit/">Live showcase</a> · <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#the-kit">The kit</a> · <a href="#numbers">Numbers</a></p>
 
-It is not an animation library or a hosted service. You describe how your product works in a sentence. The `iso` skill storyboards it into three to six beats from measured motion recipes and draws it with a small kit: rounded slabs, wires that draw themselves, light pulses, text, and a loop that returns to its first frame. The scene is plain SVG with CSS and WAAPI motion. It needs no animation library, pauses off screen and shows a still frame for reduced motion. The image above is the showcase hero: one sentence typed to Claude, and the diagram drawn from it, exported by the kit as one SVG that animates with CSS alone, so it plays right here in the README. Paste a scene like it into a landing page hero, a docs page, a pitch deck or a README.
+It is not an animation library or a hosted service. You describe how your product works in a sentence. The `iso` skill storyboards it into three to six beats from measured motion recipes and draws it with a small kit: rounded slabs, wires that draw themselves, light pulses, text, and a loop that returns to its first frame. The scene is plain SVG with CSS and WAAPI motion. It needs no animation library, pauses off screen and shows a still frame for reduced motion. The image above is the showcase hero: four sentences typed to Claude, each drawn as its own diagram in its own material and colour, and the pieces of one lift away as the next one drops in. The kit exports all four as one SVG that animates with CSS alone, so it plays right here in the README. Paste a scene like it into a landing page hero, a docs page, a pitch deck or a README.
 
 ## Gallery
 
@@ -196,38 +196,40 @@ There are 51 scenes for fictional products: 44 explainers and 7 spot illustratio
 | exploded | layers lifted apart | an audit ledger, video transcoding, a fraud gauge, data lineage, a system you click to drill into |
 | object | one or two objects | a keycard reader, a sync loop, a filling inbox, a charging battery, a table scan, a tile loader, an empty box |
 
-There is also the hero (`readme` holds its README copy with the prompt drawn in a terminal card), four `inContext` copies the showcase plays inside made-up pages, and the 49 side finishes in `materials-*.ts` with one gallery per family in `material-gallery.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
+There is also the hero (four stories in `examples/hero/` that the showcase plays in turn, and `readme()` joins them with a terminal card into one looping SVG), four `inContext` copies the showcase plays inside made-up pages, and the 49 side finishes in `materials-*.ts` with one gallery per family in `material-gallery.ts`. Slab sides use the `paints` in `shared.ts` (gradient, brushed metal, stripes, dots, glass, a seeded random mosaic and flat colour).
 
 ## Numbers
 
-All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome. 1 kB = 1024 bytes.
+All numbers were measured on 2026-11-08 on an Apple silicon Mac with Chrome, the hero's on 2026-11-09. 1 kB = 1024 bytes.
 
 | What | Raw | Gzip |
 |---|---|---|
-| Showcase `index.html` (the hero inline, 60 empty scene boxes, folded prompts, the install tabs) | 499.0 kB | 49.0 kB |
-| Showcase CSS | 33.5 kB | 7.1 kB |
-| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.5 kB | 2.5 kB |
-| Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, hero tilt, flag, slider and drill-down demos) | 16.9 kB | 4.7 kB |
-| All 114 scene files in `site/dist/scenes/` (compact and wide copies, plus the README context as one standalone SVG) | 12500.4 kB | 977.5 kB |
+| Showcase `index.html` (the hero's first story inline, 60 empty scene boxes, folded prompts, the install tabs) | 431.8 kB | 43.8 kB |
+| Showcase CSS | 35.7 kB | 7.4 kB |
+| Showcase JS bundle (runtime, `mountLazy()`, the site's retry note) | 6.6 kB | 2.7 kB |
+| Hero script (story order, prompt chips, lift-off, tilt) | 6.4 kB | 2.9 kB |
+| Showcase inline JS (copy buttons, prompt toggles, filter, install tabs, flag, slider and drill-down demos) | 14.8 kB | 4.2 kB |
+| All 117 scene files in `site/dist/scenes/` (compact and wide copies, the hero's other three stories, plus the README context as one standalone SVG) | 12837.2 kB | 1003.4 kB |
 | Largest scene file (`embed-lg.html`) | 389.8 kB | 21.8 kB |
 | Scene runtime alone (`skill/lib/entry.ts`, `mountAll()`) | 4.2 kB | 1.7 kB |
 | Runtime with `mountLazy()` | 5.7 kB | 2.3 kB |
-| `docs/svg/hero.svg` (the image at the top) | 94.4 kB | 10.1 kB |
+| `docs/svg/hero.svg` (the image at the top, all four stories) | 278.8 kB | 24.5 kB |
 
-The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60), not all 114.
+The page does not grow with the number of scenes. Each card holds an empty box that keeps its height. When the box comes within 75 % of a screen height of the viewport, the page fetches only the copy that fits, compact or wide, and mounts it. A visitor who scrolls the whole page loads one file per box (60) and the hero's other three stories, not all 117.
 
-Hero motion on the built showcase, 20 s of the loop, CPU throttled 4x in Chrome, median of three runs with the range in brackets. Main-thread time moves with the machine's own load; the frame rate does not. The hero flashes with `fill` and moves pulses by dash offset, which only repaint, and has no pan or wobble on large groups, because an opacity or transform track on any SVG element re-layerizes the page every frame:
+Hero motion on the built showcase, 20 s of play (three stories and two switches), median of three runs with the range in brackets, alternated run by run with the previous single-story hero. Main-thread time moves with the machine's own load; the frame rate does not. Only the story on screen plays. The other three hold paused and invisible but laid out, so a switch costs no layout pass. Pieces lift and drop by translate and opacity, never by scale, because scaling a group that holds SVG text makes Chrome lay the text out again every frame:
 
-| Viewport | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy |
+| Viewport, CPU | Frame rate | Frame time p50 / p95 / p99 | Late frames (over 20 ms) | Long tasks | Main thread busy: before → now |
 |---|---|---|---|---|---|
-| 393 px (phone) | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 21.4 % (18.8 to 22.2) |
-| 1280 px | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 21.7 % (19.6 to 23.2) |
+| 1280 px, 1x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 8.9 % (8.4 to 9.4) → 9.0 % (8.7 to 10.1) |
+| 393 px (phone), 4x | 60.0 fps | 16.7 / 16.8 / 16.8 ms | 0 | 0 | 31.0 % (26.2 to 34.9) → 33.7 % (33.6 to 38.7) |
+| 1280 px, 4x | 60.0 fps | 16.7 / 16.7 / 16.8 ms | 0 | 0 | 23.9 % (23.5 to 41.2) → 31.9 % (31.0 to 34.8) |
 
 The whole showcase at rest, after scrolling through it once so every scene has mounted, then stopping at points down the page. Main thread is Chrome's `TaskDuration` per second over 4 s at 1x CPU, alternated with the previous dark showcase (three runs per side at 1280 px, two at 393 px), median with the range in brackets. A scene off screen skips rendering (in browsers with `overflow-clip-margin`, so not Safari) and one more than half a screen away drops its animations, so the cost left is the scenes in view. The two pages differ in layout, so a stop lands on different scenes in each:
 
 | Stop | 1280 px, DPR 2: before → now | 393 px, DPR 3: before → now |
 |---|---|---|
-| 0 % (hero) | 16.7 → 9.9 % (8.9 to 10.2) | 9.4 to 13.7 → 11.5 % (9.6 to 16.1, three runs) |
+| 0 % (hero, four stories now, alternated with the single-story hero) | 13.6 → 11.4 % (9.3 to 11.8) | 12.5 → 11.3 % (10.4 to 13.0, three runs) |
 | 20 % | 25.6 → 17.1 % (15.0 to 23.5) | 15.0 to 15.7 → 12.6 to 16.4 % |
 | 35 % | 14.3 → 21.7 % (20.0 to 22.5) | 10.9 to 20.6 → 13.7 to 19.4 % |
 | 50 % | 17.2 → 16.5 % (14.6 to 21.6) | 16.1 to 19.9 → 15.1 to 18.4 % |
@@ -242,7 +244,7 @@ How they were measured:
 - Runtime rows: `bun build skill/lib/entry.ts --minify --target browser > out.js`, then `wc -c < out.js` and `gzip -9 -c out.js | wc -c`. The `mountLazy()` row bundles a one-line entry that calls it.
 - SVG rows: `bun run readme:svg`, which writes `docs/svg/` and prints each file's size.
 - Whole page at rest: `node skill/scripts/page-idle.mjs page=<built showcase URL> width=1280 dpr=2 throttle=1` and `width=393 dpr=3 throttle=1`, run against each build in turn. It scrolls the page through once, then at each stop reads `Performance.getMetrics` over 4 s, and sums layout shift.
-- Hero motion: `node skill/scripts/perf.mjs page=<built showcase URL> width=393 throttle=4 seconds=20 selector='#top .iso-compact'` (and `width=1280 selector='#top .iso-wide'`). It counts `requestAnimationFrame` frames, reads long tasks, and takes main-thread time from Chrome's `Performance.getMetrics`.
+- Hero motion: `node skill/scripts/perf.mjs page=<built showcase URL> width=393 throttle=4 seconds=20 selector='#top'` (and `width=1280`, with `throttle=1` and `throttle=4`), run against each build in turn. It counts `requestAnimationFrame` frames, reads long tasks, and takes main-thread time from Chrome's `Performance.getMetrics`.
 
 Fonts are not counted. The site self-hosts Inter and Fira Code as `woff2`. The SVGs in `docs/` fall back to the system's sans and monospace fonts.
 

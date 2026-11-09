@@ -1,13 +1,20 @@
 ---
-import { hero, prompt } from '../../../skill/examples/hero';
+import { gzipSync } from 'node:zlib';
+import { stage, stories } from '../../../skill/examples/hero';
 
-const chars = [...prompt];
-const typed = 400 + chars.length * 35;
-const progress = [
-  { at: typed + 450, mark: '⏺', text: 'Storyboarding 4 beats: 1, 5, 15, then 40 nodes' },
-  { at: typed + 1300, mark: '⏺', text: 'Drawing orders-api.svg with the kit' },
-  { at: typed + 2600, mark: '✓', text: '1 SVG file · no dependencies · 10 kB gzip', ok: true },
-];
+const kb = (svg: string) => Math.round(gzipSync(svg, { level: 9 }).length / 1024);
+const lines = stories.map(story => {
+  const chars = [...story.prompt];
+  return {
+    ...story,
+    chars,
+    progress: [
+      { at: 450, mark: '⏺', text: story.beats },
+      { at: 1300, mark: '⏺', text: `Drawing ${story.file} with the kit` },
+      { at: 2600, mark: '✓', text: `1 SVG file · no dependencies · ${kb(story.art.wide!.scene.exportSvg())} kB gzip`, ok: true },
+    ],
+  };
+});
 const steps = [
   { title: 'Describe it', body: 'One sentence about how your product works: what arrives, what moves where, what lights up.' },
   { title: 'Claude storyboards and draws it', body: 'The skill breaks the sentence into three to six beats from measured motion recipes, then draws each one.' },
@@ -42,43 +49,82 @@ const steps = [
     </div>
   </div>
 
-  <div class="mx-auto mt-6 w-full max-w-7xl px-3 max-lg:order-2 sm:px-8 lg:mt-10">
+  <div class="mx-auto mt-6 w-full max-w-7xl px-3 max-lg:order-2 sm:px-8 lg:mt-10" data-hero>
     <div class="flex flex-col items-stretch gap-3 overflow-hidden rounded-3xl border border-line bg-panel p-2 sm:p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-6">
-      <figure class="relative z-10 overflow-hidden rounded-2xl bg-terminal text-terminal-ink shadow-2xl ring-1 shadow-ink/20 ring-ink/10 lg:w-5/12 lg:shrink-0">
-        <div class="flex h-10 items-center gap-1.5 border-b border-terminal-line px-4">
-          {[0, 1, 2].map(() => <span class="size-2.5 rounded-full bg-terminal-line" aria-hidden="true" />)}
-          <span class="ml-3 font-mono text-xs text-terminal-muted">claude · ~/orders-api</span>
-        </div>
-        <div class="px-4 pt-4 pb-5 font-mono text-sm leading-relaxed sm:px-5">
-          <p>
-            <span class="sr-only">{prompt}</span>
-            <span class="text-terminal-accent" aria-hidden="true">&gt;</span>{' '}
-            <span class="type-in" aria-hidden="true">{chars.map((c, i) => <span style={`--i:${i}`}>{c}</span>)}</span><span
-              class="caret ml-0.5 inline-block h-4 w-2 translate-y-0.5 bg-terminal-accent"
-              aria-hidden="true"
-            />
-          </p>
-          <ul class="mt-4 hidden flex-col gap-1.5 text-terminal-muted sm:flex">
+      <div class="relative z-10 flex flex-col gap-3 lg:w-5/12 lg:shrink-0">
+        <figure class="overflow-hidden rounded-2xl bg-terminal text-terminal-ink shadow-2xl ring-1 shadow-ink/20 ring-ink/10">
+          <div class="flex h-10 items-center gap-1.5 border-b border-terminal-line px-4">
+            {[0, 1, 2].map(() => <span class="size-2.5 rounded-full bg-terminal-line" aria-hidden="true" />)}
+            <span class="ml-3 grid font-mono text-xs text-terminal-muted">
+              {lines.map((story, i) => <span class="col-start-1 row-start-1 not-data-on:invisible" data-line={i} data-on={i === 0 ? '' : undefined}>claude · {story.dir}</span>)}
+            </span>
+          </div>
+          <div class="grid px-4 pt-4 pb-5 font-mono text-sm leading-relaxed sm:px-5" data-terminal>
             {
-              progress.map(p => (
-                <li class="reveal flex gap-2" style={`--at:${p.at}ms`}>
-                  <span class:list={[p.ok ? 'text-terminal-ok' : 'text-terminal-accent']} aria-hidden="true">
-                    {p.mark}
-                  </span>
-                  <span class:list={[p.ok && 'text-terminal-ink']}>{p.text}</span>
-                </li>
+              lines.map((story, i) => (
+                <div class="col-start-1 row-start-1 not-data-on:invisible" data-line={i} data-on={i === 0 ? '' : undefined} style={`--n:${story.chars.length}`}>
+                  <p>
+                    <span class="sr-only">{story.prompt}</span>
+                    <span class="text-terminal-accent" aria-hidden="true">&gt;</span>{' '}
+                    <span class="type-in" aria-hidden="true">{story.chars.map((c, n) => <span style={`--i:${n}`}>{c}</span>)}</span><span
+                      class="caret ml-0.5 inline-block h-4 w-2 translate-y-0.5 bg-terminal-accent"
+                      aria-hidden="true"
+                    />
+                  </p>
+                  <ul class="mt-4 hidden flex-col gap-1.5 text-terminal-muted sm:flex" aria-hidden="true">
+                    {
+                      story.progress.map(p => (
+                        <li class="reveal flex gap-2" style={`--at:${p.at}ms`}>
+                          <span class:list={[p.ok ? 'text-terminal-ok' : 'text-terminal-accent']}>{p.mark}</span>
+                          <span class:list={[p.ok && 'text-terminal-ink']}>{p.text}</span>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
               ))
             }
-          </ul>
+          </div>
+        </figure>
+        <div role="tablist" aria-label="Example prompts" class="grid grid-cols-2 gap-2">
+          {
+            lines.map((story, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`hero-tab-${story.slug}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                aria-controls="hero-scene"
+                tabindex={i === 0 ? 0 : -1}
+                data-prompt={story.prompt}
+                data-peak={story.peak}
+                class="relative inline-flex h-10 min-w-0 items-center gap-2 overflow-hidden rounded-full border border-line bg-page/60 px-4 text-sm font-medium text-muted transition-colors duration-150 hover:border-line-strong hover:text-ink aria-selected:border-line-strong aria-selected:bg-page aria-selected:text-ink aria-selected:shadow-sm"
+              >
+                <span class="size-2.5 shrink-0 rounded-full ring-1 ring-ink/10" style={`background:${story.swatch}`} aria-hidden="true" />
+                {story.label}
+                <span class="absolute inset-x-4 bottom-1 h-0.5 origin-left rounded-full bg-accent/50" style="scale:0 1" aria-hidden="true" data-progress />
+              </button>
+            ))
+          }
         </div>
-      </figure>
+      </div>
       <div class="relative z-20 flex items-center justify-center lg:-mr-6 lg:w-12 lg:shrink-0" aria-hidden="true">
         <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-page px-3 py-1 font-mono text-xs font-medium whitespace-nowrap text-accent shadow-sm lg:-translate-x-3">
           1 prompt
           <svg viewBox="0 0 12 12" class="size-3 rotate-90 lg:rotate-0"><path d="M2 6h8M7 3l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </span>
       </div>
-      <div class="min-w-0 flex-1" set:html={hero.html} />
+      <div id="hero-scene" role="tabpanel" aria-labelledby={`hero-tab-${lines[0]!.slug}`} class="grid min-w-0 flex-1">
+        <div class="col-start-1 row-start-1" set:html={stage.html} />
+        {
+          lines.map((story, i) => (
+            <div class="col-start-1 row-start-1 data-off:invisible" data-panel={i} data-off={i === 0 ? undefined : ''} data-src={i === 0 ? undefined : `${import.meta.env.BASE_URL}scenes/hero-${story.slug}.html`}>
+              <p class="sr-only">{story.alt}</p>
+              {i === 0 && <Fragment set:html={story.art.html} />}
+            </div>
+          ))
+        }
+      </div>
     </div>
   </div>
 
@@ -96,3 +142,8 @@ const steps = [
     }
   </ol>
 </section>
+
+<script>
+  import { playHero } from '../scripts/hero';
+  for (const root of document.querySelectorAll<HTMLElement>('[data-hero]')) playHero(root);
+</script>

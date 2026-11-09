@@ -14,9 +14,8 @@ const write = async (file: string, svg: string) => {
 };
 const card = (surface: Example['surface']) => ({ background: surfaces[surface].card, radius: 24 });
 
-const hero = { title: 'One sentence becomes an animated diagram of the system', background: surfaces.light.page, radius: 24 };
-await write('hero.svg', readme.wide.exportSvg(hero));
-await write('hero-phone.svg', readme.compact.exportSvg(hero));
+await write('hero.svg', readme('wide'));
+await write('hero-phone.svg', readme('compact'));
 for (const slug of ['sync-loop', 'inbox-fill', 'battery-charge']) {
   const e = examples.find(x => x.slug === slug);
   if (!e) throw new Error(`readme-svg: no example ${slug}`);

@@ -99,19 +99,19 @@
     background-image: var(--surface-backdrop);
   }
 
-  .type-in > span {
-    animation: type-in 1ms linear both;
-    animation-delay: calc(400ms + var(--i) * 35ms);
-  }
-
   .type-in > span,
   .reveal {
     opacity: 0;
   }
 
-  .reveal {
+  [data-on] .type-in > span {
+    animation: type-in 1ms linear both;
+    animation-delay: calc(var(--lead, 400ms) + var(--i) * var(--step, 35ms));
+  }
+
+  [data-on] .reveal {
     animation: reveal 0.4s var(--ease-settle) both;
-    animation-delay: var(--at);
+    animation-delay: calc(var(--lead, 400ms) + var(--n) * var(--step, 35ms) + var(--at));
   }
 
   .caret {
@@ -142,6 +142,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    [data-on] .type-in > span,
+    [data-on] .reveal,
     .type-in > span,
     .reveal,
     .caret {

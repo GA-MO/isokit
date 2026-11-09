@@ -1,11 +1,11 @@
 import { expect, test } from 'bun:test';
 import { contexts, examples } from './catalog';
 import { galleries } from './material-gallery';
-import { hero, readme } from './hero';
+import { readme, stage, stories } from './hero';
 import { intents, layouts } from './shared';
 
-const arts = [...examples.map(e => e.art), hero, ...galleries.map(g => g.art), ...Object.values(contexts)];
-const variants = [...arts.flatMap(a => [a.compact, ...(a.wide ? [a.wide] : [])]), readme.wide, readme.compact];
+const arts = [...examples.map(e => e.art), stage, ...stories.map(s => s.art), ...galleries.map(g => g.art), ...Object.values(contexts)];
+const variants = arts.flatMap(a => [a.compact, ...(a.wide ? [a.wide] : [])]);
 
 test('every intent group has at least five scenes to compare', () => {
   const thin = intents.filter(i => examples.filter(e => e.intent === i).length < 5);
