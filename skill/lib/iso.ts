@@ -690,6 +690,7 @@ export class Scene {
     const d = this.wirePath(o.points, o.corner);
     const pts = o.points.map(pt => this.project(pt));
     const length = pts.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - pts[i]![0], p[1] - pts[i]![1]), 0);
+    if (o.dash !== undefined && !o.dash.trim()) throw new Error(`iso: wire "${o.id}" has an empty dash; give it dash and gap in px ('3 5') or leave dash out for a solid wire`);
     this.wires.set(o.id, { d, length, points: o.points, joins: o.joins, width: o.width ?? 1, dashed: o.dash !== undefined });
     if (o.hidden && o.dash) throw new Error(`iso: wire "${o.id}" is hidden (it draws in with a dash of its own), so it cannot also take dash "${o.dash}"`);
     if (o.hidden) this.hiddenWires.add(o.id);

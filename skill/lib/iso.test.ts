@@ -816,6 +816,7 @@ test('a dashed wire takes its dash in px and grows through a mask, so its own da
   expect(offsetAt(s, 'w', 0.5, 'w_grow-path')).toBe(1);
   expect(offsetAt(s, 'w', 1.06, 'w_grow-path')).toBe(0);
   expect(s.exportSvg()).toContain('demo_w_grow-path{animation:');
+  expect(() => scene().wire({ id: 'w', points: [[0, 0, 0], [10, 0, 0]], stroke: '#000', dash: ' ' })).toThrow(/empty dash/);
 });
 
 test('a hidden wire the author draws in the loop stays hidden in the intro until what it joins has landed', () => {
