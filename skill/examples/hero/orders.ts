@@ -1,7 +1,8 @@
 import { ease, type Scene, type Vec2, type Vec3 } from '../../lib/iso';
 import { custom, edgeLight, layers } from '../materials-kit';
 import { rng, vertical } from '../shared';
-import { block, piece, ui, type Story, type Variant } from './stage';
+import { hidden } from './motion';
+import { block, link, piece, ui, type Story, type Variant } from './stage';
 
 const accent = '#7c3aed';
 const unlit = 'rgb(124 58 237 / 0)';
@@ -62,18 +63,15 @@ function draw(s: Scene, v: Variant) {
   };
   const free = (pulse: string, t: number) => (busy.get(pulse) ?? -1) <= t;
   const hop = (wire: string) => Math.min(0.6, Math.max(0.3, s.wireLength(wire) / 300));
-  const draw = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, 1.04, 0, easing);
-  const retract = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, 0, 1.04, easing);
+  const draw = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, hidden, 0, easing);
+  const retract = (wire: string, t: number, dur: number, easing: string) => s.at(wire, 'strokeDashoffset', t, dur, 0, hidden, easing);
 
   const halo = s.def('o-halo-fill', '<radialGradient id="$ID"><stop offset="0" stop-color="#a78bfa" stop-opacity=".34"/><stop offset=".55" stop-color="#c4b5fd" stop-opacity=".12"/><stop offset="1" stop-color="#c4b5fd" stop-opacity="0"/></radialGradient>');
   piece(s, 'o-halo', () => s.face({ id: 'o-halo-face', at: [0, 0, 0], size: [k.ring * 2.4, k.ring * 2.4], radius: k.ring * 1.2, fill: halo }), 0.05);
 
   piece(s, 'o-links', () => {
     const links = services.flatMap(n => [['core', n], [n, `${n}-a`], [n, `${n}-b`]] as const);
-    for (const [from, to] of links) {
-      s.wire({ id: `o-w-${to}`, points: route(from, to), stroke: ui.wire, width: 1.25, hidden: true });
-      s.pulse({ id: `o-p-${to}`, wire: `o-w-${to}`, color: accent, length: isLeaf(to) ? 0.3 : 0.28, glow: false });
-    }
+    for (const [from, to] of links) link(s, { id: `o-w-${to}`, points: route(from, to), stroke: ui.wire, width: 1.25 }, { id: `o-p-${to}`, color: accent, length: isLeaf(to) ? 0.3 : 0.28, glow: false });
   });
 
   const tile = {
@@ -138,15 +136,16 @@ function draw(s: Scene, v: Variant) {
   for (const n of [...services, ...leaves]) s.intro(`o-p-${n}`, 'opacity', 0, 0.01, 1, 1, ease.linear);
 
   const slideFrom = (n: Service) => s.offset([...place(n), 0], [0, 0, 0]);
+  const slide = 0.355;
   services.forEach((n, i) => {
     const t = 0.05 + i * 0.05;
     s.set(`o-g-${n}`, 'opacity', t, 1);
-    s.at(`o-g-${n}`, 'translate', t, 0.355, slideFrom(n), '0 0', curve.slide);
-    draw(`o-w-${n}`, t, 0.355, curve.slide);
+    s.at(`o-g-${n}`, 'translate', t, slide, slideFrom(n), '0 0', curve.slide);
+    draw(`o-w-${n}`, t + slide, 0.28, ease.out);
   });
-  flash('o-core-hit', 0.55);
+  flash('o-core-hit', 0.62);
   services.forEach((n, i) => {
-    const t = 0.7 + i * 0.08;
+    const t = 0.75 + i * 0.08;
     const d = hop(`o-w-${n}`);
     travel(`o-p-${n}`, t, d, false);
     flash(`o-${n}-hit`, t + d);
@@ -155,8 +154,8 @@ function draw(s: Scene, v: Variant) {
     const t = 1.35 + i * 0.1;
     s.at(`o-g-${n}`, 'scale', t, 0.23, 0.05, 1.14, ease.out);
     s.at(`o-g-${n}`, 'scale', t + 0.23, 0.24, 1.14, 1, ease.io);
-    draw(`o-w-${n}`, t + 0.3, 0.3, ease.out);
-    flash(`o-${n}-hit`, t + 0.55);
+    draw(`o-w-${n}`, t + 0.47, 0.25, ease.out);
+    flash(`o-${n}-hit`, t + 0.72);
   });
 
   const r = rng(11);
@@ -182,13 +181,13 @@ function draw(s: Scene, v: Variant) {
   [...leaves].reverse().forEach((n, i) => {
     const t = reset + i * 0.04;
     retract(`o-w-${n}`, t, 0.23, curve.snapOff);
-    s.at(`o-g-${n}`, 'scale', t + 0.08, 0.36, 1, 0, curve.shrink);
+    s.at(`o-g-${n}`, 'scale', t + 0.23, 0.36, 1, 0, curve.shrink);
   });
   services.forEach((n, i) => {
     const t = reset + 0.55 + i * 0.05;
-    s.at(`o-g-${n}`, 'translate', t, 0.355, '0 0', slideFrom(n), curve.slide);
-    retract(`o-w-${n}`, t, 0.355, curve.slide);
-    s.set(`o-g-${n}`, 'opacity', t + 0.4, 0);
+    retract(`o-w-${n}`, t, 0.23, curve.snapOff);
+    s.at(`o-g-${n}`, 'translate', t + 0.23, slide, '0 0', slideFrom(n), curve.slide);
+    s.set(`o-g-${n}`, 'opacity', t + 0.23 + slide + 0.02, 0);
   });
 }
 

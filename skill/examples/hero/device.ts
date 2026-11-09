@@ -1,7 +1,8 @@
 import { ease, type Material, type Scene, type Vec2 } from '../../lib/iso';
 import { metal } from '../materials-metal';
 import { paints, ramps } from '../shared';
-import { piece, ui, type Story, type Variant } from './stage';
+import { hidden } from './motion';
+import { link, piece, ui, type Story, type Variant } from './stage';
 
 const curve = { shift: 'cubic-bezier(.49,.19,.28,.81)', settle: 'cubic-bezier(.39,.08,.04,.91)', rule: 'cubic-bezier(.05,1,.6,1)', snapOff: 'cubic-bezier(.45,.86,.17,.96)' } as const;
 const titanium = metal.find(f => f.slug === 'titanium')!.material;
@@ -74,7 +75,7 @@ function draw(s: Scene, v: Variant) {
   piece(s, 'd-notes', () => {
     layers.forEach((l, i) => {
       const [x, y] = anchor(i);
-      s.wire({ id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1, hidden: true });
+      link(s, { id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1 });
       s.group(`d-note-${l.id}`, () => {
         s.svg(`d-pin-${l.id}`, `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="#4338ca" stroke="#fff" stroke-width="1.5"/>`);
         s.text({ id: `d-name-${l.id}`, at: { screen: [k.noteX, y - k.text * 0.5] }, text: l.note, size: k.text, color: '#27272a', font: 'sans', weight: 600 });
@@ -88,10 +89,10 @@ function draw(s: Scene, v: Variant) {
   [...layers.keys()].reverse().forEach((i, n) => {
     const id = layers[i]!.id;
     const t = 0.95 + n * 0.08;
-    s.at(`d-rule-${id}`, 'strokeDashoffset', t, 0.6, 1.04, 0, curve.rule);
+    s.at(`d-rule-${id}`, 'strokeDashoffset', t, 0.6, hidden, 0, curve.rule);
     s.at(`d-note-${id}`, 'opacity', t + 0.3, 0.2, 0, 1, ease.linear);
     s.at(`d-note-${id}`, 'opacity', 3.7, 0.2, 1, 0, ease.linear);
-    s.at(`d-rule-${id}`, 'strokeDashoffset', 3.65, 0.23, 0, -1.04, curve.snapOff);
+    s.at(`d-rule-${id}`, 'strokeDashoffset', 3.65, 0.23, 0, -hidden, curve.snapOff);
   });
   s.at('d-chip', 'fill', 1.7, 0.15, off, amber, ease.linear);
   s.at('d-chip', 'fill', 1.85, 1.2, amber, off, ease.linear);
