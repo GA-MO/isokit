@@ -34,3 +34,31 @@ test('the README hero is one standalone SVG that types all four prompts on one s
     expect(shared).toHaveLength(1);
   }
 });
+
+const variants = (slug: string) => {
+  const s = stories.find(x => x.slug === slug)!;
+  return [s.art.compact.markup, s.art.wide!.markup];
+};
+
+test('Orders API paints every wire on the ground beneath every box, so no line crosses a box', () => {
+  for (const markup of variants('orders')) {
+    const lastWire = Math.max(...[...markup.matchAll(/id="[^"]+_o-w-[a-z-]+"/g)].map(m => m.index));
+    const firstBox = markup.search(/id="[^"]+_o-(g-[a-z-]+|core-live)"/);
+    expect(lastWire).toBeGreaterThan(0);
+    expect(lastWire).toBeLessThan(firstBox);
+  }
+});
+
+test('each Edge device label line meets the middle of its own layer edge once the layers are apart', () => {
+  for (const markup of variants('device')) {
+    const spec: { tracks: { target: string; prop: string; keyframes: { translate?: string }[] }[] } = JSON.parse(markup.match(/class="iso-spec">(.*?)<\/script>/s)![1]!);
+    for (const id of ['case', 'battery', 'board', 'radio', 'lid']) {
+      const [, top, right, bottom] = markup.match(new RegExp(`d-${id}-box_side"><path d="M[\\d.]+ ([\\d.]+)L([\\d.]+) [\\d.]+L[\\d.]+ ([\\d.]+)`))!.map(Number);
+      const lifts = spec.tracks.filter(t => t.target.endsWith(`_d-lift-${id}`) && t.prop === 'translate').flatMap(t => t.keyframes.map(k => Number(k.translate?.match(/^0 (-?[\d.]+)px$/)?.[1] ?? 0)));
+      const lift = Math.min(0, ...lifts);
+      const [, x, y] = markup.match(new RegExp(`d-rule-${id}" d="M([\\d.]+) ([\\d.]+)L`))!.map(Number);
+      expect(Math.abs(y! - ((top! + bottom!) / 2 + lift))).toBeLessThan(0.5);
+      expect(Math.abs(x! - right!)).toBeLessThan(2);
+    }
+  }
+});

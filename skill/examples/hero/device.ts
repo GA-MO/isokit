@@ -8,17 +8,17 @@ const titanium = metal.find(f => f.slug === 'titanium')!.material;
 const faded = (m: Material): Material => (m.kind === 'custom' ? { ...m, corner: 'fade' } : m);
 
 type Layer = 'case' | 'battery' | 'board' | 'radio' | 'lid';
-const layers: readonly { id: Layer; height: number; note: string; metal: boolean }[] = [
-  { id: 'case', height: 24, note: 'IP67 case', metal: true },
-  { id: 'battery', height: 12, note: '72 h battery', metal: false },
-  { id: 'board', height: 7, note: 'Edge chip', metal: false },
-  { id: 'radio', height: 9, note: '2.4 GHz radio', metal: false },
-  { id: 'lid', height: 13, note: 'Titanium lid', metal: true },
+const layers: readonly { id: Layer; height: number; note: string; spec: string; metal: boolean }[] = [
+  { id: 'case', height: 24, note: 'IP67 case', spec: 'Sealed to 1 m', metal: true },
+  { id: 'battery', height: 12, note: '72 h battery', spec: '1,800 mAh cell', metal: false },
+  { id: 'board', height: 7, note: 'Edge chip', spec: '8 TOPS on device', metal: false },
+  { id: 'radio', height: 9, note: '2.4 GHz radio', spec: '120 m mesh range', metal: false },
+  { id: 'lid', height: 13, note: 'Titanium lid', spec: 'Machined, 1.2 mm', metal: true },
 ];
 
 const sizes: Record<Variant, { size: number; gap: number; text: number; noteX: number }> = {
   wide: { size: 156, gap: 52, text: 14, noteX: 448 },
-  compact: { size: 112, gap: 40, text: 13, noteX: 236 },
+  compact: { size: 112, gap: 40, text: 13, noteX: 248 },
 };
 
 const off = 'rgb(251 191 36 / 0)';
@@ -66,15 +66,20 @@ function draw(s: Scene, v: Variant) {
   });
 
   const lifted = (i: number) => i * k.gap;
-  const right = (i: number): Vec2 => {
-    const [x, y] = s.project([u, -u, tops[i]!]);
-    return [x, y - lifted(i) - layers[i]!.height / 2];
+  const corner = r - r * Math.SQRT1_2;
+  const anchor = (i: number): Vec2 => {
+    const [x, y] = s.project([u - corner, -u + corner, tops[i]!]);
+    return [x, y - lifted(i) + layers[i]!.height / 2];
   };
   piece(s, 'd-notes', () => {
     layers.forEach((l, i) => {
-      const [x, y] = right(i);
-      s.wire({ id: `d-rule-${l.id}`, points: [s.unproject([x + 10, y], 0), s.unproject([k.noteX - 8, y], 0)], stroke: 'rgb(67 56 202 / .4)', width: 1, hidden: true });
-      s.text({ id: `d-note-${l.id}`, at: { screen: [k.noteX, y] }, text: l.note, size: k.text, color: '#3f3f46', font: 'sans', weight: 500 });
+      const [x, y] = anchor(i);
+      s.wire({ id: `d-rule-${l.id}`, points: [s.unproject([x + 1, y], 0), s.unproject([k.noteX - 10, y], 0)], stroke: 'rgb(67 56 202 / .45)', width: 1, hidden: true });
+      s.group(`d-note-${l.id}`, () => {
+        s.svg(`d-pin-${l.id}`, `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.5" fill="#4338ca" stroke="#fff" stroke-width="1.5"/>`);
+        s.text({ id: `d-name-${l.id}`, at: { screen: [k.noteX, y - k.text * 0.5] }, text: l.note, size: k.text, color: '#27272a', font: 'sans', weight: 600 });
+        s.text({ id: `d-spec-${l.id}`, at: { screen: [k.noteX, y + k.text * 0.72] }, text: l.spec, size: k.text - 2, color: ui.muted, font: 'sans', weight: 500 });
+      });
     });
   });
 

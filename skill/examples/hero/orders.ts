@@ -36,14 +36,16 @@ function draw(s: Scene, v: Variant) {
     return [ax * k.reach + ay * side * k.spread, ay * k.reach + ax * side * k.spread];
   };
   const sizeOf = (n: Node) => (n === 'core' ? k.core : isLeaf(n) ? k.leaf : k.svc);
+  const heightOf = (n: Node) => (n === 'core' ? k.coreH : isLeaf(n) ? k.leafH : k.svcH);
   const depth = (n: Node) => place(n)[0] + place(n)[1];
+  const behindPerHeight = 1 / (2 * (s.project([1, 0, 0])[1] - s.project([0, 0, 0])[1]));
+  const clear = (n: Node, dir: number) => sizeOf(n) / 2 + (dir < 0 ? Math.min(heightOf(n) * behindPerHeight, sizeOf(n) / 2) : 0);
   const route = (a: Node, b: Node): Vec3[] => {
     const [[ax, ay], [bx, by]] = [place(a), place(b)];
-    const [ar, br] = [sizeOf(a) / 2 + 2, sizeOf(b) / 2 + 2];
     const [sx, sy] = [Math.sign(bx - ax), Math.sign(by - ay)];
-    if (Math.abs(by - ay) < 0.5) return [[ax + sx * ar, ay, 0], [bx - sx * br, by, 0]];
-    if (Math.abs(bx - ax) < 0.5) return [[ax, ay + sy * ar, 0], [bx, by - sy * br, 0]];
-    return Math.abs(bx - ax) > Math.abs(by - ay) ? [[ax + sx * ar, ay, 0], [bx, ay, 0], [bx, by - sy * br, 0]] : [[ax, ay + sy * ar, 0], [ax, by, 0], [bx - sx * br, by, 0]];
+    if (Math.abs(by - ay) < 0.5) return [[ax + sx * clear(a, sx), ay, 0], [bx - sx * clear(b, -sx), by, 0]];
+    if (Math.abs(bx - ax) < 0.5) return [[ax, ay + sy * clear(a, sy), 0], [bx, by - sy * clear(b, -sy), 0]];
+    return Math.abs(bx - ax) > Math.abs(by - ay) ? [[ax + sx * clear(a, sx), ay, 0], [bx, ay, 0], [bx, by - sy * clear(b, -sy), 0]] : [[ax, ay + sy * clear(a, sy), 0], [ax, by, 0], [bx - sx * clear(b, -sx), by, 0]];
   };
 
   const flashed = new Map<string, number>();
@@ -67,9 +69,10 @@ function draw(s: Scene, v: Variant) {
   piece(s, 'o-halo', () => s.face({ id: 'o-halo-face', at: [0, 0, 0], size: [k.ring * 2.4, k.ring * 2.4], radius: k.ring * 1.2, fill: halo }), 0.05);
 
   piece(s, 'o-links', () => {
-    for (const n of services) {
-      s.wire({ id: `o-w-${n}`, points: route('core', n), stroke: ui.wire, width: 1.25, hidden: true });
-      s.pulse({ id: `o-p-${n}`, wire: `o-w-${n}`, color: accent, length: 0.28, glow: false });
+    const links = services.flatMap(n => [['core', n], [n, `${n}-a`], [n, `${n}-b`]] as const);
+    for (const [from, to] of links) {
+      s.wire({ id: `o-w-${to}`, points: route(from, to), stroke: ui.wire, width: 1.25, hidden: true });
+      s.pulse({ id: `o-p-${to}`, wire: `o-w-${to}`, color: accent, length: isLeaf(to) ? 0.3 : 0.28, glow: false });
     }
   });
 
@@ -105,10 +108,6 @@ function draw(s: Scene, v: Variant) {
   const clusters = [...services].sort((a, b) => depth(a) - depth(b));
   for (const n of clusters) {
     piece(s, `o-leaves-${n}`, () => {
-      for (const l of [`${n}-a`, `${n}-b`] as const) {
-        s.wire({ id: `o-w-${l}`, points: route(n, l), stroke: ui.wire, width: 1.25, hidden: true });
-        s.pulse({ id: `o-p-${l}`, wire: `o-w-${l}`, color: accent, length: 0.3, glow: false });
-      }
       for (const l of [`${n}-a`, `${n}-b`] as const) drawTile(l);
     });
   }
