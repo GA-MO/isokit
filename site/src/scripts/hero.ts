@@ -88,18 +88,19 @@ export function playHero(root: HTMLElement) {
     progress = null;
   };
 
+  const finish = (s: Story) => {
+    show(s, false);
+    for (const h of handles(s)) h.pause();
+    for (const a of exits.get(s) ?? []) a.cancel();
+    exits.delete(s);
+  };
+
   const leave = (s: Story): number => {
     if (exits.has(s) || off(s)) return 0;
     const pieces = [...(shown(s)?.querySelectorAll('.hero-piece') ?? [])].reverse();
     const anims = pieces.flatMap((p, k) => liftOff(p, k * lift.stagger));
     exits.set(s, anims);
-    window.setTimeout(() => {
-      if (exits.get(s) !== anims) return;
-      show(s, false);
-      for (const h of handles(s)) h.pause();
-      for (const a of anims) a.cancel();
-      exits.delete(s);
-    }, liftTime(pieces.length) * 1000 + 60);
+    window.setTimeout(() => exits.get(s) === anims && finish(s), liftTime(pieces.length) * 1000 + 60);
     return pieces.length;
   };
 
@@ -197,6 +198,7 @@ export function playHero(root: HTMLElement) {
     const next = story(i);
     const prev = story(active);
     if (how === 'pick') holdUntil = Math.max(holdUntil, performance.now() + holdAfterPick * 1000);
+    const typed = how === 'pick' && next === prev && next.lines.some(l => [...l.querySelectorAll('.type-in > span')].at(-1)?.getAnimations()[0]?.playState === 'finished');
     if (next === prev && (live || how === 'auto')) {
       if (how === 'pick') schedule();
       return;
@@ -208,9 +210,9 @@ export function playHero(root: HTMLElement) {
     active = stories.indexOf(next);
     mark(next);
     const t = how === 'pick' ? quickTyping : typing;
-    typePrompt(next, t);
+    if (!typed) typePrompt(next, t);
     if (reduce.matches) return still(next);
-    const sent = typeTime(next.prompt, t) * 1000;
+    const sent = typed ? 0 : typeTime(next.prompt, t) * 1000;
     const out = () => handoverAfter(Math.max(0, ...stories.map(s => (s === next ? 0 : leave(s))))) * 1000;
     if (how === 'pick') {
       const clear = out();
@@ -283,6 +285,7 @@ export function playHero(root: HTMLElement) {
     was.iso?.pause();
     seen = now;
     if (reduce.matches) return now.iso?.seek(now.iso.spec.intro + now.iso.spec.still);
+    if (off(owner) || exits.has(owner)) return finish(owner);
     now.iso?.seek(t ?? 0);
     if (owner === story(active)) return resume();
     if (inView) now.iso?.play();
