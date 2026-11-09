@@ -177,6 +177,7 @@ export interface Link {
   wire: string;
   ends: string[][];
   pulses: string[];
+  loose: boolean;
 }
 
 export interface PulseOptions {
@@ -744,7 +745,8 @@ export class Scene {
       const joins = w.joins?.map(end => (typeof end === 'string' ? [end] : [...end]));
       if (joins?.some(end => !end.length)) throw new Error(`iso: wire "${wire}" joins an empty list; name at least one id for each end, or pass joins: [] for a wire that joins nothing`);
       for (const id of joins?.flat() ?? []) if (!this.ids.has(id)) throw new Error(`iso: wire "${wire}" joins "${id}", which is not drawn in scene ${this.name}`);
-      return { wire, ends: joins ?? ends(w.points), pulses: [...this.pulses].filter(([, p]) => p.wire === wire).map(([id]) => id) };
+      const loose = !joins && [w.points[0]!, w.points[w.points.length - 1]!].some(p => !touches(p).length);
+      return { wire, ends: joins ?? ends(w.points), pulses: [...this.pulses].filter(([, p]) => p.wire === wire).map(([id]) => id), loose };
     });
   }
 
@@ -967,7 +969,7 @@ export class Scene {
     return v.replace(/(-?\d*\.?\d+)px/g, (_, n: string) => `calc(${n} * 100cqw / ${this.width})`);
   }
 
-  private wiring(): { segments: { phase: 'intro' | 'loop'; seg: Segment }[]; intro: number } {
+  private wiring(): { segments: { phase: 'intro' | 'loop'; seg: Segment }[]; intro: number; targets: Set<string> } {
     const authored: Timed[] = this.segments.map(({ phase, seg }) => ({ phase, ...seg }));
     const carriers = (id: string) => {
       const chain = [id];
@@ -988,7 +990,7 @@ export class Scene {
       return [{ target: w.dashed ? `${wire}_grow-path` : wire, ends: join, loop: true }];
     });
     const wired = schedule(wirings, authored, this.introLength, this.loopLength);
-    return { segments: wired.segments.map(({ phase, ...seg }) => ({ phase, seg: { ...seg, start: ms(seg.start), dur: ms(ms(seg.start) + seg.dur) - ms(seg.start) } })), intro: ms(wired.intro) };
+    return { segments: wired.segments.map(({ phase, ...seg }) => ({ phase, seg: { ...seg, start: ms(seg.start), dur: ms(ms(seg.start) + seg.dur) - ms(seg.start) } })), intro: ms(wired.intro), targets: new Set(wirings.map(w => w.target)) };
   }
 
   motion(): MotionSpec {
@@ -996,7 +998,7 @@ export class Scene {
     const wired = this.wiring();
     const introLength = wired.intro;
     for (const { phase, seg } of [...this.segments, ...wired.segments]) {
-      if (!this.ids.has(seg.target) && !seg.target.endsWith('_grow-path')) throw new Error(`iso: an animation in scene ${this.name} targets unknown id "${seg.target}"`);
+      if (!this.ids.has(seg.target) && !wired.targets.has(seg.target)) throw new Error(`iso: an animation in scene ${this.name} targets unknown id "${seg.target}"`);
       const key = `${phase}|${seg.target}|${seg.prop}`;
       const g = group.get(key) ?? { phase, target: seg.target, prop: seg.prop, segs: [] };
       g.segs.push(seg);

@@ -33,5 +33,6 @@ if (import.meta.main) {
   await Bun.write(out, page(mod.default));
   const scenes = mod.scenes ?? (mod.example ? artScenes(mod.example.art) : []);
   if (scenes.length) await Bun.write(out.replace(/\.html$/, '.links.json'), links(scenes));
+  else console.warn(`${entry} exports no scenes, so order.mjs cannot check its wires; add export const scenes = [compact, wide]`);
   console.log(out);
 }

@@ -12,6 +12,7 @@ const step = Number(opts.step ?? 0.05);
 const browser = opts.browser === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' });
 
 let bad = 0;
+let loose = 0;
 let frames = 0;
 const table = [];
 for (const file of files) {
@@ -22,13 +23,11 @@ for (const file of files) {
     const page = await browser.newPage({ viewport: { width: w, height: 900 } });
     await page.goto(pathToFileURL(resolve(file)).href);
     await page.waitForFunction(() => typeof window.isoSeek === 'function');
-    const result = await page.evaluate(
-      ([links, step]) => {
-        const root = [...document.querySelectorAll('.iso')].find(r => r.offsetParent !== null);
-        if (!root) return null;
+    const results = await page.evaluate(
+      ([links, step]) => [...document.querySelectorAll('.iso')].filter(r => r.offsetParent !== null).map(root => {
         const name = root.dataset.iso;
         const own = links[name];
-        if (!own) return { name, error: `no links for scene ${name}` };
+        if (!own) return { name, error: `no links for scene ${name}; export it in the module's scenes so render.ts lists it` };
         const { intro, loop } = root.iso.spec;
         const units = root.querySelector('svg').viewBox.baseVal.width / root.clientWidth;
         const el = id => root.querySelector(`#${CSS.escape(`${name}_${id}`)}`);
@@ -52,7 +51,7 @@ for (const file of files) {
         const off = (e, seen) => {
           if (!e) return 'missing';
           const p = pose(e);
-          return p.alpha < Math.min(0.99, seen - 0.05) ? `opacity ${p.alpha.toFixed(2)}` : p.shift > 8 ? `moved ${p.shift.toFixed(0)} px` : p.scale > 0.05 ? `scaled by ${p.scale.toFixed(2)}` : '';
+          return p.alpha < Math.min(0.99, seen - 0.05) ? `opacity ${p.alpha.toFixed(2)}` : p.shift > 8 ? `moved ${p.shift.toFixed(0)} px` : p.scale > 0.2 ? `scaled by ${p.scale.toFixed(2)}` : '';
         };
         const drawn = path => {
           const draw = path.getAttribute('mask') ? root.querySelector(`${path.getAttribute('mask').slice(4, -1)} path`) ?? path : path;
@@ -74,7 +73,7 @@ for (const file of files) {
           const ends = l.ends.map(alts => alts.map(el));
           return [{ l, wire, ends, pulses: l.pulses.map(p => ({ id: p, node: el(p) })) }];
         });
-        const out = { name, frames: 0, bad: 0, first: [], unjoined: own.filter(l => !l.ends.length).map(l => l.wire) };
+        const out = { name, frames: 0, bad: 0, first: [], unjoined: own.filter(l => !l.ends.length).map(l => l.wire), loose: own.filter(l => l.loose).map(l => l.wire) };
         for (let t = 0; t < intro + loop - 1e-9; t += step) {
           window.isoSeek(t);
           const why = [];
@@ -104,19 +103,25 @@ for (const file of files) {
           }
         }
         return out;
-      },
+      }),
       [links, step],
     );
     await page.close();
-    if (!result) throw new Error(`order: ${file} has no visible scene at ${w}px`);
-    if (result.error) throw new Error(`order: ${file}: ${result.error}`);
-    frames += result.frames;
-    bad += result.bad;
-    table.push(result);
-    if (result.bad) console.log(`FAIL ${basename(file)} ${result.name}: ${result.bad} of ${result.frames} frames\n  ${result.first.join('\n  ')}`);
+    if (!results.length) throw new Error(`order: ${file} has no visible scene at ${w}px`);
+    for (const result of results) {
+      if (result.error) throw new Error(`order: ${file}: ${result.error}`);
+      frames += result.frames;
+      bad += result.bad;
+      table.push(result);
+      if (result.bad) console.log(`FAIL ${basename(file)} ${result.name}: ${result.bad} of ${result.frames} frames\n  ${result.first.join('\n  ')}`);
+      if (result.loose.length) {
+        loose++;
+        console.log(`FAIL ${basename(file)} ${result.name}: ${result.loose.join(', ')} start or end on no slab or prism, so the kit cannot time them; name what each joins with wire({ joins }), or joins: [] for a line that joins nothing`);
+      }
+    }
   }
 }
 await browser.close();
 if (opts.table) for (const r of table) console.log(`${r.name.padEnd(28)} ${String(r.bad).padStart(4)} / ${r.frames}${r.unjoined.length ? `  unjoined: ${r.unjoined.join(', ')}` : ''}`);
 console.log(`${frames} frames in ${files.length} pages at ${widths.join(', ')} px every ${step * 1000} ms; ${bad ? `${bad} show a wire or pulse before what it joins is in place` : 'no wire or pulse shows before what it joins is in place'}`);
-process.exit(bad ? 1 : 0);
+process.exit(bad || loose ? 1 : 0);

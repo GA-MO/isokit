@@ -741,7 +741,8 @@ test('a wire between two boxes stays hidden until both have dropped in, then gro
   block(s, 'a', 0);
   block(s, 'b', 120);
   s.dropIn('a', 0.1).dropIn('b', 0.5);
-  expect(s.links()).toEqual([{ wire: 'w', ends: [['a'], ['b']], pulses: [] }]);
+  expect(s.links()).toEqual([{ wire: 'w', ends: [['a'], ['b']], pulses: [], loose: false }]);
+  expect(scene().wire({ id: 'w', points: [[0, 0, 0], [80, 0, 0]], stroke: '#888888' }).links()[0]!.loose).toBe(true);
   expect(s.render()).toMatch(/id="demo_w"[^>]*stroke-dasharray="1 2"/);
   expect(s.render()).not.toMatch(/id="demo_w"[^>]*stroke-dashoffset/);
   expect(offsetAt(s, 'w', 0)).toBe(1);
@@ -840,4 +841,33 @@ test('wire timing is computed afresh each time, so render() and exportSvg() agre
   expect(JSON.stringify(s.motion())).toBe(JSON.stringify(s.motion()));
   s.exportSvg();
   expect(s.motion().intro).toBe(0.95);
+});
+
+test('a box that leaves right after the loop starts, or comes back right before it ends, never makes wire segments collide', () => {
+  const build = (beats: readonly (readonly [number, number])[]) => {
+    const s = scene();
+    s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+    block(s, 'a', 0);
+    block(s, 'b', 120);
+    s.loop(6, 1);
+    for (const [out, back] of beats) s.at('b', 'opacity', out, 0.1, 1, 0).at('b', 'opacity', back, 0.1, 0, 1);
+    return s;
+  };
+  const early = build([[0.46, 1.9], [3, 5.8]]);
+  expect(() => early.render()).not.toThrow();
+  const intro = early.motion().intro;
+  expect(offsetAt(early, 'w', intro + 0.5)).toBe(1);
+  expect(offsetAt(early, 'w', intro + 2.31)).toBe(0);
+  const late = build([[0.08, 5.42]]);
+  expect(() => late.render()).not.toThrow();
+  expect(offsetAt(late, 'w', late.motion().intro + 0.1)).toBe(1);
+});
+
+test('a wire stays hidden through the loop when a box it joins left at the end of the intro and never comes back', () => {
+  const s = scene();
+  s.wire({ id: 'w', points: [[20, 0, 5], [100, 0, 5]], stroke: '#888888' });
+  block(s, 'a', 0);
+  block(s, 'b', 120);
+  s.intro('a', 'opacity', 1, 0.2, 1, 0).loop(4, 1).at('b', 'translate', 1, 0.3, '0 0', '0 -4px').at('b', 'translate', 2, 0.3, '0 -4px', '0 0');
+  expect(offsetAt(s, 'w', s.motion().intro + 0.5)).toBe(1);
 });

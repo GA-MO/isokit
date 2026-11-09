@@ -50,10 +50,10 @@ function build(l: Layout) {
   const off = (from: Vec3, d: Vec2, by: number): Vec3 => [from[0] + d[0] * by, from[1] + d[1] * by, wz];
   const qEnd = off(R, l.legs.q, rSize / 2 + l.legs.qLen * k);
   const aEnd = off(M, l.legs.a, mSize / 2 + l.legs.aLen * k);
-  s.wire({ id: 'w-q', points: [qEnd, off(R, l.legs.q, rSize / 2)], stroke: wire, width: 1.25 });
+  s.wire({ id: 'w-q', points: [qEnd, off(R, l.legs.q, rSize / 2)], stroke: wire, width: 1.25, joins: ['question', 'retriever-slab'] });
   s.wire({ id: 'w-r', points: [along(-gap + rSize / 2 / k, wz), along(-sSize / 2 / k, wz)], stroke: wire, width: 1.25 });
   s.wire({ id: 'w-s', points: [along(sSize / 2 / k, wz), along(gap - mSize / 2 / k, wz)], stroke: wire, width: 1.25 });
-  s.wire({ id: 'w-a', points: [off(M, l.legs.a, mSize / 2), aEnd], stroke: wire, width: 1.25 });
+  s.wire({ id: 'w-a', points: [off(M, l.legs.a, mSize / 2), aEnd], stroke: wire, width: 1.25, joins: ['model-slab'] });
   for (const w of ['q', 'r', 'a']) s.pulse({ id: `p-${w}`, wire: `w-${w}`, color: accent, length: 0.3 });
 
   const tiles = [

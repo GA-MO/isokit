@@ -28,7 +28,7 @@ function away(prop: (typeof placeProps)[number], v: string | number): boolean {
   const n = numbers(v);
   if (prop === 'opacity') return (n[0] ?? 1) < 0.1;
   if (prop === 'translate') return Math.hypot(n[0] ?? 0, n[1] ?? 0) > 8;
-  return n.some(x => Math.abs(x - 1) > 0.05);
+  return n.some(x => Math.abs(x - 1) > 0.2);
 }
 
 const eps = 0.002;
@@ -55,7 +55,8 @@ function absent(segments: readonly Timed[], ids: readonly string[], phase: Timed
     for (const prop of placeProps) {
       const segs = segments.filter(s => s.phase === phase && s.target === id && s.prop === prop).sort((x, y) => x.start - y.start);
       if (!segs.length) {
-        if (phase === 'intro' && awayAtLoopStart(segments, id, prop)) spans.push([0, total]);
+        const held = phase === 'intro' ? awayAtLoopStart(segments, id, prop) : awayAfterIntro(segments, id, prop);
+        if (held) spans.push([0, total]);
         continue;
       }
       let held = phase === 'intro' ? segs[0]!.from : segs[segs.length - 1]!.to;
@@ -85,6 +86,11 @@ const lastOf = (segments: readonly Timed[], phase: Timed['phase'], id: string, p
 function awayAtLoopStart(segments: readonly Timed[], id: string, prop: (typeof placeProps)[number]): boolean {
   const held = lastOf(segments, 'loop', id, prop);
   return held !== undefined && away(prop, held.to);
+}
+
+function awayAfterIntro(segments: readonly Timed[], id: string, prop: (typeof placeProps)[number]): boolean {
+  const end = lastOf(segments, 'intro', id, prop);
+  return end !== undefined && away(prop, end.to);
 }
 
 function goneAfterIntro(segments: readonly Timed[], ids: readonly string[]): boolean {
@@ -120,15 +126,17 @@ export function schedule(wirings: readonly Wiring[], segments: readonly Timed[],
       seg('loop', w.target, 0, 0.001, 1, 1, 'linear');
       continue;
     }
+    const around = (start: number, dur: number, from: number, to: number, easing: string) => {
+      const wrapped = ((start % loop) + loop) % loop;
+      const t = wrapped > loop - eps ? 0 : wrapped;
+      if (t + dur <= loop + eps) return seg('loop', w.target, t, Math.min(dur, loop - t), from, to, easing);
+      const split = from + ((to - from) * (loop - t)) / dur;
+      seg('loop', w.target, t, loop - t, from, split, 'linear');
+      seg('loop', w.target, 0, t + dur - loop, split, to, 'linear');
+    };
     for (const [a, b] of hide) {
-      const r = wireTiming.retract;
-      if (a >= r) seg('loop', w.target, a - r, r, 0, 1, wireTiming.retractEase);
-      else if (a >= r / 2) seg('loop', w.target, 0, a, 0, 1, wireTiming.retractEase);
-      else seg('loop', w.target, loop - r, r, 0, 1, wireTiming.retractEase);
-      const back = b % loop;
-      if (back + wireTiming.draw <= loop) seg('loop', w.target, back, wireTiming.draw, 1, 0, wireTiming.drawEase);
-      else if (loop - back >= wireTiming.draw / 2) seg('loop', w.target, back, loop - back, 1, 0, wireTiming.drawEase);
-      else seg('loop', w.target, 0, wireTiming.draw, 1, 0, wireTiming.drawEase);
+      around(a - wireTiming.retract, wireTiming.retract, 0, 1, wireTiming.retractEase);
+      around(b, wireTiming.draw, 1, 0, wireTiming.drawEase);
     }
   }
   return { segments: out, intro: introEnd };
