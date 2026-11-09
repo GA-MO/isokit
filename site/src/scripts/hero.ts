@@ -97,7 +97,9 @@ export function playHero(root: HTMLElement) {
 
   const leave = (s: Story): number => {
     if (exits.has(s) || off(s)) return 0;
-    const pieces = [...(shown(s)?.querySelectorAll('.hero-piece') ?? [])].reverse();
+    const view = shown(s);
+    for (const a of view?.getAnimations({ subtree: true }) ?? []) a.persist();
+    const pieces = [...(view?.querySelectorAll('.hero-piece') ?? [])].reverse();
     const anims = pieces.flatMap((p, k) => liftOff(p, k * lift.stagger));
     exits.set(s, anims);
     window.setTimeout(() => exits.get(s) === anims && finish(s), liftTime(pieces.length) * 1000 + 60);
@@ -277,6 +279,7 @@ export function playHero(root: HTMLElement) {
   });
 
   new ResizeObserver(() => {
+    for (const s of [...exits.keys()]) if (s !== story(active)) finish(s);
     const was = seen;
     const owner = was && stories.find(s => s.panel.contains(was));
     const now = owner && shown(owner);
