@@ -8,17 +8,20 @@ const files = process.argv.slice(2).map(f => resolve(f));
 if (!files.length) throw new Error('usage: node scripts/check.ts <scene.ts> [more.ts]  (strict type-check of scene files against the kit)');
 const absent = files.filter(f => !existsSync(f));
 if (absent.length) throw new Error(`check.ts: no file at ${absent.join(', ')}`);
-const specifier = /\b(?:from|import)\s*\(?\s*(['"])((?:\.{1,2}\/|\/)[^'"]*)\1/g;
-const bare = files.flatMap(f =>
-  readFileSync(f, 'utf8')
-    .split('\n')
-    .flatMap((line, i) => [...line.matchAll(specifier)].map(m => m[2] ?? '').filter(spec => !/\.(?:[cm]?ts|[cm]?js|json)$/.test(spec)).map(spec => `${f}:${i + 1}: import '${spec}' needs its extension, as in '${spec}.ts', because Node loads a .ts file only by its full name`)),
-);
+packages('check.ts');
+const ts = (await import('typescript')).default;
+const bare = files.flatMap(f => {
+  const src = readFileSync(f, 'utf8');
+  const lineOf = (pos: number) => src.slice(0, pos).split('\n').length;
+  return ts
+    .preProcessFile(src, true, true)
+    .importedFiles.filter(i => /^\.{0,2}\//.test(i.fileName) && !/\.(?:[cm]?ts|[cm]?js|json)$/.test(i.fileName))
+    .map(i => `${f}:${lineOf(i.pos)}: import '${i.fileName}' needs its extension, as in '${i.fileName}.ts', because Node loads a .ts file only by its full name`);
+});
 if (bare.length) {
   console.error(bare.join('\n'));
   process.exit(1);
 }
-packages('check.ts');
 const kit = resolve(import.meta.dirname, '..');
 const dir = mkdtempSync(join(tmpdir(), 'iso-check-'));
 const config = join(dir, 'tsconfig.json');

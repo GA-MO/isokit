@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser } from 'playwright';
 
@@ -26,36 +26,71 @@ const run = (check: string, what: string, cmd: string, args: string[], shell = f
 const manifest = join(dir, 'package.json');
 const marker = join(modules, '.iso-installed');
 const lock = join(modules, '.iso-install-lock');
-const installed = () => existsSync(marker) && readFileSync(marker, 'utf8') === readFileSync(manifest, 'utf8');
+const present = () => ['playwright', 'typescript', '@types/bun'].every(p => existsSync(join(modules, p, 'package.json')));
+const installed = () => (existsSync(marker) ? readFileSync(marker, 'utf8') === readFileSync(manifest, 'utf8') : present());
 const pause = (ms: number) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+const code = (e: unknown) => (e instanceof Error && 'code' in e ? String(e.code) : String(e));
+const alive = (pid: number) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return code(e) === 'EPERM';
+  }
+};
 
-/** Holds a lock directory so two checks started together run one install; a lock older than ten minutes is from a run that died. */
-const locked = (fn: () => string | undefined) => {
-  mkdirSync(modules, { recursive: true });
+/** The process named in the lock, 'gone' when the lock was just released, 'starting' while its owner has not written its pid yet. */
+const holder = (): number | 'gone' | 'starting' => {
+  try {
+    const pid = Number(readFileSync(lock, 'utf8'));
+    return Number.isInteger(pid) && pid > 0 ? pid : 'starting';
+  } catch {
+    return 'gone';
+  }
+};
+
+/**
+ * Runs fn while holding a lock file that names this process, so two checks started together run one install.
+ * A lock whose process is gone is taken over; a live one is waited on for five minutes at most.
+ */
+const locked = (check: string, fn: () => string | undefined) => {
+  const until = Date.now() + 300_000;
+  let told = false;
   for (;;) {
     try {
-      mkdirSync(lock);
+      mkdirSync(modules, { recursive: true });
+      writeFileSync(lock, String(process.pid), { flag: 'wx' });
       break;
-    } catch {
-      const age = Date.now() - (statSync(lock, { throwIfNoEntry: false })?.mtimeMs ?? Date.now());
-      if (age > 600_000) rmSync(lock, { recursive: true, force: true });
-      else pause(500);
+    } catch (e) {
+      if (code(e) !== 'EEXIST') return `cannot write ${modules} (${code(e)})`;
     }
+    const held = holder();
+    if (held === 'gone') continue;
+    if (held !== 'starting' && !alive(held)) {
+      rmSync(lock, { force: true });
+      continue;
+    }
+    const who = held === 'starting' ? 'a process that is starting' : `process ${held}`;
+    if (Date.now() > until) return `another install (${who}) has held ${lock} for five minutes`;
+    if (!told) console.error(`${check}: waiting for another install to finish (${who})`);
+    told = true;
+    pause(500);
   }
   try {
     return fn();
   } finally {
-    rmSync(lock, { recursive: true, force: true });
+    rmSync(lock, { force: true });
   }
 };
 
 /**
  * Installs this folder's package.json into its own node_modules, with bun under Bun and npm under Node, and never globally.
  * It runs on first use and again whenever package.json changes, since a marker holds the package.json it installed.
+ * A tree from before the marker counts as installed while its three packages are there.
  */
 export function packages(check: string) {
   if (installed()) return;
-  const failed = locked(() => {
+  const failed = locked(check, () => {
     if (installed()) return undefined;
     const why = process.versions.bun
       ? run(check, 'its packages', process.execPath, ['install'])
