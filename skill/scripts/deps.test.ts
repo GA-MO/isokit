@@ -64,6 +64,21 @@ for (const runtime of ['bun', 'node'] as const) {
   }, 300_000);
 }
 
+test.skipIf(process.platform === 'win32' || process.getuid?.() === 0)('an old tree that cannot be fully deleted does not fail a finished install', () => {
+  const dir = folder('stuck-old');
+  expect(check(dir).status).toBe(0);
+  const stuck = join(dir, 'node_modules', 'stuck');
+  mkdirSync(stuck);
+  writeFileSync(join(stuck, 'file'), '');
+  chmodSync(stuck, 0o555);
+  writeFileSync(join(dir, 'node_modules', '.iso-installed'), 'an older package.json');
+  const r = check(dir);
+  for (const s of stages(dir)) chmodSync(join(dir, s, 'old', 'stuck'), 0o755);
+  expect(r.stdout).toContain('ready');
+  expect(r.status).toBe(0);
+  complete(dir);
+}, 300_000);
+
 test('a finished manual install is kept, because its postinstall writes the marker', () => {
   const dir = folder('manual');
   expect(spawnSync(process.execPath, ['install'], { cwd: dir, encoding: 'utf8' }).status).toBe(0);

@@ -57,10 +57,13 @@ const holder = () => {
   return { pid: Number.isInteger(pid) && pid > 0 ? pid : undefined, mtime: stat.mtimeMs };
 };
 
-/** A lock is stale when its process is gone, when it still names no process ten seconds after it was made, or after DEAD_AFTER. */
+/**
+ * A lock is stale when its process is gone, when it names this process (a container that reuses pids after a killed run),
+ * when it still names no process ten seconds after it was made, or after DEAD_AFTER.
+ */
 const stale = (h: { pid: number | undefined; mtime: number }) => {
   const old = Date.now() - h.mtime;
-  return old > DEAD_AFTER || (h.pid === undefined ? old > 10_000 : !alive(h.pid));
+  return old > DEAD_AFTER || (h.pid === undefined ? old > 10_000 : h.pid === process.pid || !alive(h.pid));
 };
 
 /**
@@ -101,6 +104,7 @@ const locked = (check: string, fn: () => string | undefined) => {
     }
     const seen = holder();
     if (!seen) continue;
+    if (Date.now() > until) return `another install has held ${lock} for five minutes`;
     if (stale(seen)) {
       try {
         breakStale(seen);
@@ -111,7 +115,6 @@ const locked = (check: string, fn: () => string | undefined) => {
       continue;
     }
     const who = seen.pid === undefined ? 'a process that is starting' : `process ${seen.pid}`;
-    if (Date.now() > until) return `another install (${who}) has held ${lock} for five minutes`;
     if (!told) console.error(`${check}: waiting for another install to finish (${who})`);
     told = true;
     pause(500);
@@ -153,26 +156,37 @@ const move = (from: string, to: string) => {
 
 /**
  * Installs into a staging folder named after this process, then swaps its node_modules in by rename, so a run cut off at any
- * point leaves the old tree or the new one, never a half-written one. Returns why it failed, or nothing.
+ * point leaves the old tree or the new one, never a half-written one; a failed swap puts the old tree back. Returns why it
+ * failed, or nothing, and never throws.
  */
 const install = (check: string) => {
   const stage = join(dir, `${stagePrefix}${process.pid}`);
-  rmSync(stage, { recursive: true, force: true });
-  mkdirSync(stage);
+  const old = join(stage, 'old');
   try {
+    rmSync(stage, { recursive: true, force: true });
+    mkdirSync(stage);
     for (const f of ['package.json', 'bun.lock']) if (existsSync(join(dir, f))) copyFileSync(join(dir, f), join(stage, f));
     const why = process.versions.bun
       ? run(check, 'its packages', process.execPath, ['install'], stage)
       : run(check, 'its packages', 'npm', ['install', '--include=dev', '--no-audit', '--no-fund', '--no-package-lock', '--fetch-retries=0', '--loglevel=error', '--no-update-notifier'], stage, process.platform === 'win32');
     if (why) return why;
-    if (existsSync(modules)) move(modules, join(stage, 'old'));
-    move(join(stage, 'node_modules'), modules);
+    if (existsSync(modules)) move(modules, old);
+    try {
+      move(join(stage, 'node_modules'), modules);
+    } catch (e) {
+      if (existsSync(old)) move(old, modules);
+      throw e;
+    }
     writeFileSync(marker, readFileSync(manifest, 'utf8'));
     return undefined;
   } catch (e) {
     return `could not put the new packages in place (${code(e)})`;
   } finally {
-    rmSync(stage, { recursive: true, force: true });
+    try {
+      rmSync(stage, { recursive: true, force: true, maxRetries: 3 });
+    } catch {
+      // sweep() removes it on a later check
+    }
   }
 };
 
