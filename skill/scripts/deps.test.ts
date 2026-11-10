@@ -1,6 +1,6 @@
 import { afterAll, expect, test } from 'bun:test';
 import { spawn, spawnSync } from 'node:child_process';
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -15,32 +15,61 @@ const folder = (name: string) => {
   writeFileSync(join(dir, 'run.ts'), "import { packages } from './deps.ts';\npackages('test');\nconsole.log('ready');\n");
   return dir;
 };
-const check = (dir: string) => spawnSync(process.execPath, [join(dir, 'run.ts')], { encoding: 'utf8', timeout: 240_000 });
+const check = (dir: string, runtime = process.execPath) => spawnSync(runtime, [join(dir, 'run.ts')], { encoding: 'utf8', timeout: 240_000 });
+const nodeVersion = spawnSync('node', ['-p', 'process.versions.node'], { encoding: 'utf8' }).stdout?.trim() ?? '';
+const [major = 0, minor = 0] = nodeVersion.split('.').map(Number);
+const nodeStrips = major > 23 || (major === 23 && minor >= 6) || (major === 22 && minor >= 18);
+const stages = (dir: string) => readdirSync(dir).filter(e => /^\.iso-install-\d+$/.test(e));
+const aged = (path: string, ms: number) => {
+  const t = (Date.now() - ms) / 1000;
+  utimesSync(path, t, t);
+};
 const complete = (dir: string) => {
   const modules = join(dir, 'node_modules');
   expect(readFileSync(join(modules, '.iso-installed'), 'utf8')).toBe(readFileSync(join(dir, 'package.json'), 'utf8'));
   for (const f of ['playwright-core/package.json', 'typescript/lib/lib.d.ts', '@types/bun/package.json']) expect(existsSync(join(modules, f))).toBe(true);
   expect(existsSync(join(dir, '.iso-install-lock'))).toBe(false);
+  expect(existsSync(join(dir, '.iso-install-lock.break'))).toBe(false);
 };
 const lockAged = (dir: string, content: string, ms: number) => {
   const lock = join(dir, '.iso-install-lock');
   writeFileSync(lock, content);
-  const t = (Date.now() - ms) / 1000;
-  utimesSync(lock, t, t);
+  aged(lock, ms);
 };
 
-test('an install killed part way is repaired by the next check', async () => {
-  const dir = folder('killed');
-  const lock = join(dir, '.iso-install-lock');
-  const child = spawn(process.execPath, [join(dir, 'run.ts')], { stdio: 'ignore' });
-  const exited = new Promise(done => child.on('exit', done));
-  while (!existsSync(lock) && child.exitCode === null) await new Promise(r => setTimeout(r, 2));
-  child.kill('SIGKILL');
-  await exited;
-  expect(existsSync(join(dir, 'node_modules', '.iso-installed'))).toBe(false);
-  const again = check(dir);
-  expect(again.stdout).toContain('ready');
-  expect(again.status).toBe(0);
+for (const runtime of ['bun', 'node'] as const) {
+  test.skipIf(runtime === 'node' && !nodeStrips)(`an install killed while ${runtime} writes packages is repaired by the next check`, async () => {
+    const dir = folder(`killed-${runtime}`);
+    const bin = runtime === 'bun' ? process.execPath : 'node';
+    const child = spawn(bin, [join(dir, 'run.ts')], { stdio: 'ignore' });
+    const exited = new Promise(done => child.on('exit', done));
+    const writing = () => stages(dir).some(s => existsSync(join(dir, s, 'node_modules', 'playwright')));
+    while (!writing() && child.exitCode === null) await new Promise(r => setTimeout(r, 2));
+    expect(child.exitCode).toBe(null);
+    child.kill('SIGKILL');
+    await exited;
+    expect(existsSync(join(dir, 'node_modules', '.iso-installed'))).toBe(false);
+    const again = check(dir, bin);
+    expect(again.stdout).toContain('ready');
+    expect(again.status).toBe(0);
+    complete(dir);
+
+    const until = Date.now() + 60_000;
+    while (stages(dir).length && Date.now() < until) {
+      for (const s of stages(dir)) aged(join(dir, s), 11 * 60_000);
+      expect(check(dir, bin).status).toBe(0);
+      await new Promise(r => setTimeout(r, 500));
+    }
+    expect(stages(dir)).toEqual([]);
+  }, 300_000);
+}
+
+test('a finished manual install is kept, because its postinstall writes the marker', () => {
+  const dir = folder('manual');
+  expect(spawnSync(process.execPath, ['install'], { cwd: dir, encoding: 'utf8' }).status).toBe(0);
+  const r = check(dir);
+  expect(r.stderr).not.toContain('installing');
+  expect(r.status).toBe(0);
   complete(dir);
 }, 300_000);
 

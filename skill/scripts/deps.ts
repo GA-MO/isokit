@@ -26,11 +26,13 @@ const run = (check: string, what: string, cmd: string, args: string[], cwd = dir
 const manifest = join(dir, 'package.json');
 const marker = join(modules, '.iso-installed');
 const lock = join(dir, '.iso-install-lock');
+const breaker = `${lock}.break`;
 const stagePrefix = '.iso-install-';
 const present = () => ['playwright', 'typescript', '@types/bun'].every(p => existsSync(join(modules, p, 'package.json')));
 const installed = () => existsSync(marker) && readFileSync(marker, 'utf8') === readFileSync(manifest, 'utf8');
 const pause = (ms: number) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 const code = (e: unknown) => (e instanceof Error && 'code' in e ? String(e.code) : String(e));
+const age = (path: string) => Date.now() - (statSync(path, { throwIfNoEntry: false })?.mtimeMs ?? Date.now());
 const alive = (pid: number) => {
   try {
     process.kill(pid, 0);
@@ -39,33 +41,55 @@ const alive = (pid: number) => {
     return code(e) === 'EPERM';
   }
 };
+/** Longer than any install takes, so anything older belongs to a run that died, even if its pid now names another process. */
+const DEAD_AFTER = 600_000;
 
-/** Who holds the lock and when they took it; pid is undefined while the holder has not written it yet. */
+/** Who holds the lock and when they took it, or undefined when there is no lock. pid is undefined while unwritten or unreadable. */
 const holder = () => {
+  const stat = statSync(lock, { throwIfNoEntry: false });
+  if (!stat) return undefined;
+  let pid = NaN;
   try {
-    const pid = Number(readFileSync(lock, 'utf8'));
-    return { pid: Number.isInteger(pid) && pid > 0 ? pid : undefined, mtime: statSync(lock).mtimeMs };
+    pid = Number(readFileSync(lock, 'utf8'));
   } catch {
-    return undefined;
+    // unreadable counts like unwritten: stale after ten seconds
+  }
+  return { pid: Number.isInteger(pid) && pid > 0 ? pid : undefined, mtime: stat.mtimeMs };
+};
+
+/** A lock is stale when its process is gone, when it still names no process ten seconds after it was made, or after DEAD_AFTER. */
+const stale = (h: { pid: number | undefined; mtime: number }) => {
+  const old = Date.now() - h.mtime;
+  return old > DEAD_AFTER || (h.pid === undefined ? old > 10_000 : !alive(h.pid));
+};
+
+/**
+ * Removes a stale lock. Only the process that holds the breaker file may do it, and only if the lock is still the one it judged
+ * stale, so two waiters can never both remove a lock and both take the next one. A breaker left by a dead process expires in ten seconds.
+ */
+const breakStale = (seen: { pid: number | undefined; mtime: number }) => {
+  try {
+    writeFileSync(breaker, String(process.pid), { flag: 'wx' });
+  } catch (e) {
+    if (code(e) !== 'EEXIST') throw e;
+    if (age(breaker) > 10_000) rmSync(breaker, { force: true });
+    return;
+  }
+  try {
+    const now = holder();
+    if (now && now.pid === seen.pid && now.mtime === seen.mtime) rmSync(lock, { force: true });
+  } finally {
+    rmSync(breaker, { force: true });
   }
 };
 
 /**
- * A lock is stale when its process is gone, when it is still empty ten seconds after it was made (its maker died or ran out of disk
- * between creating and writing it), or when it is older than any install takes, which also covers a pid reused after a reboot.
- */
-const stale = (h: { pid: number | undefined; mtime: number }) => {
-  const age = Date.now() - h.mtime;
-  return age > 600_000 || (h.pid === undefined ? age > 10_000 : !alive(h.pid));
-};
-
-/**
  * Runs fn while holding a lock file that names this process, so two checks started together run one install.
- * A stale lock is taken over; a live one is waited on for five minutes at most.
- * Returns why it failed, or nothing. A folder it cannot write is a failure only when the packages are not already there.
+ * A stale lock is taken over; a live one is waited on for five minutes at most. Returns why it failed, or nothing.
+ * A folder it cannot write is a failure only when the packages are not already there.
  */
 const locked = (check: string, fn: () => string | undefined) => {
-  const unwritable = (e: unknown) => (present() ? undefined : `cannot write ${modules} (${code(e)})`);
+  const unwritable = (e: unknown) => (present() ? undefined : `cannot write ${dir} (${code(e)})`);
   const until = Date.now() + 300_000;
   let told = false;
   for (;;) {
@@ -78,12 +102,12 @@ const locked = (check: string, fn: () => string | undefined) => {
     const seen = holder();
     if (!seen) continue;
     if (stale(seen)) {
-      const now = holder();
       try {
-        if (now && now.pid === seen.pid && now.mtime === seen.mtime) rmSync(lock, { force: true });
+        breakStale(seen);
       } catch (e) {
         return unwritable(e);
       }
+      pause(50);
       continue;
     }
     const who = seen.pid === undefined ? 'a process that is starting' : `process ${seen.pid}`;
@@ -100,34 +124,53 @@ const locked = (check: string, fn: () => string | undefined) => {
 };
 
 /**
- * Installs into a staging folder named after this process, then renames its node_modules into place, so node_modules is
- * either the old tree or a whole new one. An install that was cut off leaves only its staging folder, which a later run
- * removes; its installer may still be writing there, so it never shares a folder with the next one.
+ * Removes staging folders left by checks that were killed. A killed check's installer keeps running on its own, so a folder is
+ * removed only once its process is gone and DEAD_AFTER has passed, when that installer has long finished.
  */
-const install = (check: string) => {
-  if (existsSync(modules)) accessSync(modules, constants.W_OK);
+const sweep = () => {
   for (const entry of readdirSync(dir)) {
     const pid = Number(entry.startsWith(stagePrefix) ? entry.slice(stagePrefix.length) : NaN);
-    if (!Number.isInteger(pid) || pid === process.pid || alive(pid)) continue;
+    if (!Number.isInteger(pid) || pid === process.pid || alive(pid) || age(join(dir, entry)) < DEAD_AFTER) continue;
     try {
       rmSync(join(dir, entry), { recursive: true, force: true });
     } catch {
-      // its installer is still writing; a later run removes it
+      // a later check tries again
     }
   }
+};
+
+/** Renames, retrying for a second when Windows reports a folder busy (an antivirus scan of files just written). */
+const move = (from: string, to: string) => {
+  for (let tries = 0; ; tries++) {
+    try {
+      return renameSync(from, to);
+    } catch (e) {
+      if (tries >= 5 || !['EPERM', 'EBUSY', 'EACCES'].includes(code(e))) throw e;
+      pause(200);
+    }
+  }
+};
+
+/**
+ * Installs into a staging folder named after this process, then swaps its node_modules in by rename, so a run cut off at any
+ * point leaves the old tree or the new one, never a half-written one. Returns why it failed, or nothing.
+ */
+const install = (check: string) => {
   const stage = join(dir, `${stagePrefix}${process.pid}`);
   rmSync(stage, { recursive: true, force: true });
   mkdirSync(stage);
-  for (const f of ['package.json', 'bun.lock']) if (existsSync(join(dir, f))) copyFileSync(join(dir, f), join(stage, f));
   try {
+    for (const f of ['package.json', 'bun.lock']) if (existsSync(join(dir, f))) copyFileSync(join(dir, f), join(stage, f));
     const why = process.versions.bun
       ? run(check, 'its packages', process.execPath, ['install'], stage)
       : run(check, 'its packages', 'npm', ['install', '--include=dev', '--no-audit', '--no-fund', '--no-package-lock', '--fetch-retries=0', '--loglevel=error', '--no-update-notifier'], stage, process.platform === 'win32');
     if (why) return why;
-    rmSync(modules, { recursive: true, force: true });
-    renameSync(join(stage, 'node_modules'), modules);
+    if (existsSync(modules)) move(modules, join(stage, 'old'));
+    move(join(stage, 'node_modules'), modules);
     writeFileSync(marker, readFileSync(manifest, 'utf8'));
     return undefined;
+  } catch (e) {
+    return `could not put the new packages in place (${code(e)})`;
   } finally {
     rmSync(stage, { recursive: true, force: true });
   }
@@ -135,18 +178,20 @@ const install = (check: string) => {
 
 /**
  * Installs this folder's package.json into its own node_modules, with bun under Bun and npm under Node, and never globally.
- * It runs on first use, again whenever package.json changes, and again after an install that was cut off, since only a
- * finished install writes the marker that holds the package.json it installed.
+ * It runs on first use, again whenever package.json changes, and again after an install that was cut off, because the marker
+ * holding the package.json it installed is written only by a finished install (this one, or the postinstall of a manual one).
  */
 export function packages(check: string) {
+  sweep();
   if (installed()) return;
   const failed = locked(check, () => {
     if (installed()) return undefined;
     try {
-      return install(check);
+      if (existsSync(modules)) accessSync(modules, constants.W_OK);
     } catch (e) {
       return present() ? undefined : `cannot write ${modules} (${code(e)})`;
     }
+    return install(check);
   });
   if (failed) skip(check, failed);
 }
