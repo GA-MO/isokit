@@ -27,6 +27,7 @@ jobs:
           bun-version: 1.4.4
       - run: sh scripts/check-names.sh
       - run: bun install
+      - run: bun run check:runtime
       - run: bun run test
       - run: cd skill/scripts && bun install --frozen-lockfile
       - run: bun run check:contrast

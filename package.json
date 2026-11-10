@@ -12,7 +12,9 @@
     "size": "bun run --cwd site size",
     "check:names": "sh scripts/check-names.sh",
     "readme:svg": "bun scripts/readme-svg.ts",
-    "check:contrast": "bun skill/scripts/render-all.ts .contrast && node skill/scripts/contrast.mjs .contrast/*.html",
-    "check:order": "bun skill/scripts/render-all.ts .order && node skill/scripts/order.mjs .order/*.html"
+    "check:contrast": "bun scripts/runtime.ts && node skill/scripts/render-all.ts .contrast && node skill/scripts/contrast.mjs .contrast/*.html",
+    "check:order": "bun scripts/runtime.ts && node skill/scripts/render-all.ts .order && node skill/scripts/order.mjs .order/*.html",
+    "build:runtime": "bun scripts/runtime.ts",
+    "check:runtime": "bun scripts/runtime.ts --check"
   }
 }

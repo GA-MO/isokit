@@ -1,4 +1,4 @@
-import type { AnimatedProp } from './iso';
+import type { AnimatedProp } from './iso.ts';
 
 export interface Timed {
   phase: 'intro' | 'loop';

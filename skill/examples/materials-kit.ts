@@ -1,5 +1,5 @@
-import type { Material, Scene, SidePaint } from '../lib/iso';
-import { fill, n, vertical } from './shared';
+import type { Material, Scene, SidePaint } from '../lib/iso.ts';
+import { fill, n, vertical } from './shared.ts';
 
 export const finishCategories = [
   { slug: 'metal', name: 'Metal', note: 'Hardware, storage and premium tiers' },

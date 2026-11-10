@@ -1,4 +1,4 @@
-import type { MotionSpec } from './iso';
+import type { MotionSpec } from './iso.ts';
 
 export interface IsoHandle {
   spec: MotionSpec;

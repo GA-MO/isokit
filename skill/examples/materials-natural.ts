@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { custom, group, layers, sheen, wrap } from './materials-kit';
-import { bandKey, n, once, pattern, rng, stops, vertical } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { custom, group, layers, sheen, wrap } from './materials-kit.ts';
+import { bandKey, n, once, pattern, rng, stops, vertical } from './shared.ts';
 
 function specks(seed: number, w: number, h: number, count: number, size: readonly [number, number], colors: readonly (readonly [string, number])[]): string {
   const r = rng(seed);

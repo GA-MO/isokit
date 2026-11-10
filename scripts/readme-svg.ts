@@ -1,9 +1,9 @@
 import { mkdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
-import { examples } from '../skill/examples/catalog';
-import { readme } from '../skill/examples/hero';
-import { sampler } from '../skill/examples/material-gallery';
-import { surfaces, type Example } from '../skill/examples/shared';
+import { examples } from '../skill/examples/catalog.ts';
+import { readme } from '../skill/examples/hero.ts';
+import { sampler } from '../skill/examples/material-gallery.ts';
+import { surfaces, type Example } from '../skill/examples/shared.ts';
 
 const out = new URL('../docs/svg/', import.meta.url).pathname;
 mkdirSync(out, { recursive: true });

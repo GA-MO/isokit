@@ -1,4 +1,4 @@
-import { schedule, type Timed, type Wiring } from './wiring';
+import { schedule, type Timed, type Wiring } from './wiring.ts';
 
 export type Vec2 = readonly [number, number];
 export type Vec3 = readonly [number, number, number];

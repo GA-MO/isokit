@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fitX, fonts, narrowest, page, paints, ramps, surfaces, type Example } from './shared.ts';
 
 const ui = surfaces.light;
 const line = 'rgb(22 23 27 / .16)';

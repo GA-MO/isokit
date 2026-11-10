@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, nightFloor, page, paints, ramps, surfaces, type Example, type Ramp } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fitX, fonts, narrowest, nightFloor, page, paints, ramps, surfaces, type Example, type Ramp } from './shared.ts';
 
 const ui = surfaces.night;
 const cyan: Ramp = ['#083344', '#0e7490', '#22d3ee', '#cffafe'];

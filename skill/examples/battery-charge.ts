@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, paints, ramps, surfaces, nightFloor, type Example } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fonts, page, paints, ramps, surfaces, nightFloor, type Example } from './shared.ts';
 
 const ui = surfaces.night;
 const emerald = ramps.emerald;

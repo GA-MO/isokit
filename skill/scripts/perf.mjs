@@ -1,6 +1,6 @@
-import { chromium } from 'playwright';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { browser as open } from './deps.ts';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const target = args.page;
@@ -9,7 +9,7 @@ const width = Number(args.width ?? 393);
 const throttle = Number(args.throttle ?? 4);
 const seconds = Number(args.seconds ?? 20);
 const selector = args.selector ?? '.iso';
-const browser = await chromium.launch({ channel: 'chrome' });
+const browser = await open('chromium', 'perf.mjs');
 const page = await browser.newPage({ viewport: { width, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
 const cdp = await page.context().newCDPSession(page);
 await cdp.send('Performance.enable');

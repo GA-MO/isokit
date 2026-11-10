@@ -1,7 +1,7 @@
-import { ease, type Scene, type Vec2, type Vec3 } from '../../lib/iso';
-import { paints } from '../shared';
-import { hidden } from './motion';
-import { link, piece, ui, type Story, type Variant } from './stage';
+import { ease, type Scene, type Vec2, type Vec3 } from '../../lib/iso.ts';
+import { paints } from '../shared.ts';
+import { hidden } from './motion.ts';
+import { link, piece, ui, type Story, type Variant } from './stage.ts';
 
 const mint = ['#064e3b', '#059669', '#6ee7b7', '#ecfdf5'] as const;
 const money = '#059669';

@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test';
-import { contexts, examples } from './catalog';
-import { galleries } from './material-gallery';
-import { readme, stage, stories } from './hero';
-import { intents, layouts } from './shared';
+import { contexts, examples } from './catalog.ts';
+import { galleries } from './material-gallery.ts';
+import { readme, stage, stories } from './hero.ts';
+import { intents, layouts } from './shared.ts';
 
 const arts = [...examples.map(e => e.art), stage, ...stories.map(s => s.art), ...galleries.map(g => g.art), ...Object.values(contexts)];
 const variants = arts.flatMap(a => [a.compact, ...(a.wide ? [a.wide] : [])]);

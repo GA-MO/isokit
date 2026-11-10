@@ -1,6 +1,6 @@
-import { chromium } from 'playwright';
 import { pathToFileURL } from 'node:url';
 import { resolve, basename } from 'node:path';
+import { browser as open } from './deps.ts';
 
 const args = process.argv.slice(2);
 const opts = Object.fromEntries(args.filter(a => a.includes('=')).map(a => a.split('=')));
@@ -18,7 +18,7 @@ const ratio = (a, b) => {
 };
 const hex = c => '#' + c.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
 
-const browser = await chromium.launch({ channel: 'chrome' });
+const browser = await open('chromium', 'contrast.mjs');
 let failures = 0;
 let checked = 0;
 for (const file of files) {

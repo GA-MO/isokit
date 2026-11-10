@@ -1,6 +1,6 @@
-import { ISO_X, Scene, ease } from '../lib/iso';
-import { finishCategories, finishes, type Finish, type FinishCategory } from './materials';
-import { art, fonts, page, surfaces, type Art } from './shared';
+import { ISO_X, Scene, ease } from '../lib/iso.ts';
+import { finishCategories, finishes, type Finish, type FinishCategory } from './materials.ts';
+import { art, fonts, page, surfaces, type Art } from './shared.ts';
 
 const ui = surfaces.night;
 const iy = ISO_X * Math.tan(Math.PI / 6);

@@ -1,3 +1,3 @@
-import { mountAll } from './runtime';
+import { mountAll } from './runtime.ts';
 
 mountAll();

@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { custom, edgeLight, group, layers, sheen } from './materials-kit';
-import { n, once, paints, pattern, ramps, stops, vertical } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { custom, edgeLight, group, layers, sheen } from './materials-kit.ts';
+import { n, once, paints, pattern, ramps, stops, vertical } from './shared.ts';
 
 function titanium(s: Scene): Material {
   return custom((_, a, t, band) => layers(a, t, vertical(s, 'titanium', band, [[0, '#ecc38a'], [0.32, '#c4568e'], [0.68, '#5b5bd6'], [1, '#283a8a']])) + edgeLight(a, t, band));

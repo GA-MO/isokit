@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fonts, n, page, ramps, surfaces, type Example, paints, nightFloor } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso.ts';
+import { art, fonts, n, page, ramps, surfaces, type Example, paints, nightFloor } from './shared.ts';
 
 const ui = surfaces.night;
 const metric = '#2dd4bf';

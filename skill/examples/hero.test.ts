@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
-import { readme, stories } from './hero';
-import { breakpoint, frames, storyScene } from './hero/stage';
+import { readme, stories } from './hero.ts';
+import { breakpoint, frames, storyScene } from './hero/stage.ts';
 
 const loops = (svg: string) => [...new Set([...svg.matchAll(/ ([\d.]+)ms linear [\d.]+ms infinite/g)].map(m => m[1]))];
 

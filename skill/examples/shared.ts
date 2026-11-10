@@ -1,5 +1,5 @@
-import { responsive, type Material, type Scene, type SidePaint, type Vec3 } from '../lib/iso';
-import type { Page } from '../scripts/render';
+import { responsive, type Material, type Scene, type SidePaint, type Vec3 } from '../lib/iso.ts';
+import type { Page } from '../scripts/render.ts';
 
 export const levels = ['spot', 'simple', 'medium', 'complex'] as const;
 export type Level = (typeof levels)[number];

@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, narrowest, page, surfaces, type Example } from './shared';
+import { Scene, ease, type Vec3 } from '../lib/iso.ts';
+import { art, fitX, fonts, narrowest, page, surfaces, type Example } from './shared.ts';
 
 const ui = surfaces.light;
 const ink = '#3f3f46';

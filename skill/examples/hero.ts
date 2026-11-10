@@ -1,9 +1,9 @@
-import { build } from './hero/build';
-import { device } from './hero/device';
-import { orders } from './hero/orders';
-import { payment } from './hero/payment';
-import { reel, stageArt, storyArt, ui, type Story, type Variant } from './hero/stage';
-import { page, type Art } from './shared';
+import { build } from './hero/build.ts';
+import { device } from './hero/device.ts';
+import { orders } from './hero/orders.ts';
+import { payment } from './hero/payment.ts';
+import { reel, stageArt, storyArt, ui, type Story, type Variant } from './hero/stage.ts';
+import { page, type Art } from './shared.ts';
 
 const list: readonly Story[] = [orders, device, payment, build];
 

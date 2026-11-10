@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { custom, edgeLight, group, layers } from './materials-kit';
-import { n, once, pattern, rng, stops, vertical } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { custom, edgeLight, group, layers } from './materials-kit.ts';
+import { n, once, pattern, rng, stops, vertical } from './shared.ts';
 
 function clear(s: Scene): Material {
   return custom((_, a, t, band) => layers(a, t, vertical(s, 'clear', band, [[0, '#f2fbff'], [0.06, '#8fd3f0'], [0.2, '#2a7fa6'], [1, '#1f8fc2']])), 0.72);

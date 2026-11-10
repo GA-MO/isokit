@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
-import { Scene, type Material } from '../lib/iso';
-import { art, fitX, paints, ramps } from './shared';
+import { Scene, type Material } from '../lib/iso.ts';
+import { art, fitX, paints, ramps } from './shared.ts';
 
 test('a centred label near either edge moves inside the scene', () => {
   const left = fitX(10, 'clip.mp4 · 64 MB', 390, 300);

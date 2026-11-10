@@ -1,5 +1,5 @@
-import { ISO_X, ISO_Y, Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared';
+import { ISO_X, ISO_Y, Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fonts, page, ramps, surfaces, type Example, fitX, narrowest, paints } from './shared.ts';
 
 const ui = surfaces.light;
 const accent = '#d97706';

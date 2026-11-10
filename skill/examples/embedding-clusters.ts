@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fitX, fonts, n, narrowest, page, paints, ramps, rng, surfaces, type Example, type Ramp } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fitX, fonts, n, narrowest, page, paints, ramps, rng, surfaces, type Example, type Ramp } from './shared.ts';
 
 const ui = surfaces.night;
 const settle = 'cubic-bezier(.39,.08,.04,.91)';

@@ -1,10 +1,10 @@
-import { finishCategories, type Finish, type FinishCategory } from './materials-kit';
-import { generative } from './materials-generative';
-import { glass } from './materials-glass';
-import { metal } from './materials-metal';
-import { natural } from './materials-natural';
-import { retro } from './materials-retro';
-import { tech } from './materials-tech';
+import { finishCategories, type Finish, type FinishCategory } from './materials-kit.ts';
+import { generative } from './materials-generative.ts';
+import { glass } from './materials-glass.ts';
+import { metal } from './materials-metal.ts';
+import { natural } from './materials-natural.ts';
+import { retro } from './materials-retro.ts';
+import { tech } from './materials-tech.ts';
 
 export { finishCategories, type Finish, type FinishCategory };
 

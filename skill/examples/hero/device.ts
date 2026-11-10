@@ -1,8 +1,8 @@
-import { ease, type Material, type Scene, type Vec2 } from '../../lib/iso';
-import { metal } from '../materials-metal';
-import { paints, ramps } from '../shared';
-import { hidden } from './motion';
-import { link, piece, ui, type Story, type Variant } from './stage';
+import { ease, type Material, type Scene, type Vec2 } from '../../lib/iso.ts';
+import { metal } from '../materials-metal.ts';
+import { paints, ramps } from '../shared.ts';
+import { hidden } from './motion.ts';
+import { link, piece, ui, type Story, type Variant } from './stage.ts';
 
 const curve = { shift: 'cubic-bezier(.49,.19,.28,.81)', settle: 'cubic-bezier(.39,.08,.04,.91)', rule: 'cubic-bezier(.05,1,.6,1)', snapOff: 'cubic-bezier(.45,.86,.17,.96)' } as const;
 const titanium = metal.find(f => f.slug === 'titanium')!.material;

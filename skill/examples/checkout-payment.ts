@@ -1,5 +1,5 @@
-import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso';
-import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared';
+import { Scene, ease, type Vec2, type Vec3 } from '../lib/iso.ts';
+import { art, fonts, page, ramps, surfaces, type Example, paints } from './shared.ts';
 
 const ui = surfaces.light;
 const accent = '#7c3aed';

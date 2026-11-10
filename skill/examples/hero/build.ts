@@ -1,6 +1,6 @@
-import { ease, type Scene, type Vec2 } from '../../lib/iso';
-import { paints } from '../shared';
-import { piece, ui, type Story, type Variant } from './stage';
+import { ease, type Scene, type Vec2 } from '../../lib/iso.ts';
+import { paints } from '../shared.ts';
+import { piece, ui, type Story, type Variant } from './stage.ts';
 
 const squash = 'cubic-bezier(.05,.6,.2,1)';
 const orange = { top: '#fff7ed', side: ['#c2410c', '#f97316'] as const, ink: '#c2410c' };

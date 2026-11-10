@@ -1,7 +1,7 @@
-import { chromium, webkit } from 'playwright';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { browser as open } from './deps.ts';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.split('=')));
 const file = args.page;
@@ -12,7 +12,7 @@ const out = args.out ?? 'shots';
 const scene = args.scene;
 const selector = args.selector ?? (scene ? `[data-iso="${scene}"]` : 'body');
 mkdirSync(out, { recursive: true });
-const browser = await (args.engine === 'webkit' ? webkit : chromium).launch(args.engine === 'webkit' ? {} : { channel: 'chrome' });
+const browser = await open(args.engine === 'webkit' ? 'webkit' : 'chromium', 'shots.mjs');
 const sheet = [];
 for (const w of widths) {
   const page = await browser.newPage({ viewport: { width: w, height: 900 }, deviceScaleFactor: 1 });

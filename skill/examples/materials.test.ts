@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
-import { Scene, type Material } from '../lib/iso';
-import { galleries, sampler } from './material-gallery';
-import { finishCategories, finishes } from './materials';
+import { Scene, type Material } from '../lib/iso.ts';
+import { galleries, sampler } from './material-gallery.ts';
+import { finishCategories, finishes } from './materials.ts';
 
 const onSlab = (paint: (s: Scene) => Material) => {
   const s = new Scene({ name: 'probe', width: 200, height: 160 });

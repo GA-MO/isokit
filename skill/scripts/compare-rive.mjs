@@ -1,7 +1,7 @@
-import { chromium } from 'playwright';
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { browser as open } from './deps.ts';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.split(/=(.*)/s).slice(0, 2)));
 const usage = 'usage: node compare-rive.mjs riv=<file.riv> page=<scene.html> scene=<name> times=0.5,1,2 (ascending) runtime=<dir with canvas_advanced.mjs + rive.wasm> [artboard=<name>] [scale=1 (2 can misdraw text and raster logos in some files)] [hover=x,y@t;x,y@t (drives the Rive side only; check kit hover with a real mouse)] [out=dir] [bg=#fff]';
@@ -43,7 +43,7 @@ window.at = (t, hover) => {
 window.ready = true;
 </script>`;
 
-const b = await chromium.launch({ channel: 'chrome' });
+const b = await open('chromium', 'compare-rive.mjs');
 const rp = await b.newPage();
 await rp.route('http://rive.local/**', r => {
   const path = new URL(r.request().url()).pathname;

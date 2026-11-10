@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { custom, group, layers, mix, sheen, wave } from './materials-kit';
-import { bandKey, n, once, pattern, rng, vertical } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { custom, group, layers, mix, sheen, wave } from './materials-kit.ts';
+import { bandKey, n, once, pattern, rng, vertical } from './shared.ts';
 
 function circuit(s: Scene): Material {
   const traces = once(s, 'fin-circuit', () => {

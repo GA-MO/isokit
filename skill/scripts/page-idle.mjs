@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { browser as open } from './deps.ts';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)]));
 if (!args.page) throw new Error('usage: node page-idle.mjs page=<http(s) url of a page with many scenes> [width=1280] [dpr=2] [throttle=1,4] [at=0,0.2,0.35,0.5,0.6,0.8] [seconds=4] [scroll=<CPU throttle for a 5 s scroll, e.g. 4>]');
@@ -8,7 +8,7 @@ const throttles = (args.throttle ?? '1,4').split(',').map(Number);
 const stops = (args.at ?? '0,0.2,0.35,0.5,0.6,0.8').split(',').map(Number);
 const seconds = Number(args.seconds ?? 4);
 const mobile = width < 600;
-const browser = await chromium.launch({ channel: 'chrome' });
+const browser = await open('chromium', 'page-idle.mjs');
 const page = await browser.newPage({ viewport: { width, height: mobile ? 852 : 800 }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
 const cdp = await page.context().newCDPSession(page);
 await cdp.send('Performance.enable');

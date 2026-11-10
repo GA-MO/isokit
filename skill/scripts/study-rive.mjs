@@ -1,6 +1,6 @@
-import { chromium } from 'playwright';
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve, extname } from 'node:path';
+import { browser as open } from './deps.ts';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.split(/=(.*)/s).slice(0, 2)));
 if (!args.riv || !args.runtime) throw new Error('usage: node study-rive.mjs riv=<file.riv> runtime=<dir with canvas_advanced.mjs + rive.wasm> [seconds=12] [step=0.25] [cols=8] [artboard=<name>] [hover=x,y@t;x,y@t] [out=dir]');
@@ -49,7 +49,7 @@ window.at = (t, hover) => {
 window.ready = true;
 </script>`;
 
-const b = await chromium.launch({ channel: 'chrome' });
+const b = await open('chromium', 'study-rive.mjs');
 const rp = await b.newPage();
 await rp.route('http://rive.local/**', r => {
   const path = new URL(r.request().url()).pathname;

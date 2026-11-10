@@ -1,6 +1,6 @@
-import { Scene, ease, type AnimatedProp, type PulseOptions, type SceneOptions, type ValueOf, type Vec2, type WireOptions } from '../../lib/iso';
-import { art, fonts, surfaces, type Art } from '../shared';
-import { handoverAfter, hidden, lift, liftTime, typeTime, typing, unwireTime } from './motion';
+import { Scene, ease, type AnimatedProp, type PulseOptions, type SceneOptions, type ValueOf, type Vec2, type WireOptions } from '../../lib/iso.ts';
+import { art, fonts, surfaces, type Art } from '../shared.ts';
+import { handoverAfter, hidden, lift, liftTime, typeTime, typing, unwireTime } from './motion.ts';
 
 export type Variant = 'wide' | 'compact';
 
@@ -129,12 +129,11 @@ class Slot extends Scene {
   readonly queue: Seg[] = [];
   unwire = 0;
   private readonly rest = new Map<string, { intro: boolean; start: number; value: string | number }>();
+  readonly story: Story;
 
-  constructor(
-    opts: SceneOptions,
-    readonly story: Story,
-  ) {
+  constructor(opts: SceneOptions, story: Story) {
     super(opts);
+    this.story = story;
   }
 
   private remember(key: string, intro: boolean, start: number, value: string | number) {

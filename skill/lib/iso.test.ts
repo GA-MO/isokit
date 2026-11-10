@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
-import { Scene, isoCss, lazyBox } from './iso';
-import { mount } from './runtime';
+import { Scene, isoCss, lazyBox } from './iso.ts';
+import { mount } from './runtime.ts';
 
 const scene = () => new Scene({ name: 'demo', width: 400, height: 300 });
 

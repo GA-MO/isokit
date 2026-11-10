@@ -1,8 +1,8 @@
-import { ease, type Scene, type Vec2, type Vec3 } from '../../lib/iso';
-import { custom, edgeLight, layers } from '../materials-kit';
-import { rng, vertical } from '../shared';
-import { hidden } from './motion';
-import { block, link, piece, ui, type Story, type Variant } from './stage';
+import { ease, type Scene, type Vec2, type Vec3 } from '../../lib/iso.ts';
+import { custom, edgeLight, layers } from '../materials-kit.ts';
+import { rng, vertical } from '../shared.ts';
+import { hidden } from './motion.ts';
+import { block, link, piece, ui, type Story, type Variant } from './stage.ts';
 
 const accent = '#7c3aed';
 const unlit = 'rgb(124 58 237 / 0)';

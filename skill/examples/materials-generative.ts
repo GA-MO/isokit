@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { checkSeed, custom, layers, mix, seededGroup, sheen, wrap } from './materials-kit';
-import { bandKey, n, once, paints, pattern, ramps, rng, vertical, type Ramp } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { checkSeed, custom, layers, mix, seededGroup, sheen, wrap } from './materials-kit.ts';
+import { bandKey, n, once, paints, pattern, ramps, rng, vertical, type Ramp } from './shared.ts';
 
 const base = (s: Scene, ramp: Ramp, band: Parameters<typeof vertical>[2]) => vertical(s, `gen-${ramp[0].slice(1)}-${ramp[1].slice(1)}`, band, [[0, ramp[1]], [1, ramp[0]]]);
 

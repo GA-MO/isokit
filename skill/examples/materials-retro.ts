@@ -1,6 +1,6 @@
-import type { Material, Scene } from '../lib/iso';
-import { custom, group, layers, sheen } from './materials-kit';
-import { bandKey, n, once, pattern, vertical } from './shared';
+import type { Material, Scene } from '../lib/iso.ts';
+import { custom, group, layers, sheen } from './materials-kit.ts';
+import { bandKey, n, once, pattern, vertical } from './shared.ts';
 
 const bayer = [
   [0, 8, 2, 10],

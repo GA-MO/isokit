@@ -1,7 +1,7 @@
-import { chromium, webkit } from 'playwright';
 import { existsSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve, basename } from 'node:path';
+import { browser as open } from './deps.ts';
 
 const args = process.argv.slice(2);
 const opts = Object.fromEntries(args.filter(a => a.includes('=')).map(a => a.split('=')));
@@ -9,7 +9,7 @@ const files = args.filter(a => !a.includes('='));
 if (!files.length) throw new Error('usage: node order.mjs <page.html ...> [widths=393,1280] [step=0.05] [browser=chrome|webkit] [table=1]  (pages and their .links.json from render.ts or render-all.ts)');
 const widths = (opts.widths ?? '393,1280').split(',').map(Number);
 const step = Number(opts.step ?? 0.05);
-const browser = opts.browser === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' });
+const browser = await open(opts.browser === 'webkit' ? 'webkit' : 'chromium', 'order.mjs');
 
 let bad = 0;
 let loose = 0;
