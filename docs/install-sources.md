@@ -35,7 +35,7 @@ Only Claude Code and Codex document that they follow a symlinked skill folder. F
 
 ## Node
 
-- *Measured* with the official darwin-arm64 builds from nodejs.org: `node scripts/render.ts examples/notifications.ts` runs on 22.18.0, 23.6.0, 24.0.0 and 25.0.0 and writes the same bytes as Bun. 20.19.5, 22.17.1 and 23.5.0 stop with `ERR_UNKNOWN_FILE_EXTENSION`; 22.6.0 and 22.17.1 run it with `--experimental-strip-types`. 23.6.0 and 24.0.0 print an `ExperimentalWarning` for type stripping; 22.18.0 and 25.0.0 do not.
+- *Measured* with the official darwin-arm64 builds from nodejs.org: `node scripts/render.ts examples/notifications.ts out/n.html`, run from a copy of `skill/` outside the repo, works on 22.18.0, 23.6.0, 24.0.0 and 25.0.0 and writes the same bytes as Bun. 20.19.5, 22.17.1 and 23.5.0 stop with `ERR_UNKNOWN_FILE_EXTENSION`; 22.6.0 and 22.17.1 run it with `--experimental-strip-types`. 23.6.0 and 24.0.0 print an `ExperimentalWarning` for type stripping; 22.18.0 and 25.0.0 do not.
 
 ## Claude Code
 

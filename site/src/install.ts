@@ -93,7 +93,7 @@ const defs = {
         text: 'Turn on code execution: Settings > Capabilities > `Code execution and file creation` (called `Create and edit files` in the newer settings). On Team and Enterprise plans an owner enables `Skills` under Organization settings > Plugins & skills > Policy.',
       },
       {
-        text: 'Download `iso.zip` from the latest GitHub release. It holds the `iso` folder at its top level, as Claude requires. To update later, upload the next release’s `iso.zip`.',
+        text: 'Download `iso.zip` from the latest GitHub release, or build the same file in a clone with `sh scripts/zip.sh`. It holds the `iso` folder at its top level, as Claude requires. To update later, upload the next release’s `iso.zip`.',
         code: 'curl -LO https://github.com/GA-MO/isokit/releases/latest/download/iso.zip',
       },
       {

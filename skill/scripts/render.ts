@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isoCss, type Scene } from '../lib/iso.ts';
@@ -31,7 +31,7 @@ export const write = (file: string, text: string) => {
 
 const isPage = (v: unknown): v is Page => typeof v === 'object' && v !== null && 'title' in v && typeof v.title === 'string' && 'body' in v && typeof v.body === 'string';
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const usage = 'usage: node scripts/render.ts <scene-module.ts> <out.html>  (the module default-exports a Page)';
   const [entry, out, ...rest] = process.argv.slice(2);
   if (!entry || !out || rest.length) throw new Error(usage);

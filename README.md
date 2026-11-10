@@ -77,7 +77,7 @@ This adds the `isokit` marketplace and installs the `iso` plugin from it (Claude
 ### Claude app (claude.ai and the desktop app)
 
 1. Turn on code execution: Settings > Capabilities > Code execution and file creation (Create and edit files in the newer settings). On Team and Enterprise plans, an owner turns on Skills under Organization settings > Plugins & skills > Policy.
-2. Download [`iso.zip`](https://github.com/GA-MO/isokit/releases/latest/download/iso.zip) from the latest release.
+2. Download [`iso.zip`](https://github.com/GA-MO/isokit/releases/latest/download/iso.zip) from the latest release, or build the same file from a clone with `sh scripts/zip.sh` ([docs/install.md](docs/install.md#claude-app-claudeai-and-the-desktop-app)).
 3. Open Customize > Skills, click `+`, then `+ Create skill`, then `Upload a skill`, and choose `iso.zip`. Turn `iso` on.
 
 To update, upload the newer `iso.zip` from the next release.
