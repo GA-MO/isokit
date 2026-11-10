@@ -1,0 +1,9 @@
+{
+  "name": "iso",
+  "description": "Draw animated isometric product diagrams as plain SVG with CSS and WAAPI motion, checked at phone and desktop widths",
+  "author": { "name": "GA-MO", "url": "https://github.com/GA-MO" },
+  "homepage": "https://ga-mo.github.io/isokit/",
+  "repository": "https://github.com/GA-MO/isokit",
+  "license": "MIT",
+  "keywords": ["isometric", "svg", "animation", "diagram", "landing-page"]
+}

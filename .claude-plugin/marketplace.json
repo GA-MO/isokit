@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "isokit",
+  "description": "The iso skill: one sentence about your product becomes an animated isometric diagram",
+  "owner": { "name": "GA-MO", "url": "https://github.com/GA-MO" },
+  "plugins": [
+    {
+      "name": "iso",
+      "source": "./skill",
+      "description": "Draw animated isometric product diagrams as plain SVG with CSS and WAAPI motion",
+      "category": "design"
+    }
+  ]
+}
