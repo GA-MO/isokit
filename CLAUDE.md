@@ -19,7 +19,7 @@ bun run dev                         # site dev server
 bun run build                       # site/dist
 bun run size                        # gzip sizes of the build (numbers in README)
 bun run check:names                 # banned-name check (CI runs it too)
-bun run test                        # kit and example tests (skill/lib, skill/examples)
+bun run test                        # kit, example and install tests (skill/lib, skill/examples, skill/scripts)
 bun run check:contrast              # every text in every scene at 4.5:1 or more (CI runs it; needs skill/scripts deps)
 bun run check:order                 # no wire or pulse before the boxes it joins, every 50 ms (CI runs it; needs skill/scripts deps)
 bun run build:runtime               # rebuild skill/lib/runtime.min.js after editing skill/lib; CI fails when it is stale
