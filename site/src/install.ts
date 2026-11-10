@@ -38,56 +38,63 @@ export type Tool = FolderTool | UploadTool;
 const clone = 'git clone --depth 1 https://github.com/GA-MO/isokit.git';
 const agents = '~/.agents/skills';
 
+/** The one command that installs the skill for most agents. */
+export const add = 'npx skills add GA-MO/isokit';
+
+const cli = (ids: string): Step => ({
+  text: 'Install it with the skills CLI (Node 22.20 or later). `-g` installs it for every project; without it, the skill goes into the current project.',
+  code: `${add} -g -a ${ids}`,
+});
+
 const copyTo = (dir: string): Step => ({
-  text: `Clone the repo and copy its \`skill\` folder to \`${dir}/iso\`. If \`${dir}/iso\` already exists, move it away first, or the copy lands inside it.`,
+  text: `Or clone the repo and copy its \`skill\` folder to \`${dir}/iso\`. If \`${dir}/iso\` already exists, move it away first, or the copy lands inside it.`,
   code: `${clone}\nmkdir -p ${dir}\ncp -R isokit/skill ${dir}/iso`,
 });
 
-const scripts = (dir: string): Step => ({
-  text: 'Install the render, screenshot and type-check scripts the skill runs to check its own work. You need Bun; screenshots use your installed Google Chrome.',
-  code: `cd ${dir}/iso/scripts && bun install`,
-});
-
 const project = (dir: string): Step => ({
-  text: `For one repo only, copy it to \`${dir}/iso\` at the repo root instead and commit it, so everyone on the repo gets it. Keep \`scripts/node_modules\` out of git.`,
-  code: `git clone --depth 1 https://github.com/GA-MO/isokit.git ../isokit\nmkdir -p ${dir}\ncp -R ../isokit/skill ${dir}/iso\ncd ${dir}/iso/scripts && bun install`,
+  text: `For one repo only, copy it to \`${dir}/iso\` at the repo root instead and commit it, so everyone on the repo gets it. Keep \`scripts/node_modules\` out of git: the checks install their packages there on first run.`,
+  code: `git clone --depth 1 https://github.com/GA-MO/isokit.git ../isokit\nmkdir -p ${dir}\ncp -R ../isokit/skill ${dir}/iso`,
 });
 
 const defs = {
   'claude-code': {
     kind: 'folder',
     name: 'Claude Code',
-    note: 'Claude Code follows a symlinked skill folder, so a `git pull` in the clone updates the skill.',
+    note: 'Use one of the first three steps, not more, or Claude Code loads two copies. The plugin is the one that can update itself: turn on auto-update in `/plugin` > Marketplaces > `isokit`.',
     personal: '~/.claude/skills',
     project: '.claude/skills',
     steps: [
+      cli('claude-code'),
       {
-        text: 'Clone the repo and link its `skill` folder to `~/.claude/skills/iso`. If `~/.claude/skills/iso` already exists, move it away first, or the link lands inside it.',
-        code: `git clone https://github.com/GA-MO/isokit.git\nmkdir -p ~/.claude/skills\nln -s "$PWD/isokit/skill" ~/.claude/skills/iso`,
+        text: 'Or install the plugin (Claude Code 2.1.275 or later), which adds the `isokit` marketplace. The skill is then `/iso:iso`, and `claude plugin update iso@isokit` updates it.',
+        code: 'claude plugin install iso --marketplace GA-MO/isokit',
       },
       {
-        text: 'Install the render, screenshot and type-check scripts the skill runs to check its own work. You need Bun; screenshots use your installed Google Chrome.',
-        code: 'cd isokit/skill/scripts && bun install',
+        text: 'Or clone the repo and link its `skill` folder to `~/.claude/skills/iso`, so a `git pull` updates it. If `~/.claude/skills/iso` already exists, move it away first, or the link lands inside it.',
+        code: `git clone https://github.com/GA-MO/isokit.git\nmkdir -p ~/.claude/skills\nln -s "$PWD/isokit/skill" ~/.claude/skills/iso`,
       },
       {
         text: 'Claude Code picks up the skill in a running session; if `~/.claude/skills` did not exist when the session started, run `/reload-skills`. Type `/iso`, or ask `What skills are available?` and look for `iso`.',
       },
       project('.claude/skills'),
     ],
-    sources: [{ title: 'Claude Code skills', url: 'https://code.claude.com/docs/en/skills' }],
+    sources: [
+      { title: 'Claude Code skills', url: 'https://code.claude.com/docs/en/skills' },
+      { title: 'Plugin marketplaces', url: 'https://code.claude.com/docs/en/plugin-marketplaces' },
+    ],
   },
   'claude-app': {
     kind: 'upload',
     name: 'Claude app',
-    note: 'For chat on claude.ai and the desktop app. Its scripts run in Claude’s code sandbox with what that sandbox provides, so the Bun render and screenshot checks may not run there.',
+    note: 'For chat on claude.ai and the desktop app. Its scripts run in Claude’s code sandbox; where that sandbox has no network, the checks say they were skipped and rendering still works.',
     where: 'Customize > Skills',
     steps: [
       {
         text: 'Turn on code execution: Settings > Capabilities > `Code execution and file creation` (called `Create and edit files` in the newer settings). On Team and Enterprise plans an owner enables `Skills` under Organization settings > Plugins & skills > Policy.',
       },
       {
-        text: 'Build `iso.zip` with the `iso` folder at its top level. Claude looks for `iso/SKILL.md` inside the archive, and the folder name must match the skill name. Every file `unzip -l` lists should start with `iso/`.',
-        code: `${clone}\ncd isokit && git archive --format=zip --prefix=iso/ -o ../iso.zip HEAD:skill && cd ..\nunzip -l iso.zip`,
+        text: 'Download `iso.zip` from the latest GitHub release. It holds the `iso` folder at its top level, as Claude requires. To update later, upload the next release’s `iso.zip`.',
+        code: 'curl -LO https://github.com/GA-MO/isokit/releases/latest/download/iso.zip',
       },
       {
         text: 'Open Customize > Skills, click `+`, then `+ Create skill`, then `Upload a skill`, and choose `iso.zip`.',
@@ -108,8 +115,8 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('codex'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Codex detects new skills on its own; restart it if `iso` does not show. In the CLI or IDE extension run `/skills` or type `$` to mention it. In the ChatGPT desktop app, open Skills in the sidebar.',
       },
@@ -124,8 +131,8 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('cursor'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Restart Cursor so it finds the skill, then open Customize in the sidebar and go to Skills. In Agent chat, type `/` and search for `iso`.',
       },
@@ -136,12 +143,12 @@ const defs = {
   'gemini-cli': {
     kind: 'folder',
     name: 'Gemini CLI',
-    note: 'Gemini CLI reads `~/.agents/skills` as an alias of `~/.gemini/skills`. Its docs say Antigravity CLI replaced it for unpaid tier and Google One users on 18 June 2026.',
+    note: 'Gemini CLI reads `~/.agents/skills` as an alias of `~/.gemini/skills`. Its docs say Antigravity CLI replaced it on 18 June 2026.',
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('gemini-cli'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Skills load when a session starts. In a running session, run `/skills reload`, then `/skills list`. From the terminal:',
         code: 'gemini skills list --all',
@@ -153,16 +160,21 @@ const defs = {
   antigravity: {
     kind: 'folder',
     name: 'Antigravity',
-    note: '`~/.gemini/config/skills` is read by the Antigravity app, CLI and IDE alike.',
+    note: '`~/.gemini/config/skills` is read by the Antigravity app, CLI and IDE alike. They read `.agents/skills` only inside a workspace, so `npx skills add -g` does not reach them.',
     personal: '~/.gemini/config/skills',
     project: '.agents/skills',
     steps: [
-      copyTo('~/.gemini/config/skills'),
-      scripts('~/.gemini/config/skills'),
+      {
+        text: 'Clone the repo and copy its `skill` folder to `~/.gemini/config/skills/iso`. If it already exists, move it away first, or the copy lands inside it.',
+        code: `${clone}\nmkdir -p ~/.gemini/config/skills\ncp -R isokit/skill ~/.gemini/config/skills/iso`,
+      },
       {
         text: 'In the CLI, run `/skills reload` or start a new conversation. In the IDE, open the Customizations menu in the agent side panel to see active skills.',
       },
-      project('.agents/skills'),
+      {
+        text: 'For one workspace, run the skills CLI in it instead. It writes `.agents/skills/iso`.',
+        code: `${add} -a antigravity`,
+      },
     ],
     sources: [{ title: 'Antigravity skills', url: 'https://antigravity.google/docs/skills' }],
   },
@@ -173,8 +185,8 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('github-copilot'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Copilot CLI: in a session run `/skills reload`, then `/skills list`. From the terminal:',
         code: 'copilot skill list',
@@ -197,8 +209,8 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('devin'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Click Customize in the agent sidebar and open the Skills tab, which lists what the agent loaded. Type `/iso` to run it directly.',
       },
@@ -213,10 +225,10 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('opencode'),
       copyTo(agents),
-      scripts(agents),
       {
-        text: 'opencode lists the skills it found in its `skill` tool, so ask it which skills it can load. If `iso` is missing, check that no `permission.skill` rule in `opencode.json` denies it.',
+        text: 'If `iso` is missing, check that no rule in the `permissions` array of `opencode.json` with action `skill` and effect `deny` matches it; the last matching rule wins.',
       },
       project('.agents/skills'),
     ],
@@ -229,13 +241,13 @@ const defs = {
     personal: agents,
     project: '.agents/skills',
     steps: [
+      cli('goose amp junie kiro-cli'),
       copyTo(agents),
-      scripts(agents),
       {
         text: 'Check it loaded: run `goose skills list` for goose, `amp skills list` for Amp, or `/skills` in Junie.',
       },
       {
-        text: 'Kiro: copy the folder to `~/.kiro/skills/iso` instead, then find it under Agent Steering & Skills in the Kiro panel, or type `/` in chat.',
+        text: 'Kiro reads `~/.kiro/skills/iso`, where `-a kiro-cli` puts it, or copy the folder there. Then find it under Agent Steering & Skills in the Kiro panel, or type `/` in chat.',
         code: 'mkdir -p ~/.kiro/skills\ncp -R isokit/skill ~/.kiro/skills/iso',
       },
       project('.agents/skills'),

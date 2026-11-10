@@ -1,5 +1,5 @@
 ---
-import { tools } from '../install';
+import { add, tools } from '../install';
 import CopyButton from './CopyButton.astro';
 
 const tab =
@@ -15,8 +15,14 @@ const runs = (text: string) => text.split(/`([^`]+)`/);
     <div class="max-w-2xl">
       <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Install the skill.</h2>
       <p class="mt-4 text-lg leading-relaxed text-pretty text-muted">
-        <code class="font-mono text-ink">iso</code> is an Agent Skill, one folder with a <code class="font-mono text-ink">SKILL.md</code>. Pick the agent you use. The skill's checks need Bun.
+        <code class="font-mono text-ink">iso</code> is an Agent Skill, one folder with a <code class="font-mono text-ink">SKILL.md</code>. One command installs it for most agents and asks which ones you use. It renders with Node 22.18 or later, and its checks install what they need the first time they run.
       </p>
+      <div class="mt-6 flex min-w-0 items-center rounded-xl border border-surface-line bg-surface-well text-surface-ink">
+        <pre class="min-w-0 flex-1 overflow-x-auto py-3 pr-2 pl-4 font-mono text-sm leading-relaxed whitespace-pre"><code>{add}</code></pre>
+        <div class="shrink-0 p-2">
+          <CopyButton text={add} label="Copy the install command" />
+        </div>
+      </div>
     </div>
 
     <div data-tabs class="mt-8">
@@ -122,7 +128,7 @@ const runs = (text: string) => text.split(/`([^`]+)`/);
         <p class="mt-1.5 font-mono text-sm leading-relaxed break-words text-ink">Draw an isometric flow of an order moving from cart to payment to the warehouse.</p>
       </div>
       <p class="text-sm leading-relaxed text-pretty text-muted lg:col-span-2">
-        To update, run <code class={inline}>git pull</code> in your clone. If you copied the folder instead of linking it, copy <code class={inline}>isokit/skill/.</code> over it again.
+        To update, run <code class={inline}>npx skills update</code>, or <code class={inline}>claude plugin update iso@isokit</code> for the plugin. A linked clone updates with <code class={inline}>git pull</code>; a copied folder needs <code class={inline}>isokit/skill/.</code> copied over it again.
       </p>
     </div>
   </div>

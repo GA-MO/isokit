@@ -22,9 +22,13 @@ bun run check:names                 # banned-name check (CI runs it too)
 bun run test                        # kit and example tests (skill/lib, skill/examples)
 bun run check:contrast              # every text in every scene at 4.5:1 or more (CI runs it; needs skill/scripts deps)
 bun run check:order                 # no wire or pulse before the boxes it joins, every 50 ms (CI runs it; needs skill/scripts deps)
+bun run build:runtime               # rebuild skill/lib/runtime.min.js after editing skill/lib; CI fails when it is stale
+sh scripts/zip.sh                   # iso.zip for the Claude app; a v* tag runs release.yml, which attaches it to the Release
 cd skill/scripts && bun install     # render / shots / check tools
 bun skill/scripts/check.ts skill/examples/*.ts   # strict types for scenes
 ```
+
+Users run the skill's scripts with plain Node 22.18+ (`node skill/scripts/render.ts ...`), so everything under `skill/` must run under Node's type stripping: relative imports end in `.ts`, type-only imports use `import type`, no enums, namespaces or parameter properties. The tsconfig enforces all of that except the extensions, which `check:contrast` and `check:order` catch because they render with `node`. Scripts that need packages call `skill/scripts/deps.ts`, which installs into `skill/scripts/node_modules` on first run and exits 2 when it cannot.
 
 ## Rules
 

@@ -52,97 +52,41 @@ Eight of the 49 side finishes, from all six families: metal, glass, natural, tec
 
 ## Install
 
-`iso` is an Agent Skill: the `skill/` folder with its `SKILL.md`. Every tool below needs it installed as a folder named `iso`. The skill's render and screenshot checks need [Bun](https://bun.sh) and your installed Google Chrome. Every path and command here comes from each tool's official docs, checked on 2026-11-06; the pages are listed in [docs/install-sources.md](docs/install-sources.md).
-
-### Claude Code
-
 ```sh
-git clone https://github.com/GA-MO/isokit.git
-mkdir -p ~/.claude/skills
-ln -s "$PWD/isokit/skill" ~/.claude/skills/iso
-cd isokit/skill/scripts && bun install
+npx skills add GA-MO/isokit
 ```
 
-If `~/.claude/skills/iso` already exists, move it away first, or the link lands inside it. Claude Code picks up the skill in a running session. If `~/.claude/skills` did not exist when the session started, run `/reload-skills`. Type `/iso`, or ask `What skills are available?`. For one repo only, copy the folder to `.claude/skills/iso` and commit it. Source: [Claude Code skills](https://code.claude.com/docs/en/skills).
+That is the whole install for most agents. The [skills CLI](https://github.com/vercel-labs/skills) finds the `iso` skill in this repo, asks which of your agents should get it, and asks whether to install it for you (`-g`) or for the current project only. It needs Node 22.20 or later. To skip the questions, name the agents: `npx skills add GA-MO/isokit -g -a claude-code codex -y`. The CLI sends anonymous usage data unless you set `DISABLE_TELEMETRY=1`.
+
+| Agent | `-a` | With `-g`, lands in |
+|---|---|---|
+| Claude Code | `claude-code` | `~/.claude/skills/iso` |
+| Codex, Cursor, Gemini CLI, GitHub Copilot, opencode, Amp | `codex`, `cursor`, `gemini-cli`, `github-copilot`, `opencode`, `amp` | `~/.agents/skills/iso` |
+| Devin, goose, Junie, Kiro | `devin`, `goose`, `junie`, `kiro-cli` | each agent's own folder, linked to `~/.agents/skills/iso` |
+
+Antigravity reads `.agents/skills` only inside a project, so install it there (`npx skills add GA-MO/isokit -a antigravity`) or copy the folder to `~/.gemini/config/skills/iso` as [docs/install.md](docs/install.md#antigravity) shows. Update with `npx skills update`.
+
+### Claude Code plugin, if you want updates delivered
+
+```sh
+claude plugin install iso --marketplace GA-MO/isokit
+```
+
+This adds the `isokit` marketplace and installs the `iso` plugin from it (Claude Code 2.1.275 or later; inside a session, `/plugin marketplace add GA-MO/isokit`, then `/plugin install iso@isokit`). The skill is then `/iso:iso`. Claude Code leaves auto-update off for marketplaces you add yourself. Turn it on in `/plugin` > Marketplaces > `isokit` > Enable auto-update, or run `claude plugin update iso@isokit`. Use either this or `npx skills add` in Claude Code, not both, or you end up with two copies of the skill.
 
 ### Claude app (claude.ai and the desktop app)
 
-1. Turn on code execution: Settings > Capabilities > Code execution and file creation (called Create and edit files in the newer settings). On Team and Enterprise plans, an owner turns on Skills under Organization settings > Plugins & skills > Policy.
-2. Build `iso.zip` with the `iso` folder at its top level. Every file `unzip -l` lists should start with `iso/`.
+1. Turn on code execution: Settings > Capabilities > Code execution and file creation (Create and edit files in the newer settings). On Team and Enterprise plans, an owner turns on Skills under Organization settings > Plugins & skills > Policy.
+2. Download [`iso.zip`](https://github.com/GA-MO/isokit/releases/latest/download/iso.zip) from the latest release.
+3. Open Customize > Skills, click `+`, then `+ Create skill`, then `Upload a skill`, and choose `iso.zip`. Turn `iso` on.
 
-   ```sh
-   git clone --depth 1 https://github.com/GA-MO/isokit.git
-   cd isokit && git archive --format=zip --prefix=iso/ -o ../iso.zip HEAD:skill && cd ..
-   unzip -l iso.zip
-   ```
+To update, upload the newer `iso.zip` from the next release.
 
-3. Open Customize > Skills, click `+`, then `+ Create skill`, then `Upload a skill`, and choose `iso.zip`.
-4. Turn `iso` on in Customize > Skills. Then ask for an isometric flow and check that Claude's thinking shows it loading the skill.
+### What the skill needs to run
 
-Scripts run in Claude's code sandbox, so the Bun checks may not run there. Sources: [Using skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude), [Create custom skills](https://claude.com/docs/skills/how-to).
+Rendering a scene needs only Node 22.18 or later (or 23.6 or later), or Bun. The first time a check runs, it installs Playwright and TypeScript into the skill's own `scripts/node_modules`, never globally. Screenshots and checks use your installed Google Chrome; without it, Playwright downloads its own Chromium into that folder. Where there is no network, as in skills on the Claude API, a check says it was skipped and exits with code 2, and the rendered page is still good.
 
-### Codex (CLI, IDE extension, ChatGPT desktop app)
-
-```sh
-git clone --depth 1 https://github.com/GA-MO/isokit.git
-mkdir -p ~/.agents/skills
-cp -R isokit/skill ~/.agents/skills/iso
-cd ~/.agents/skills/iso/scripts && bun install
-```
-
-Codex detects new skills on its own. Restart it if `iso` doesn't show. In the CLI or IDE extension, run `/skills` or type `$`. In the ChatGPT desktop app, open Skills in the sidebar. For one repo, use `.agents/skills/iso`. Source: [Codex skills](https://learn.chatgpt.com/docs/build-skills).
-
-### Cursor
-
-Use the same commands as Codex (`~/.agents/skills/iso`). Restart Cursor, then open Customize in the sidebar and go to Skills, or type `/` in Agent chat. For one repo, use `.agents/skills/iso` (or `.cursor/skills/iso`). Source: [Cursor skills](https://cursor.com/docs/context/skills).
-
-### Gemini CLI
-
-Use the same commands as Codex: Gemini CLI reads `~/.agents/skills` as an alias of `~/.gemini/skills`. In a session, run `/skills reload`, then `/skills list`. From the terminal, run `gemini skills list --all`. For one repo, use `.agents/skills/iso`. Its docs say Antigravity CLI replaced it for unpaid tier and Google One users on 18 June 2026. Source: [Gemini CLI skills](https://geminicli.com/docs/cli/skills/).
-
-### Antigravity (app, CLI, IDE)
-
-```sh
-git clone --depth 1 https://github.com/GA-MO/isokit.git
-mkdir -p ~/.gemini/config/skills
-cp -R isokit/skill ~/.gemini/config/skills/iso
-cd ~/.gemini/config/skills/iso/scripts && bun install
-```
-
-In the CLI, run `/skills reload` or start a new conversation. In the IDE, open the Customizations menu in the agent side panel. For one repo, use `.agents/skills/iso`. Source: [Antigravity skills](https://antigravity.google/docs/skills).
-
-### GitHub Copilot (CLI, VS Code, cloud agent)
-
-Use the same commands as Codex (`~/.agents/skills/iso`; `~/.copilot/skills/iso` works too).
-
-- Copilot CLI: run `/skills reload`, then `/skills list` in a session, or `copilot skill list` in the terminal.
-- VS Code: type `/` in a new chat, run `/skills`, or run Chat: Open Customizations and select Skills.
-- Cloud agent: commit the skill to the repo (`.github/skills/iso`, `.claude/skills/iso` or `.agents/skills/iso`), or put it in `.copilot/skills` in your dotfiles repo.
-
-Sources: [About agent skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills), [Copilot CLI skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills), [VS Code agent skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills).
-
-### Devin Desktop (formerly Windsurf)
-
-Use the same commands as Codex: Devin Desktop reads `~/.agents/skills` next to its own `~/.config/devin/skills`. Click Customize in the agent sidebar and open the Skills tab, or type `/iso`. For one repo, use `.agents/skills/iso` (`.devin/skills` and the legacy `.windsurf/skills` work too). Sources: [Devin Desktop skills](https://docs.devin.ai/desktop/cascade/skills), [Devin Desktop FAQ](https://docs.devin.ai/desktop/devin-desktop-faq).
-
-### opencode
-
-Use the same commands as Codex. opencode also reads `~/.config/opencode/skills` and `~/.claude/skills`. Ask it which skills it can load: it lists them in its `skill` tool. If `iso` is missing, check that no `permission.skill` rule in `opencode.json` denies it. For one repo, use `.agents/skills/iso`. Source: [opencode skills](https://opencode.ai/docs/skills/).
-
-### goose, Amp, Junie, Kiro
-
-goose, Amp and Junie read `~/.agents/skills`, so use the same commands as Codex. Check with `goose skills list`, `amp skills list`, or `/skills` in Junie. Kiro reads `~/.kiro/skills`, and only in the IDE:
-
-```sh
-mkdir -p ~/.kiro/skills
-cp -R isokit/skill ~/.kiro/skills/iso
-```
-
-Then find it under Agent Steering & Skills in the Kiro panel, or type `/` in chat. Sources: [goose](https://goose-docs.ai/docs/guides/context-engineering/using-skills), [Amp](https://ampcode.com/docs/customize/skills), [Junie](https://junie.jetbrains.com/docs/agent-skills.html), [Kiro](https://kiro.dev/docs/skills/).
-
-### Update
-
-Run `git pull` in your clone. If you copied the folder instead of linking it, copy it over again: `cp -R isokit/skill/. ~/.agents/skills/iso/`.
+Manual installs for every agent (clone and copy, project folders, how to check the skill loaded) are in [docs/install.md](docs/install.md). Every path and command there and here was checked against each tool's official docs on 2026-11-10; the pages are listed in [docs/install-sources.md](docs/install-sources.md).
 
 ## Use
 
@@ -156,7 +100,7 @@ To render an example yourself:
 
 ```sh
 cd skill
-bun scripts/render.ts examples/notifications.ts out/notifications.html
+node scripts/render.ts examples/notifications.ts out/notifications.html
 node scripts/shots.mjs page=out/notifications.html times=0,1,2 loop=1 widths=393,1280 out=out/shots
 ```
 
@@ -257,11 +201,14 @@ bun run dev          # showcase dev server
 bun run build        # static build into site/dist, served under /isokit/
 bun run test         # kit and example tests
 bun run readme:svg   # rewrite the animated SVGs in docs/svg/
-bun run check:contrast  # every text in every scene at 4.5:1 or more (needs skill/scripts deps and Chrome)
-bun run check:order     # no wire or pulse before the boxes it joins, every 50 ms (needs skill/scripts deps and Chrome)
+bun run build:runtime   # rebuild skill/lib/runtime.min.js after editing skill/lib (render.ts inlines it; CI fails when it is stale)
+bun run check:contrast  # every text in every scene at 4.5:1 or more (installs skill/scripts deps on first run, uses Chrome)
+bun run check:order     # no wire or pulse before the boxes it joins, every 50 ms (installs skill/scripts deps on first run, uses Chrome)
 ```
 
 Pushing to `main` deploys the site to GitHub Pages through `.github/workflows/pages.yml`. Set the repository's Pages source to GitHub Actions (Settings, Pages) once before the first deploy.
+
+Pushing a tag that starts with `v` (for example `git tag v1.0.0 && git push origin v1.0.0`) runs `.github/workflows/release.yml`, which builds `iso.zip` with `scripts/zip.sh` and attaches it to that tag's GitHub Release. `sh scripts/zip.sh` builds the same file locally.
 
 ## License
 
